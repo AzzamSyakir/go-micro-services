@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  postgresql:
+    image: postgres
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_MULTIPLE_DATABASES: user_db, product_db
+
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - ./multiple-databases:/docker-entrypoint-initdb.d
+
