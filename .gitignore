@@ -1,0 +1,10 @@
+./docker/postgres
+/docker/postgres/data/pg_hba.conf
+/docker/postgres/data/pg_ident.conf
+/docker/postgres/data/PG_VERSION
+/docker/postgres/data/postgresql.auto.conf
+/docker/postgres/data/postgresql.conf
+/docker/postgres/data/postmaster.opts
+/docker/postgres/data/postmaster.pid
+/.idea/
+.env
