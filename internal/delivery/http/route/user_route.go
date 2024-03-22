@@ -19,5 +19,5 @@ func NewUserRoute(router *mux.Router, userController *http.UserController) *User
 }
 
 func (userRoute *UserRoute) Register() {
-	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.GetById).Methods("GET")
+	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.GetOneById).Methods("GET")
 }
