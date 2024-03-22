@@ -3,55 +3,90 @@ package config
 import (
 	"database/sql"
 	"fmt"
-	"os"
+	_ "github.com/lib/pq"
 )
 
 type DatabaseConfig struct {
-	PostgresDatabase *PostgresDatabase
+	UserDB    *PostgresDatabase
+	ProductDB *PostgresDatabase
 }
 
 type PostgresDatabase struct {
 	Connection *sql.DB
 }
 
-func InitUserDb() *PostgresDatabase {
-
-	sqlInfo := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-	)
-
-	connection, err := sql.Open("mysql", sqlInfo)
-	if err != nil {
-		panic(err)
+func NewProductDBConfig(envConfig *EnvConfig) *DatabaseConfig {
+	databaseConfig := &DatabaseConfig{
+		ProductDB: NewProductDB(envConfig),
 	}
-	PostgresDatabase := &PostgresDatabase{
-		Connection: connection,
-	}
-	return PostgresDatabase
+	return databaseConfig
 }
-func InitProductDb() *PostgresDatabase {
+func NewUserDBConfig(envConfig *EnvConfig) *DatabaseConfig {
+	databaseConfig := &DatabaseConfig{
+		UserDB: NewUserDB(envConfig),
+	}
+	return databaseConfig
+}
+func NewUserDB(envConfig *EnvConfig) *PostgresDatabase {
+	var url string
+	if envConfig.UserDB.Password == "" {
+		url = fmt.Sprintf(
+			"postgresql://%s@%s:%s/%s",
+			envConfig.UserDB.User,
+			envConfig.UserDB,
+			envConfig.UserDB.Host,
+			envConfig.UserDB.Port,
+			envConfig.UserDB.Database,
+		)
+	} else {
+		url = fmt.Sprintf(
+			"postgresql://%s:%s@%s:%s/%s",
+			envConfig.UserDB.User,
+			envConfig.UserDB.Password,
+			envConfig.UserDB.Host,
+			envConfig.UserDB.Port,
+			envConfig.UserDB.Database,
+		)
+	}
 
-	sqlInfo := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_PRODUCT"),
-	)
-
-	connection, err := sql.Open("mysql", sqlInfo)
+	connection, err := sql.Open("postgres", url)
 	if err != nil {
 		panic(err)
 	}
 
-	PostgresDatabase := &PostgresDatabase{
+	userDB := &PostgresDatabase{
 		Connection: connection,
 	}
-	return PostgresDatabase
+	return userDB
+}
+func NewProductDB(envConfig *EnvConfig) *PostgresDatabase {
+	var url string
+	if envConfig.UserDB.Password == "" {
+		url = fmt.Sprintf(
+			"postgresql://%s@%s:%s/%s",
+			envConfig.ProductDB.User,
+			envConfig.ProductDB.Host,
+			envConfig.ProductDB.Port,
+			envConfig.ProductDB.Database,
+		)
+	} else {
+		url = fmt.Sprintf(
+			"postgresql://%s:%s@%s:%s/%s",
+			envConfig.UserDB.User,
+			envConfig.UserDB.Password,
+			envConfig.UserDB.Host,
+			envConfig.UserDB.Port,
+			envConfig.UserDB.Database,
+		)
+	}
+
+	connection, err := sql.Open("postgres", url)
+	if err != nil {
+		panic(err)
+	}
+
+	userDB := &PostgresDatabase{
+		Connection: connection,
+	}
+	return userDB
 }
