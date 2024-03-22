@@ -6,18 +6,18 @@ import (
 )
 
 type ProductRoute struct {
-	Router         *mux.Router
-	UserController *http.UserController
+	Router            *mux.Router
+	ProductController *http.ProductController
 }
 
-func NewProductRoute(router *mux.Router, userController *http.UserController) *UserRoute {
-	userRoute := &UserRoute{
-		Router:         router.PathPrefix("/users").Subrouter(),
-		UserController: userController,
+func NewProductRoute(router *mux.Router, productController *http.ProductController) *ProductRoute {
+	productRoute := &ProductRoute{
+		Router:            router.PathPrefix("/products").Subrouter(),
+		ProductController: productController,
 	}
-	return userRoute
+	return productRoute
 }
 
-func (userRoute *ProductRoute) Register() {
-	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.GetById).Methods("GET")
+func (productRoute *ProductRoute) Register() {
+	productRoute.Router.HandleFunc("/{id}", productRoute.ProductController.GetOneById).Methods("GET")
 }
