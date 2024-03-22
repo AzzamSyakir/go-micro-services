@@ -11,11 +11,11 @@ type ControllerContainer struct {
 
 func NewControllerContainer(
 	user *http.UserController,
-	auth *http.ProductController,
+	product *http.ProductController,
 ) *ControllerContainer {
 	controllerContainer := &ControllerContainer{
 		User:    user,
-		Product: auth,
+		Product: product,
 	}
 	return controllerContainer
 }
