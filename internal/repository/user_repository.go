@@ -12,11 +12,11 @@ func NewUserRepository() *UserRepository {
 	userRepository := &UserRepository{}
 	return userRepository
 }
-func (userRepository *UserRepository) GetOneById(tx *sql.Tx, id string) (result *entity.User, err error) {
+func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (result *entity.User, err error) {
 	var rows *sql.Rows
 	var queryErr error
-	rows, queryErr = tx.Query(
-		`SELECT id, name, saldo created_at, updated_at, deleted_at FROM "user" WHERE id=$1 LIMIT 1;`,
+	rows, queryErr = begin.Query(
+		`SELECT id, name, saldo, created_at, updated_at, deleted_at FROM "users" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 	if queryErr != nil {
@@ -36,7 +36,6 @@ func (userRepository *UserRepository) GetOneById(tx *sql.Tx, id string) (result 
 	err = nil
 	return result, err
 }
-
 func DeserializeUserRows(rows *sql.Rows) []*entity.User {
 	var foundUsers []*entity.User
 	for rows.Next() {

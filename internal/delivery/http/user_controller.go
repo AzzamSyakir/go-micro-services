@@ -18,12 +18,13 @@ func NewUserController(userUseCase *use_case.UserUseCase) *UserController {
 	return userController
 }
 
-func (userController *UserController) GetById(writer http.ResponseWriter, reader *http.Request) {
+func (userController *UserController) GetOneById(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
-	ctx := reader.Context()
-	foundUser, foundUserErr := userController.UserUseCase.GetOneById(ctx, id)
-	if foundUserErr == nil {
-		response.NewResponse(writer, foundUser)
+
+	result, resultErr := userController.UserUseCase.GetOneById(id)
+	if resultErr != nil {
+		response.NewResponse(writer, result)
 	}
+	response.NewResponse(writer, result)
 }

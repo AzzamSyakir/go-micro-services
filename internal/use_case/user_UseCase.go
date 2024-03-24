@@ -1,10 +1,9 @@
 package use_case
 
 import (
-	"context"
+	"fmt"
 	"go-micro-services/internal/config"
 	"go-micro-services/internal/entity"
-	"go-micro-services/internal/model"
 	"go-micro-services/internal/model/response"
 	"go-micro-services/internal/repository"
 	"net/http"
@@ -26,25 +25,26 @@ func NewUserUseCase(
 	}
 	return userUseCase
 }
+func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response[*entity.User], err error) {
+	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :", transactionErr)
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
 
-func (userUseCase *UserUseCase) GetOneById(ctx context.Context, id string) (result *response.Response[*entity.User], err error) {
-	transaction := ctx.Value("transaction").(*model.Transaction)
-
-	foundUser, foundUserErr := userUseCase.UserRepository.GetOneById(transaction.Tx, id)
+	foundUser, foundUserErr := userUseCase.UserRepository.GetOneById(transaction, id)
 	if foundUserErr != nil {
-		transaction.TxErr = foundUserErr
 		result = nil
 		err = foundUserErr
 		return result, err
 	}
 	if foundUser == nil {
-		rollbackErr := transaction.Tx.Rollback()
-		if rollbackErr != nil {
-			transaction.TxErr = rollbackErr
-			result = nil
-			err = rollbackErr
-			return result, err
-		}
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: "UserUserCase FindOneById is failed, user is not found by id.",

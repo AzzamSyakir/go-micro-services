@@ -1,6 +1,9 @@
 package response
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 type Response[T any] struct {
 	Message string `json:"message,omitempty"`

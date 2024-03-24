@@ -12,27 +12,31 @@ import (
 
 type ProductUseCase struct {
 	DatabaseConfig    *config.DatabaseConfig
-	productRepository *repository.ProductRepository
+	ProductRepository *repository.ProductRepository
 }
 
-func NewProductUseCase(productRepository *repository.ProductRepository) *ProductUseCase {
-	productUseCase := &ProductUseCase{
-		productRepository: productRepository,
+func NewProductUseCase(
+	databaseConfig *config.DatabaseConfig,
+	userRepository *repository.ProductRepository,
+
+) *ProductUseCase {
+	userUseCase := &ProductUseCase{
+		DatabaseConfig:    databaseConfig,
+		ProductRepository: userRepository,
 	}
-	return productUseCase
+	return userUseCase
 }
-
-func (productUseCase *ProductUseCase) GetOneById(ctx context.Context, id string) (result *response.Response[*entity.User], err error) {
+func (productUseCase *ProductUseCase) GetOneById(ctx context.Context, id string) (result *response.Response[*entity.Product], err error) {
 	transaction := ctx.Value("transaction").(*model.Transaction)
 
-	foundUser, foundUserErr := productUseCase.productRepository.GetOneById(transaction.Tx, id)
-	if foundUserErr != nil {
-		transaction.TxErr = foundUserErr
+	productFound, productFoundErr := productUseCase.ProductRepository.GetOneById(transaction.Tx, id)
+	if productFoundErr != nil {
+		transaction.TxErr = productFoundErr
 		result = nil
-		err = foundUserErr
+		err = productFoundErr
 		return result, err
 	}
-	if foundUser == nil {
+	if productFound == nil {
 		rollbackErr := transaction.Tx.Rollback()
 		if rollbackErr != nil {
 			transaction.TxErr = rollbackErr
@@ -40,19 +44,19 @@ func (productUseCase *ProductUseCase) GetOneById(ctx context.Context, id string)
 			err = rollbackErr
 			return result, err
 		}
-		result = &response.Response[*entity.User]{
+		result = &response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
-			Message: "UserUserCase FindOneById is failed, user is not found by id.",
+			Message: "ProductUseCase FindOneById is failed, product is not found by id.",
 			Data:    nil,
 		}
 		err = nil
 		return result, err
 	}
 
-	result = &response.Response[*entity.User]{
+	result = &response.Response[*entity.Product]{
 		Code:    http.StatusOK,
-		Message: "UserUserCase FindOneById is succeed.",
-		Data:    foundUser,
+		Message: "ProductUseCase FindOneById is succeed.",
+		Data:    productFound,
 	}
 	err = nil
 	return result, err
