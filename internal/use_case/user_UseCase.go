@@ -47,7 +47,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 	if foundUser == nil {
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
-			Message: "UserUserCase FindOneById is failed, user is not found by id.",
+			Message: "User UseCase FindOneById is failed, user is not found by id.",
 			Data:    nil,
 		}
 		err = nil
@@ -56,7 +56,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 
 	result = &response.Response[*entity.User]{
 		Code:    http.StatusOK,
-		Message: "UserUserCase FindOneById is succeed.",
+		Message: "User UseCase FindOneById is succeed.",
 		Data:    foundUser,
 	}
 	err = nil
