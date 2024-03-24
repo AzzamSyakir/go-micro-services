@@ -16,7 +16,7 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, saldo created_at, updated_at, deleted_at FROM "users" WHERE id=$1 LIMIT 1;`,
+		`SELECT id, name, saldo, created_at, updated_at, deleted_at FROM "users" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 	if queryErr != nil {

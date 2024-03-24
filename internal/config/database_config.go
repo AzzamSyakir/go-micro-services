@@ -40,7 +40,7 @@ func NewUserDB(envConfig *EnvConfig) *PostgresDatabase {
 		)
 	} else {
 		url = fmt.Sprintf(
-			"postgresql://%s:%s@%s:%s/%s",
+			"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
 			envConfig.UserDB.User,
 			envConfig.UserDB.Password,
 			envConfig.UserDB.Host,
@@ -71,7 +71,7 @@ func NewProductDB(envConfig *EnvConfig) *PostgresDatabase {
 		)
 	} else {
 		url = fmt.Sprintf(
-			"postgresql://%s:%s@%s:%s/%s",
+			"postgresql://%s:%s@%s:%s/%s,?sslmode=disable",
 			envConfig.UserDB.User,
 			envConfig.UserDB.Password,
 			envConfig.UserDB.Host,
