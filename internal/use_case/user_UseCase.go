@@ -1,7 +1,6 @@
 package use_case
 
 import (
-	"context"
 	"fmt"
 	"github.com/guregu/null"
 	"go-micro-services/internal/config"
@@ -32,7 +31,7 @@ func NewUserUseCase(
 func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response[*entity.User], err error) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :", transactionErr)
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -49,7 +48,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 		return result, err
 	}
 	if foundUser == nil {
-		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, user is not found by id.", id)
+		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, user is not found by id :%s", id)
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -67,10 +66,10 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 	err = nil
 	return result, err
 }
-func (userUseCase *UserUseCase) PatchOneByIdFromRequest(ctx context.Context, id string, request *model_request.UserPatchOneByIdRequest) (result *response.Response[*entity.User], err error) {
+func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *model_request.UserPatchOneByIdRequest) (result *response.Response[*entity.User], err error) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :", transactionErr)
+		errorMessage := fmt.Sprintf("transaction failed : %s", transactionErr)
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -87,7 +86,7 @@ func (userUseCase *UserUseCase) PatchOneByIdFromRequest(ctx context.Context, id 
 		return result, err
 	}
 	if foundUser == nil {
-		errorMessage := fmt.Sprintf("User UseCase PatchOneById is failed, user is not found by id : %s", id)
+		errorMessage := fmt.Sprintf("UserUseCase PatchOneById is failed, user is not found by id : %s", id)
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -103,16 +102,19 @@ func (userUseCase *UserUseCase) PatchOneByIdFromRequest(ctx context.Context, id 
 	if request.Saldo.Valid {
 		foundUser.Saldo = request.Saldo
 	}
-
 	foundUser.UpdatedAt = null.NewTime(time.Now(), true)
 
 	patchedUser, patchedUserErr := userUseCase.UserRepository.PatchOneById(transaction, id, foundUser)
 	if patchedUserErr != nil {
-		result = nil
-		err = patchedUserErr
+		errorMessage := fmt.Sprintf("UserUseCase PatchOneById is failed, patched failed : %s", patchedUserErr)
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
 		return result, err
 	}
-
 	result = &response.Response[*entity.User]{
 		Code:    http.StatusOK,
 		Message: "UserUserCase PatchOneByIdFromRequest is succeed.",
