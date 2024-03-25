@@ -28,7 +28,7 @@ func NewProductUseCase(
 func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Response[*entity.Product], err error) {
 	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :", transactionErr)
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
 		result = &response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -39,14 +39,20 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Re
 	}
 	productFound, productFoundErr := productUseCase.ProductRepository.GetOneById(transaction, id)
 	if productFoundErr != nil {
-		result = nil
-		err = productFoundErr
+		errorMessage := fmt.Sprintf("ProductUseCase GetOneById is failed, GetProduct failed : %s", productFoundErr)
+		result = &response.Response[*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
 		return result, err
 	}
+	errorMessage := fmt.Sprintf("productUseCase FindOneById is failed, product is not found by id %s", id)
 	if productFound == nil {
 		result = &response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
-			Message: "Product UseCase FindOneById is failed, product is not found by id.",
+			Message: errorMessage,
 			Data:    nil,
 		}
 		err = nil
