@@ -19,7 +19,7 @@ func DeserializeUserRows(rows *sql.Rows) []*entity.User {
 		scanErr := rows.Scan(
 			&foundUser.Id,
 			&foundUser.Name,
-			&foundUser.Saldo,
+			&foundUser.Balance,
 			&foundUser.CreatedAt,
 			&foundUser.UpdatedAt,
 			&foundUser.DeletedAt,
@@ -36,7 +36,7 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, saldo, created_at, updated_at, deleted_at FROM "users" WHERE id=$1 LIMIT 1;`,
+		`SELECT id, name, balance, created_at, updated_at, deleted_at FROM "users" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 
@@ -57,12 +57,13 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 	err = nil
 	return result, err
 }
+
 func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *entity.User) (result *entity.User, err error) {
 	_, queryErr := begin.Query(
-		`UPDATE "users" SET id=$1, name=$2, saldo=$3, created_at=$4, updated_at=$5, deleted_at=$6 WHERE id = $7;`,
+		`UPDATE "users" SET id=$1, name=$2,  balance=$3, created_at=$4, updated_at=$5, deleted_at=$6 WHERE id = $7 ;`,
 		toPatchUser.Id,
 		toPatchUser.Name,
-		toPatchUser.Saldo,
+		toPatchUser.Balance,
 		toPatchUser.CreatedAt,
 		toPatchUser.UpdatedAt,
 		toPatchUser.DeletedAt,
@@ -75,5 +76,7 @@ func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toP
 		return
 	}
 
-	return toPatchUser, nil
+	result = toPatchUser
+	err = nil
+	return result, err
 }
