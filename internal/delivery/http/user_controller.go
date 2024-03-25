@@ -39,8 +39,7 @@ func (userController *UserController) PatchOneById(writer http.ResponseWriter, r
 		panic(decodeErr)
 	}
 
-	patchedUser, patchedUserErr := userController.UserUseCase.PatchOneByIdFromRequest(id, request)
-	if patchedUserErr == nil {
-		response.NewResponse(writer, patchedUser)
-	}
+	result := userController.UserUseCase.PatchOneByIdFromRequest(id, request)
+
+	response.NewResponse(writer, result)
 }
