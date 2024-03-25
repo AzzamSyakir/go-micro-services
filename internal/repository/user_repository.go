@@ -39,6 +39,7 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 		`SELECT id, name, saldo, created_at, updated_at, deleted_at FROM "users" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
+
 	if queryErr != nil {
 		result = nil
 		err = queryErr
@@ -56,9 +57,9 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 	err = nil
 	return result, err
 }
-func (userRepository *UserRepository) PatchOneById(tx *sql.Tx, id string, toPatchUser *entity.User) (result *entity.User, err error) {
-	_, queryErr := tx.Query(
-		`UPDATE "user" SET id=$1, name=$2, username=$3, created_at=$9, updated_at=$10, deleted_at=$11 WHERE id = $12 LIMIT 1;`,
+func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *entity.User) (result *entity.User, err error) {
+	_, queryErr := begin.Query(
+		`UPDATE "users" SET id=$1, name=$2, saldo=$3, created_at=$4, updated_at=$5, deleted_at=$6 WHERE id = $7;`,
 		toPatchUser.Id,
 		toPatchUser.Name,
 		toPatchUser.Saldo,
@@ -74,7 +75,5 @@ func (userRepository *UserRepository) PatchOneById(tx *sql.Tx, id string, toPatc
 		return
 	}
 
-	result = toPatchUser
-	err = nil
-	return result, err
+	return toPatchUser, nil
 }
