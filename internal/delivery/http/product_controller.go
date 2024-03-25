@@ -20,8 +20,7 @@ func NewProductController(productUseCase *use_case.ProductUseCase) *ProductContr
 func (ProductController *ProductController) GetOneById(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
-	ctx := reader.Context()
-	foundProduct, foundProductErr := ProductController.ProductUseCase.GetOneById(ctx, id)
+	foundProduct, foundProductErr := ProductController.ProductUseCase.GetOneById(id)
 	if foundProductErr == nil {
 		response.NewResponse(writer, foundProduct)
 	}

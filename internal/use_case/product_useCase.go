@@ -1,10 +1,9 @@
 package use_case
 
 import (
-	"context"
+	"fmt"
 	"go-micro-services/internal/config"
 	"go-micro-services/internal/entity"
-	"go-micro-services/internal/model"
 	"go-micro-services/internal/model/response"
 	"go-micro-services/internal/repository"
 	"net/http"
@@ -26,27 +25,34 @@ func NewProductUseCase(
 	}
 	return userUseCase
 }
-func (productUseCase *ProductUseCase) GetOneById(ctx context.Context, id string) (result *response.Response[*entity.Product], err error) {
-	transaction := ctx.Value("transaction").(*model.Transaction)
-
-	productFound, productFoundErr := productUseCase.ProductRepository.GetOneById(transaction.Tx, id)
-	if productFoundErr != nil {
-		transaction.TxErr = productFoundErr
-		result = nil
-		err = productFoundErr
-		return result, err
-	}
-	if productFound == nil {
-		rollbackErr := transaction.Tx.Rollback()
-		if rollbackErr != nil {
-			transaction.TxErr = rollbackErr
-			result = nil
-			err = rollbackErr
-			return result, err
-		}
+func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Response[*entity.Product], err error) {
+	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
 		result = &response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
-			Message: "ProductUseCase FindOneById is failed, product is not found by id.",
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+	productFound, productFoundErr := productUseCase.ProductRepository.GetOneById(transaction, id)
+	if productFoundErr != nil {
+		errorMessage := fmt.Sprintf("ProductUseCase GetOneById is failed, GetProduct failed : %s", productFoundErr)
+		result = &response.Response[*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+	errorMessage := fmt.Sprintf("productUseCase FindOneById is failed, product is not found by id %s", id)
+	if productFound == nil {
+		result = &response.Response[*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
 			Data:    nil,
 		}
 		err = nil
@@ -55,7 +61,7 @@ func (productUseCase *ProductUseCase) GetOneById(ctx context.Context, id string)
 
 	result = &response.Response[*entity.Product]{
 		Code:    http.StatusOK,
-		Message: "ProductUseCase FindOneById is succeed.",
+		Message: "Product UseCase FindOneById is succeed.",
 		Data:    productFound,
 	}
 	err = nil

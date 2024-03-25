@@ -61,7 +61,7 @@ func NewUserDB(envConfig *EnvConfig) *PostgresDatabase {
 }
 func NewProductDB(envConfig *EnvConfig) *PostgresDatabase {
 	var url string
-	if envConfig.UserDB.Password == "" {
+	if envConfig.ProductDB.Password == "" {
 		url = fmt.Sprintf(
 			"postgresql://%s@%s:%s/%s",
 			envConfig.ProductDB.User,
@@ -71,12 +71,12 @@ func NewProductDB(envConfig *EnvConfig) *PostgresDatabase {
 		)
 	} else {
 		url = fmt.Sprintf(
-			"postgresql://%s:%s@%s:%s/%s,?sslmode=disable",
-			envConfig.UserDB.User,
-			envConfig.UserDB.Password,
-			envConfig.UserDB.Host,
-			envConfig.UserDB.Port,
-			envConfig.UserDB.Database,
+			"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
+			envConfig.ProductDB.User,
+			envConfig.ProductDB.Password,
+			envConfig.ProductDB.Host,
+			envConfig.ProductDB.Port,
+			envConfig.ProductDB.Database,
 		)
 	}
 
@@ -85,8 +85,8 @@ func NewProductDB(envConfig *EnvConfig) *PostgresDatabase {
 		panic(err)
 	}
 
-	userDB := &PostgresDatabase{
+	productDB := &PostgresDatabase{
 		Connection: connection,
 	}
-	return userDB
+	return productDB
 }

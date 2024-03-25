@@ -2,11 +2,15 @@ package use_case
 
 import (
 	"fmt"
+	"github.com/cockroachdb/cockroach-go/v2/crdb"
+	"github.com/guregu/null"
 	"go-micro-services/internal/config"
 	"go-micro-services/internal/entity"
+	model_request "go-micro-services/internal/model/request/controller"
 	"go-micro-services/internal/model/response"
 	"go-micro-services/internal/repository"
 	"net/http"
+	"time"
 )
 
 type UserUseCase struct {
@@ -28,7 +32,7 @@ func NewUserUseCase(
 func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response[*entity.User], err error) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :", transactionErr)
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -38,16 +42,22 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 		return result, err
 	}
 
-	foundUser, foundUserErr := userUseCase.UserRepository.GetOneById(transaction, id)
-	if foundUserErr != nil {
-		result = nil
-		err = foundUserErr
-		return result, err
-	}
-	if foundUser == nil {
+	GetOneById, GetOneByIdErr := userUseCase.UserRepository.GetOneById(transaction, id)
+	if GetOneByIdErr != nil {
+		errorMessage := fmt.Sprintf("UserUseCase GetOneById is failed, GetUser failed : %s", GetOneByIdErr)
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
-			Message: "UserUserCase FindOneById is failed, user is not found by id.",
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+	if GetOneById == nil {
+		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, user is not found by id %s", id)
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
 			Data:    nil,
 		}
 		err = nil
@@ -56,9 +66,63 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 
 	result = &response.Response[*entity.User]{
 		Code:    http.StatusOK,
-		Message: "UserUserCase FindOneById is succeed.",
-		Data:    foundUser,
+		Message: "User UseCase FindOneById is succeed.",
+		Data:    GetOneById,
 	}
 	err = nil
 	return result, err
+}
+func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *model_request.UserPatchOneByIdRequest) (result *response.Response[*entity.User]) {
+	beginErr := crdb.Execute(func() (err error) {
+		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+		if err != nil {
+			return err
+		}
+
+		foundUser, err := userUseCase.UserRepository.GetOneById(begin, id)
+		if err != nil {
+			return err
+		}
+		if foundUser == nil {
+			err = begin.Rollback()
+			result = &response.Response[*entity.User]{
+				Code:    http.StatusNotFound,
+				Message: "UserUserCase PatchOneByIdFromRequest is failed, user is not found by id.",
+				Data:    nil,
+			}
+			return err
+		}
+
+		if request.Name.Valid {
+			foundUser.Name = request.Name
+		}
+		if request.Balance.Valid {
+			foundUser.Balance = request.Balance
+		}
+
+		foundUser.UpdatedAt = null.NewTime(time.Now(), true)
+
+		patchedUser, err := userUseCase.UserRepository.PatchOneById(begin, id, foundUser)
+		if err != nil {
+			return err
+		}
+
+		err = begin.Commit()
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusOK,
+			Message: "UserUserCase PatchOneByIdFromRequest is succeed.",
+			Data:    patchedUser,
+		}
+		return err
+	})
+
+	if beginErr != nil {
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusInternalServerError,
+			Message: "UserUserCase PatchOneByIdFromRequest  is failed, " + beginErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return result
 }
