@@ -1,7 +1,9 @@
 package http
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
+	model_request "go-micro-services/internal/model/request/controller"
 	"go-micro-services/internal/model/response"
 	"go-micro-services/internal/use_case"
 	"net/http"
@@ -24,4 +26,17 @@ func (ProductController *ProductController) GetOneById(writer http.ResponseWrite
 	if foundProductErr == nil {
 		response.NewResponse(writer, foundProduct)
 	}
+}
+func (ProductController *ProductController) PatchOneById(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+
+	request := &model_request.ProductPatchOneByIdRequest{}
+	decodeErr := json.NewDecoder(reader.Body).Decode(request)
+	if decodeErr != nil {
+		panic(decodeErr)
+	}
+	result := ProductController.ProductUseCase.PatchOneByIdFromRequest(id, request)
+
+	response.NewResponse(writer, result)
 }

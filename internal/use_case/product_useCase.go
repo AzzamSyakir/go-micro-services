@@ -2,11 +2,15 @@ package use_case
 
 import (
 	"fmt"
+	"github.com/cockroachdb/cockroach-go/v2/crdb"
+	"github.com/guregu/null"
 	"go-micro-services/internal/config"
 	"go-micro-services/internal/entity"
+	model_request "go-micro-services/internal/model/request/controller"
 	"go-micro-services/internal/model/response"
 	"go-micro-services/internal/repository"
 	"net/http"
+	"time"
 )
 
 type ProductUseCase struct {
@@ -16,14 +20,14 @@ type ProductUseCase struct {
 
 func NewProductUseCase(
 	databaseConfig *config.DatabaseConfig,
-	userRepository *repository.ProductRepository,
+	productRepository *repository.ProductRepository,
 
 ) *ProductUseCase {
-	userUseCase := &ProductUseCase{
+	productUseCase := &ProductUseCase{
 		DatabaseConfig:    databaseConfig,
-		ProductRepository: userRepository,
+		ProductRepository: productRepository,
 	}
-	return userUseCase
+	return productUseCase
 }
 func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Response[*entity.Product], err error) {
 	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
@@ -66,4 +70,54 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Re
 	}
 	err = nil
 	return result, err
+}
+func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request *model_request.ProductPatchOneByIdRequest) (result *response.Response[*entity.Product]) {
+	beginErr := crdb.Execute(func() (err error) {
+		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+		if err != nil {
+			return err
+		}
+
+		foundProduct, err := productUseCase.ProductRepository.GetOneById(begin, id)
+		if err != nil {
+			return err
+		}
+		if foundProduct == nil {
+			err = begin.Rollback()
+			result = &response.Response[*entity.Product]{
+				Code:    http.StatusNotFound,
+				Message: "ProductProductCase PatchOneByIdFromRequest is failed, product is not found by id.",
+				Data:    nil,
+			}
+			return err
+		}
+		if request.Name.Valid && request.Stock.Valid {
+			foundProduct.Name = request.Name
+			foundProduct.Stock = request.Stock
+		}
+
+		foundProduct.UpdatedAt = null.NewTime(time.Now(), true)
+
+		patchedProduct, err := productUseCase.ProductRepository.PatchOneById(begin, id, foundProduct)
+		if err != nil {
+			return err
+		}
+
+		err = begin.Commit()
+		result = &response.Response[*entity.Product]{
+			Code:    http.StatusOK,
+			Message: "ProductProductCase PatchOneByIdFromRequest is succeed.",
+			Data:    patchedProduct,
+		}
+		return err
+	})
+
+	if beginErr != nil {
+		result = &response.Response[*entity.Product]{
+			Code:    http.StatusInternalServerError,
+			Message: "ProductProductCase PatchOneByIdFromRequest  is failed, " + beginErr.Error(),
+			Data:    nil,
+		}
+	}
+	return result
 }
