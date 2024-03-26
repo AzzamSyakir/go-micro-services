@@ -30,18 +30,22 @@ func NewWebContainer() *WebContainer {
 	envConfig := config.NewEnvConfig()
 	userDBConfig := config.NewUserDBConfig(envConfig)
 	productDBConfig := config.NewProductDBConfig(envConfig)
+	orderDBConfig := config.NewProductDBConfig(envConfig)
 
 	userRepository := repository.NewUserRepository()
 	productRepository := repository.NewProductRepository()
-	repositoryContainer := NewRepositoryContainer(userRepository, productRepository)
+	orderRepository := repository.NewOrderRepository()
+	repositoryContainer := NewRepositoryContainer(userRepository, productRepository, orderRepository)
 
 	userUseCase := use_case.NewUserUseCase(userDBConfig, userRepository)
 	productUseCase := use_case.NewProductUseCase(productDBConfig, productRepository)
-	useCaseContainer := NewUseCaseContainer(userUseCase, productUseCase)
+	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository)
+	useCaseContainer := NewUseCaseContainer(userUseCase, productUseCase, orderUseCase)
 
 	userController := http_delivery.NewUserController(userUseCase)
 	productController := http_delivery.NewProductController(productUseCase)
-	controllerContainer := NewControllerContainer(userController, productController)
+	orderController := http_delivery.NewOrderController(orderUseCase)
+	controllerContainer := NewControllerContainer(userController, productController, orderController)
 
 	router := mux.NewRouter()
 	userRoute := route.NewUserRoute(router, userController)
