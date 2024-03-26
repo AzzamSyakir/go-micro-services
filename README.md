@@ -29,7 +29,7 @@ This project uses the ``micro-services`` architecture as explained above, this `
 
 ### first clone this repo
 ```bash
-  git clone "githu repo links"
+git clone "githu repo links"
 ```
 ### build and run docker compose 
 ```bash
