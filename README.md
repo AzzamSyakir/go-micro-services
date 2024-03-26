@@ -33,10 +33,10 @@ This project uses the ``micro-services`` architecture as explained above, this `
 ```
 ### build and run docker compose 
 ```bash
-	docker compose -f ./docker/docker-compose.yml build --no-cache
+docker compose -f ./docker/docker-compose.yml build --no-cache
 ```
 ```bash
-    docker compose -f ./docker/development/docker-compose.yml up -d
+docker compose -f ./docker/development/docker-compose.yml up -d
 ```
 ### run project
 ```bash
