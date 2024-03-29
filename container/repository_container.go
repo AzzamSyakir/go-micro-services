@@ -7,15 +7,18 @@ import (
 type RepositoryContainer struct {
 	User    *repository.UserRepository
 	Product *repository.ProductRepository
+	Order   *repository.OrderRepository
 }
 
 func NewRepositoryContainer(
 	user *repository.UserRepository,
-	Product *repository.ProductRepository,
+	product *repository.ProductRepository,
+	order *repository.OrderRepository,
 ) *RepositoryContainer {
 	repositoryContainer := &RepositoryContainer{
 		User:    user,
-		Product: Product,
+		Product: product,
+		Order:   order,
 	}
 	return repositoryContainer
 }
