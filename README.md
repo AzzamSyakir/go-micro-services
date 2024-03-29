@@ -1,4 +1,3 @@
-
 # Go Micro-Services 
 
 template boilerplate for go project using micro-services architecture 
