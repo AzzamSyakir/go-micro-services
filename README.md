@@ -2,6 +2,7 @@
 
 template boilerplate for go project using micro-services architecture 
 # micro-services
+
 ## What are microservices?
 ```Microservices``` are an architectural approach to developing an application as a collection of small, self-contained services that each fulfill a specific business purpose. Developers can build these services in several programming languages, deploy, scale, and maintain them independently, and enable communication between them via well-defined APIs. The following image demonstrates how ```microservices``` work in practice.
 
