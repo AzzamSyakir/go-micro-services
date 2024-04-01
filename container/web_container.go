@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go-micro-services/internal/config"
-	http_delivery "go-micro-services/internal/delivery/http"
+	httpdelivery "go-micro-services/internal/delivery/http"
 	"go-micro-services/internal/delivery/http/route"
 	"go-micro-services/internal/repository"
 	"go-micro-services/internal/use_case"
@@ -15,6 +15,7 @@ type WebContainer struct {
 	Env             *config.EnvConfig
 	UserDatabase    *config.DatabaseConfig
 	ProductDatabase *config.DatabaseConfig
+	OrderDatabase   *config.DatabaseConfig
 	Repository      *RepositoryContainer
 	UseCase         *UseCaseContainer
 	Controller      *ControllerContainer
@@ -30,7 +31,7 @@ func NewWebContainer() *WebContainer {
 	envConfig := config.NewEnvConfig()
 	userDBConfig := config.NewUserDBConfig(envConfig)
 	productDBConfig := config.NewProductDBConfig(envConfig)
-	orderDBConfig := config.NewProductDBConfig(envConfig)
+	orderDBConfig := config.NewOrderDBConfig(envConfig)
 
 	userRepository := repository.NewUserRepository()
 	productRepository := repository.NewProductRepository()
@@ -42,9 +43,9 @@ func NewWebContainer() *WebContainer {
 	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository)
 	useCaseContainer := NewUseCaseContainer(userUseCase, productUseCase, orderUseCase)
 
-	userController := http_delivery.NewUserController(userUseCase)
-	productController := http_delivery.NewProductController(productUseCase)
-	orderController := http_delivery.NewOrderController(orderUseCase)
+	userController := httpdelivery.NewUserController(userUseCase)
+	productController := httpdelivery.NewProductController(productUseCase)
+	orderController := httpdelivery.NewOrderController(orderUseCase)
 	controllerContainer := NewControllerContainer(userController, productController, orderController)
 
 	router := mux.NewRouter()
@@ -63,6 +64,7 @@ func NewWebContainer() *WebContainer {
 		Env:             envConfig,
 		UserDatabase:    userDBConfig,
 		ProductDatabase: productDBConfig,
+		OrderDatabase:   orderDBConfig,
 		Repository:      repositoryContainer,
 		UseCase:         useCaseContainer,
 		Controller:      controllerContainer,
