@@ -38,7 +38,7 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 	return result, err
 }
 
-func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProducts entity.OrderProducts) (result *entity.OrderProducts, err error) {
+func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProducts *entity.OrderProducts) (result *entity.OrderProducts, err error) {
 	_, queryErr := begin.Query(
 		`INSERT INTO "order_products"(id, order_id, product_id, total_price, qty, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		orderProducts.Id,
