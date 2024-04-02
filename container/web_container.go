@@ -51,11 +51,13 @@ func NewWebContainer() *WebContainer {
 	router := mux.NewRouter()
 	userRoute := route.NewUserRoute(router, userController)
 	productRoute := route.NewProductRoute(router, productController)
+	orderRoute := route.NewOrderRoute(router, orderController)
 
 	rootRoute := route.NewRootRoute(
 		router,
 		userRoute,
 		productRoute,
+		orderRoute,
 	)
 
 	rootRoute.Register()
