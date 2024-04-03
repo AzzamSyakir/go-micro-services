@@ -10,6 +10,6 @@ type OrderProducts struct {
 	TotalPrice null.Int    `json:"total_price"`
 }
 type OrderRequest struct {
-	TotalPaid null.Int        `json:"total_price"`
+	TotalPaid null.Int        `json:"total_paid"`
 	Products  []OrderProducts `json:"products"`
 }
