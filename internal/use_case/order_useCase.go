@@ -22,10 +22,11 @@ type OrderUseCase struct {
 	Env             *config.EnvConfig
 }
 
-func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *repository.OrderRepository) *OrderUseCase {
+func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *repository.OrderRepository, envConfig *config.EnvConfig) *OrderUseCase {
 	OrderUseCase := &OrderUseCase{
 		DatabaseConfig:  databaseConfig,
 		OrderRepository: orderRepository,
+		Env:             envConfig,
 	}
 	return OrderUseCase
 }
@@ -38,12 +39,15 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			Data:    nil,
 		}
 	}
-	//	GetUser
+	//    GetUser
 	user := orderUseCase.GetUser(userId)
-	//	GetProduct
+	//    GetProduct
 	var totalOrderPrice int
 	for i, products := range request.Products {
 		productId := products.ProductId.String
+		fmt.Println("productId", productId)
+		qty := products.Qty.Int64
+		fmt.Println("qty", qty)
 		product := orderUseCase.GetProduct(productId)
 		if products.Qty.Int64 > product.Data.Stock.Int64 {
 			result = &model_response.Response[*model_response.OrderResponse]{
@@ -57,7 +61,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 		request.Products[i].TotalPrice.Int64 = totalProductPrice
 		totalOrderPrice += int(totalProductPrice)
 	}
-	//	orders
+	//    orders
 	totalReturn := request.TotalPaid.Int64 - int64(totalOrderPrice)
 	firstLetter := strings.ToUpper(string(user.Data.Name.String[0]))
 	rand.Seed(time.Now().UnixNano())
@@ -84,7 +88,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 		}
 		return result
 	}
-	//	orderProducts
+	//    orderProducts
 	for _, orderProduct := range request.Products {
 		productId := orderProduct.ProductId.String
 		orderProductsData := &entity.OrderProducts{
@@ -130,7 +134,7 @@ func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response
 	if doErr != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: "OrderUseCase failed, GetUser is failed," + newRequestErr.Error(),
+			Message: "OrderUseCase failed, GetUser is failed," + doErr.Error(),
 			Data:    nil,
 		}
 		return result
@@ -149,7 +153,7 @@ func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response
 
 func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_response.Response[*entity.Product]) {
 	address := fmt.Sprintf("%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.Port)
-	url := fmt.Sprintf("%s/%s/%s", address, "users", productId)
+	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 	if newRequestErr != nil {
 		result = &model_response.Response[*entity.Product]{
@@ -162,7 +166,7 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 	if doErr != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: "OrderUseCase failed, GetProduct is failed," + newRequestErr.Error(),
+			Message: "OrderUseCase failed, GetProduct is failed," + doErr.Error(),
 			Data:    nil,
 		}
 		return result
