@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"go-micro-services/internal/entity"
+	model_response "go-micro-services/internal/model/response"
 )
 
 type OrderRepository struct{}
@@ -12,7 +13,7 @@ func NewOrderRepository() *OrderRepository {
 	return orderRepository
 }
 
-func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Order) (result *entity.Order, err error) {
+func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Order) (result *model_response.Response[*model_response.OrderResponse], err error) {
 	_, queryErr := begin.Query(
 		`INSERT INTO "orders"(id, user_id, name, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 		orders.Id,
@@ -33,7 +34,20 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 		return
 	}
 
-	result = orders
+	ordersResponse := &model_response.OrderResponse{
+		Id:          orders.Id,
+		UserId:      orders.UserId,
+		Name:        orders.Name,
+		TotalPrice:  orders.TotalPrice,
+		TotalPaid:   orders.TotalPaid,
+		TotalReturn: orders.TotalReturn,
+		ReceiptCode: orders.ReceiptCode,
+		CreatedAt:   orders.CreatedAt,
+		UpdatedAt:   orders.UpdatedAt,
+	}
+	result = &model_response.Response[*model_response.OrderResponse]{
+		Data: ordersResponse,
+	}
 	err = nil
 	return result, err
 }
