@@ -40,7 +40,7 @@ func NewWebContainer() *WebContainer {
 
 	userUseCase := use_case.NewUserUseCase(userDBConfig, userRepository)
 	productUseCase := use_case.NewProductUseCase(productDBConfig, productRepository)
-	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository)
+	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository, envConfig)
 	useCaseContainer := NewUseCaseContainer(userUseCase, productUseCase, orderUseCase)
 
 	userController := httpdelivery.NewUserController(userUseCase)
