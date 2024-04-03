@@ -23,12 +23,12 @@ func NewOrderController(orderUseCase *use_case.OrderUseCase) *OrderController {
 func (orderController *OrderController) Orders(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	userId := vars["id"]
-	request := model_request.OrderRequest{}
+	request := &model_request.OrderRequest{}
 
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 
 	if decodeErr != nil {
-		panic(decodeErr)
+		http.Error(writer, "Invalid request body", http.StatusBadRequest)
 	}
 
 	result := orderController.OrderUseCase.Order(userId, request)
