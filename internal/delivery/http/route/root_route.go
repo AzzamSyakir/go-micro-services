@@ -8,17 +8,20 @@ type RootRoute struct {
 	Router       *mux.Router
 	UserRoute    *UserRoute
 	ProductRoute *ProductRoute
+	OrderRoute   *OrderRoute
 }
 
 func NewRootRoute(
 	router *mux.Router,
 	userRoute *UserRoute,
-	ProductRoute *ProductRoute,
+	productRoute *ProductRoute,
+	orderRoute *OrderRoute,
 ) *RootRoute {
 	rootRoute := &RootRoute{
 		Router:       router,
 		UserRoute:    userRoute,
-		ProductRoute: ProductRoute,
+		ProductRoute: productRoute,
+		OrderRoute:   orderRoute,
 	}
 	return rootRoute
 }
@@ -26,4 +29,5 @@ func NewRootRoute(
 func (rootRoute *RootRoute) Register() {
 	rootRoute.UserRoute.Register()
 	rootRoute.ProductRoute.Register()
+	rootRoute.OrderRoute.Register()
 }

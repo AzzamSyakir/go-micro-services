@@ -9,6 +9,7 @@ import (
 type DatabaseConfig struct {
 	UserDB    *PostgresDatabase
 	ProductDB *PostgresDatabase
+	OrderDB   *PostgresDatabase
 }
 
 type PostgresDatabase struct {
@@ -27,13 +28,18 @@ func NewUserDBConfig(envConfig *EnvConfig) *DatabaseConfig {
 	}
 	return databaseConfig
 }
+func NewOrderDBConfig(envConfig *EnvConfig) *DatabaseConfig {
+	databaseConfig := &DatabaseConfig{
+		OrderDB: NewOrderDB(envConfig),
+	}
+	return databaseConfig
+}
 func NewUserDB(envConfig *EnvConfig) *PostgresDatabase {
 	var url string
 	if envConfig.UserDB.Password == "" {
 		url = fmt.Sprintf(
 			"postgresql://%s@%s:%s/%s",
 			envConfig.UserDB.User,
-			envConfig.UserDB,
 			envConfig.UserDB.Host,
 			envConfig.UserDB.Port,
 			envConfig.UserDB.Database,
@@ -89,4 +95,35 @@ func NewProductDB(envConfig *EnvConfig) *PostgresDatabase {
 		Connection: connection,
 	}
 	return productDB
+}
+func NewOrderDB(envConfig *EnvConfig) *PostgresDatabase {
+	var url string
+	if envConfig.OrderDB.Password == "" {
+		url = fmt.Sprintf(
+			"postgresql://%s@%s:%s/%s",
+			envConfig.OrderDB.User,
+			envConfig.OrderDB.Host,
+			envConfig.OrderDB.Port,
+			envConfig.OrderDB.Database,
+		)
+	} else {
+		url = fmt.Sprintf(
+			"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
+			envConfig.OrderDB.User,
+			envConfig.OrderDB.Password,
+			envConfig.OrderDB.Host,
+			envConfig.OrderDB.Port,
+			envConfig.OrderDB.Database,
+		)
+	}
+
+	connection, err := sql.Open("postgres", url)
+	if err != nil {
+		panic(err)
+	}
+
+	orderDB := &PostgresDatabase{
+		Connection: connection,
+	}
+	return orderDB
 }
