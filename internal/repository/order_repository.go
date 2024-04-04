@@ -27,7 +27,6 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 		orders.UpdatedAt,
 		orders.DeletedAt,
 	)
-
 	if queryErr != nil {
 		result = nil
 		err = queryErr
