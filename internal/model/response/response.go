@@ -6,9 +6,9 @@ import (
 )
 
 type Response[T any] struct {
+	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 	Data    T      `json:"data,omitempty"`
-	Code    int    `json:"code,omitempty"`
 	Errors  any    `json:"errors,omitempty"`
 }
 

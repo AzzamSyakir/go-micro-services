@@ -41,14 +41,29 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	}
 	//    GetUser
 	user := orderUseCase.GetUser(userId)
+	if user.Data == nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: user.Message,
+			Data:    nil,
+		}
+		return result
+	}
+	fmt.Println("user data : ", user.Data)
+
 	//    GetProduct
 	var totalOrderPrice int
 	for i, products := range request.Products {
 		productId := products.ProductId.String
-		fmt.Println("productId", productId)
-		qty := products.Qty.Int64
-		fmt.Println("qty", qty)
 		product := orderUseCase.GetProduct(productId)
+		if product.Data == nil {
+			result = &model_response.Response[*model_response.OrderResponse]{
+				Code:    http.StatusBadRequest,
+				Message: product.Message,
+				Data:    nil,
+			}
+			return result
+		}
 		if products.Qty.Int64 > product.Data.Stock.Int64 {
 			result = &model_response.Response[*model_response.OrderResponse]{
 				Code:    http.StatusBadRequest,
@@ -118,7 +133,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	return order
 }
 func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.Port)
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.Port)
 	url := fmt.Sprintf("%s/%s/%s", address, "users", userId)
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 	if newRequestErr != nil {
@@ -152,9 +167,10 @@ func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response
 }
 
 func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.Port)
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.Port)
 	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+	fmt.Println(url)
+	newRequest, newRequestErr := http.NewRequest(http.MethodGet, url, nil)
 	if newRequestErr != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
@@ -166,7 +182,7 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 	if doErr != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: "OrderUseCase failed, GetProduct is failed," + doErr.Error(),
+			Message: "OrderUseCase failed, GetProduct is failed : " + doErr.Error(),
 			Data:    nil,
 		}
 		return result
@@ -176,7 +192,7 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 	if decodeErr != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: "OrderUseCase fail, GetProduct is failed, " + decodeErr.Error(),
+			Message: "OrderUseCase fail, GetProduct is failed : " + decodeErr.Error(),
 			Data:    nil,
 		}
 		return result

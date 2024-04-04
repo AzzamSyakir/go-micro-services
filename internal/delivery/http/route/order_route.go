@@ -19,5 +19,5 @@ func NewOrderRoute(router *mux.Router, orderController *http.OrderController) *O
 }
 
 func (productRoute *OrderRoute) Register() {
-	productRoute.Router.HandleFunc("", productRoute.OrderController.Orders).Methods("POST")
+	productRoute.Router.HandleFunc("/{id}", productRoute.OrderController.Orders).Methods("POST")
 }

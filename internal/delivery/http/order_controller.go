@@ -27,9 +27,9 @@ func (orderController *OrderController) Orders(writer http.ResponseWriter, reade
 
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
-		panic(decodeErr)
+		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
+		return
 	}
-
 	if request == nil {
 		http.Error(writer, "Invalid request body", http.StatusBadRequest)
 	}
