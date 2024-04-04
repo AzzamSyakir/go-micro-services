@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"go-micro-services/internal/entity"
 	model_response "go-micro-services/internal/model/response"
 )
@@ -14,7 +15,7 @@ func NewOrderRepository() *OrderRepository {
 }
 
 func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Order) (result *model_response.Response[*model_response.OrderResponse], err error) {
-	_, queryErr := begin.Query(
+	rows, queryErr := begin.Query(
 		`INSERT INTO "orders"(id, user_id, name, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 		orders.Id,
 		orders.UserId,
@@ -32,6 +33,7 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 		err = queryErr
 		return
 	}
+	defer rows.Close()
 
 	ordersResponse := &model_response.OrderResponse{
 		Id:          orders.Id,
@@ -50,9 +52,8 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 	err = nil
 	return result, err
 }
-
 func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProducts *entity.OrderProducts) (result *entity.OrderProducts, err error) {
-	_, queryErr := begin.Query(
+	rows, queryErr := begin.Query(
 		`INSERT INTO "order_products"(id, order_id, product_id, total_price, qty, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		orderProducts.Id,
 		orderProducts.OrderId,
@@ -63,12 +64,14 @@ func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProduc
 		orderProducts.UpdatedAt,
 		orderProducts.DeletedAt,
 	)
-
 	if queryErr != nil {
+		fmt.Println("queryErr : ", queryErr)
 		result = nil
 		err = queryErr
 		return
 	}
+
+	defer rows.Close()
 
 	result = orderProducts
 	err = nil

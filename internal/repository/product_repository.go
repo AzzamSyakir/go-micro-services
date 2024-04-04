@@ -45,6 +45,7 @@ func (productRepository ProductRepository) GetOneById(tx *sql.Tx, id string) (re
 		err = queryErr
 		return result, err
 	}
+	defer rows.Close()
 
 	foundProducts := DeserializeProductRows(rows)
 	if len(foundProducts) == 0 {
@@ -58,7 +59,7 @@ func (productRepository ProductRepository) GetOneById(tx *sql.Tx, id string) (re
 	return result, err
 }
 func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id string, toPatchProduct *entity.Product) (result *entity.Product, err error) {
-	_, queryErr := begin.Query(
+	rows, queryErr := begin.Query(
 		`UPDATE "products" SET name=$1,  stock=$2, price=$3, updated_at=$4 WHERE id = $5 ;`,
 		toPatchProduct.Name,
 		toPatchProduct.Stock,
@@ -72,6 +73,7 @@ func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id strin
 		err = queryErr
 		return
 	}
+	defer rows.Close()
 
 	result = toPatchProduct
 	err = nil

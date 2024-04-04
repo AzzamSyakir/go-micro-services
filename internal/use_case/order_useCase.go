@@ -33,10 +33,11 @@ func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *rep
 	return OrderUseCase
 }
 func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.OrderRequest) (result *model_response.Response[*model_response.OrderResponse]) {
+
 	beginErr := crdb.Execute(func() (err error) {
-		begin, beginErr := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
-		if beginErr != nil {
-			return beginErr
+		begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+		if err != nil {
+			return err
 		}
 		//    GetUser
 		user := orderUseCase.GetUser(userId)
@@ -124,7 +125,6 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			Data:    nil,
 		}
 	}
-
 	return result
 
 }
@@ -194,7 +194,6 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 	}
 	return bodyResponseProduct
 }
-
 func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, order *model_response.Response[*model_response.OrderResponse], totalOrderPrice int) (result *model_response.Response[*model_response.OrderResponse]) {
 	for _, orderProduct := range request.Products {
 		productId := orderProduct.ProductId.String
