@@ -1,6 +1,6 @@
 # Go Micro-Services 
 
-template boilerplate for go project using micro-services architecture 
+POS-API develop using micro-services architecture patten 
 # micro-services
 
 ## What are microservices?
