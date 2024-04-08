@@ -10,4 +10,7 @@ require (
 	github.com/lib/pq v1.10.9
 )
 
-require golang.org/x/sys v0.18.0 // indirect
+require (
+	github.com/google/uuid v1.6.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
+)
