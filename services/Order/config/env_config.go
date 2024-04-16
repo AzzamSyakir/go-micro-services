@@ -24,7 +24,7 @@ func NewEnvConfig() *EnvConfig {
 	envConfig := &EnvConfig{
 		App: &AppEnv{
 			Host: os.Getenv("GATEWAY_APP_HOST"),
-			Port: os.Getenv("ORDER_SERVICES_PORT_SERVICES_PORT"),
+			Port: os.Getenv("ORDER_SERVICES_PORT"),
 		},
 		OrderDB: &PostgresEnv{
 			Host:     os.Getenv("POSTGRES_HOST"),
