@@ -2,44 +2,43 @@ package route
 
 import (
 	"github.com/gorilla/mux"
-	"go-micro-services/services/Product/delivery/http"
+	"go-micro-services/services/Order/delivery/http"
 )
 
 type RootRoute struct {
-	Router       *mux.Router
-	ProductRoute *ProductRoute
+	Router     *mux.Router
+	OrderRoute *OrderRoute
 }
 
 func NewRootRoute(
 	router *mux.Router,
-	userRoute *ProductRoute,
+	userRoute *OrderRoute,
 
 ) *RootRoute {
 	rootRoute := &RootRoute{
-		Router:       router,
-		ProductRoute: userRoute,
+		Router:     router,
+		OrderRoute: userRoute,
 	}
 	return rootRoute
 }
 
 func (rootRoute *RootRoute) Register() {
-	rootRoute.ProductRoute.Register()
+	rootRoute.OrderRoute.Register()
 }
 
-type ProductRoute struct {
-	Router            *mux.Router
-	ProductController *http.ProductController
+type OrderRoute struct {
+	Router          *mux.Router
+	OrderController *http.OrderController
 }
 
-func NewProductRoute(router *mux.Router, productController *http.ProductController) *ProductRoute {
-	productRoute := &ProductRoute{
-		Router:            router.PathPrefix("/products").Subrouter(),
-		ProductController: productController,
+func NewOrderRoute(router *mux.Router, orderController *http.OrderController) *OrderRoute {
+	orderRoute := &OrderRoute{
+		Router:          router.PathPrefix("/orders").Subrouter(),
+		OrderController: orderController,
 	}
-	return productRoute
+	return orderRoute
 }
 
-func (productRoute *ProductRoute) Register() {
-	productRoute.Router.HandleFunc("/{id}", productRoute.ProductController.GetOneById).Methods("GET")
-	productRoute.Router.HandleFunc("/update-stock/{id}", productRoute.ProductController.PatchOneById).Methods("PATCH")
+func (productRoute *OrderRoute) Register() {
+	productRoute.Router.HandleFunc("/{id}", productRoute.OrderController.Orders).Methods("POST")
 }

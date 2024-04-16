@@ -32,7 +32,7 @@ func NewWebContainer() *WebContainer {
 	orderRepository := repository.NewOrderRepository()
 	repositoryContainer := NewRepositoryContainer(orderRepository)
 
-	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository)
+	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository, envConfig)
 
 	useCaseContainer := NewUseCaseContainer(orderUseCase)
 

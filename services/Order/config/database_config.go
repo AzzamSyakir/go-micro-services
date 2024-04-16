@@ -28,7 +28,7 @@ func NewOrderDB(envConfig *EnvConfig) *PostgresDatabase {
 			"postgresql://%s@%s:%s/%s",
 			envConfig.OrderDB.User,
 			envConfig.OrderDB.Host,
-			envConfig.OrderDB.Port,
+			envConfig.OrderDB.OrderPort,
 			envConfig.OrderDB.Database,
 		)
 	} else {
@@ -37,7 +37,7 @@ func NewOrderDB(envConfig *EnvConfig) *PostgresDatabase {
 			envConfig.OrderDB.User,
 			envConfig.OrderDB.Password,
 			envConfig.OrderDB.Host,
-			envConfig.OrderDB.Port,
+			envConfig.OrderDB.OrderPort,
 			envConfig.OrderDB.Database,
 		)
 	}
