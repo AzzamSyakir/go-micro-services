@@ -5,15 +5,15 @@ import (
 )
 
 type ControllerContainer struct {
-	User *http.ProductController
+	Product *http.ProductController
 }
 
 func NewControllerContainer(
-	user *http.ProductController,
+	product *http.ProductController,
 
 ) *ControllerContainer {
 	controllerContainer := &ControllerContainer{
-		User: user,
+		Product: product,
 	}
 	return controllerContainer
 }
