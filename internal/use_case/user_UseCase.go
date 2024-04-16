@@ -21,7 +21,6 @@ type UserUseCase struct {
 func NewUserUseCase(
 	databaseConfig *config.DatabaseConfig,
 	userRepository *repository.UserRepository,
-
 ) *UserUseCase {
 	userUseCase := &UserUseCase{
 		DatabaseConfig: databaseConfig,
