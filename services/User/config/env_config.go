@@ -16,17 +16,15 @@ type PostgresEnv struct {
 }
 
 type EnvConfig struct {
-	App       *AppEnv
-	UserDB    *PostgresEnv
-	ProductDB *PostgresEnv
-	OrderDB   *PostgresEnv
+	App    *AppEnv
+	UserDB *PostgresEnv
 }
 
 func NewEnvConfig() *EnvConfig {
 	envConfig := &EnvConfig{
 		App: &AppEnv{
 			Host: os.Getenv("GATEWAY_APP_HOST"),
-			Port: os.Getenv("GATEWAY_APP_PORT"),
+			Port: os.Getenv("PRODUCT_SERVICES_PORT"),
 		},
 		UserDB: &PostgresEnv{
 			Host:     os.Getenv("POSTGRES_HOST"),

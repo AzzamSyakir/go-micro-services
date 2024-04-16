@@ -2,8 +2,29 @@ package route
 
 import (
 	"github.com/gorilla/mux"
-	"go-micro-services/internal/delivery/http"
+	"go-micro-services/services/User/delivery/http"
 )
+
+type RootRoute struct {
+	Router    *mux.Router
+	UserRoute *UserRoute
+}
+
+func NewRootRoute(
+	router *mux.Router,
+	userRoute *UserRoute,
+
+) *RootRoute {
+	rootRoute := &RootRoute{
+		Router:    router,
+		UserRoute: userRoute,
+	}
+	return rootRoute
+}
+
+func (rootRoute *RootRoute) Register() {
+	rootRoute.UserRoute.Register()
+}
 
 type UserRoute struct {
 	Router         *mux.Router
