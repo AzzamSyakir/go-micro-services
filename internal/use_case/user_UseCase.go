@@ -53,7 +53,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 		return result, err
 	}
 	if GetOneById == nil {
-		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, user is not found by id %s", id)
+		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, User is not found by id %s", id)
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -86,7 +86,7 @@ func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *mode
 			err = begin.Rollback()
 			result = &response.Response[*entity.User]{
 				Code:    http.StatusNotFound,
-				Message: "UserUserCase PatchOneByIdFromRequest is failed, user is not found by id.",
+				Message: "UserUserCase PatchOneByIdFromRequest is failed, User is not found by id.",
 				Data:    nil,
 			}
 			return err

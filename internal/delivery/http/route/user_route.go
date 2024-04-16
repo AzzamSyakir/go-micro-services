@@ -12,7 +12,7 @@ type UserRoute struct {
 
 func NewUserRoute(router *mux.Router, userController *http.UserController) *UserRoute {
 	userRoute := &UserRoute{
-		Router:         router.PathPrefix("/users").Subrouter(),
+		Router:         router.PathPrefix("/User").Subrouter(),
 		UserController: userController,
 	}
 	return userRoute

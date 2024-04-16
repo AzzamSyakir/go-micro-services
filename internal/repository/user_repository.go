@@ -36,7 +36,7 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, balance, created_at, updated_at, deleted_at FROM "users" WHERE id=$1 LIMIT 1;`,
+		`SELECT id, name, balance, created_at, updated_at, deleted_at FROM "User" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 
@@ -61,7 +61,7 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 
 func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *entity.User) (result *entity.User, err error) {
 	rows, queryErr := begin.Query(
-		`UPDATE "users" SET id=$1, name=$2,  balance=$3, created_at=$4, updated_at=$5, deleted_at=$6 WHERE id = $7 ;`,
+		`UPDATE "User" SET id=$1, name=$2,  balance=$3, created_at=$4, updated_at=$5, deleted_at=$6 WHERE id = $7 ;`,
 		toPatchUser.Id,
 		toPatchUser.Name,
 		toPatchUser.Balance,
