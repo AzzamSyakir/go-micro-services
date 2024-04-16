@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"go-micro-services/services/User/container"
+	"go-micro-services/services/Order/container"
 	"net/http"
 )
 
 func main() {
-	fmt.Println("User Services started.")
+	fmt.Println("Order Services started.")
 
 	webContainer := container.NewWebContainer()
 
@@ -20,5 +20,5 @@ func main() {
 	if listenAndServeErr != nil {
 		panic(listenAndServeErr)
 	}
-	fmt.Println("User Services finished.")
+	fmt.Println("Order Services finished.")
 }

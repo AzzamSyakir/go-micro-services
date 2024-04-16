@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Web started.")
+	fmt.Println("Product Services started.")
 
 	webContainer := container.NewWebContainer()
 
@@ -20,5 +20,5 @@ func main() {
 	if listenAndServeErr != nil {
 		panic(listenAndServeErr)
 	}
-	fmt.Println("Web finished.")
+	fmt.Println("Product Services finished.")
 }

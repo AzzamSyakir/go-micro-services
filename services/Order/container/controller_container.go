@@ -1,19 +1,19 @@
 package container
 
 import (
-	"go-micro-services/services/Product/delivery/http"
+	"go-micro-services/services/Order/delivery/http"
 )
 
 type ControllerContainer struct {
-	Product *http.ProductController
+	Order *http.OrderController
 }
 
 func NewControllerContainer(
-	product *http.ProductController,
+	order *http.OrderController,
 
 ) *ControllerContainer {
 	controllerContainer := &ControllerContainer{
-		Product: product,
+		Order: order,
 	}
 	return controllerContainer
 }

@@ -1,19 +1,19 @@
 package container
 
 import (
-	"go-micro-services/services/Product/repository"
+	"go-micro-services/services/Order/repository"
 )
 
 type RepositoryContainer struct {
-	Product *repository.ProductRepository
+	Order *repository.OrderRepository
 }
 
 func NewRepositoryContainer(
-	product *repository.ProductRepository,
+	order *repository.OrderRepository,
 
 ) *RepositoryContainer {
 	repositoryContainer := &RepositoryContainer{
-		Product: product,
+		Order: order,
 	}
 	return repositoryContainer
 }

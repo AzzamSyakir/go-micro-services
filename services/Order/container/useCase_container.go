@@ -1,19 +1,19 @@
 package container
 
 import (
-	"go-micro-services/services/Product/use_case"
+	"go-micro-services/services/Order/use_case"
 )
 
 type UseCaseContainer struct {
-	Product *use_case.ProductUseCase
+	Order *use_case.OrderUseCase
 }
 
 func NewUseCaseContainer(
-	product *use_case.ProductUseCase,
+	order *use_case.OrderUseCase,
 
 ) *UseCaseContainer {
 	useCaseContainer := &UseCaseContainer{
-		Product: product,
+		Order: order,
 	}
 	return useCaseContainer
 }
