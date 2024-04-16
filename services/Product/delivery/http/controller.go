@@ -14,10 +14,10 @@ type ProductController struct {
 }
 
 func NewProductController(productUseCase *use_case.ProductUseCase) *ProductController {
-	productControler := &ProductController{
+	productController := &ProductController{
 		ProductUseCase: productUseCase,
 	}
-	return productControler
+	return productController
 }
 func (ProductController *ProductController) GetOneById(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)

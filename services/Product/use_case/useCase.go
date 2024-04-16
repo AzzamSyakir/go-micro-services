@@ -91,11 +91,10 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 			}
 			return err
 		}
-		if request.Name.Valid && request.Stock.Valid {
-			foundProduct.Name = request.Name
+
+		if request.Stock.Valid {
 			foundProduct.Stock = request.Stock
 		}
-
 		foundProduct.UpdatedAt = null.NewTime(time.Now(), true)
 
 		patchedProduct, err := productUseCase.ProductRepository.PatchOneById(begin, id, foundProduct)
