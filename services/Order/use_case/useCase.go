@@ -48,7 +48,6 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 				Message: "user not found",
 				Data:    nil,
 			}
-			fmt.Println("user data", user)
 			return err
 		}
 		//    GetProduct
@@ -131,7 +130,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 
 }
 func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.Port)
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.UserPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "User", userId)
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 	if newRequestErr != nil {
@@ -165,7 +164,7 @@ func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response
 }
 
 func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.Port)
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.ProductPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
 	newRequest, newRequestErr := http.NewRequest(http.MethodGet, url, nil)
 	if newRequestErr != nil {
