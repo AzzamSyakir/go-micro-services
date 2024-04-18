@@ -61,7 +61,7 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 
 func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *entity.User) (result *entity.User, err error) {
 	rows, queryErr := begin.Query(
-		`UPDATE "User" SET id=$1, name=$2,  balance=$3, created_at=$4, updated_at=$5, deleted_at=$6 WHERE id = $7 ;`,
+		`UPDATE "users" SET id=$1, name=$2,  balance=$3, created_at=$4, updated_at=$5, deleted_at=$6 WHERE id = $7 ;`,
 		toPatchUser.Id,
 		toPatchUser.Name,
 		toPatchUser.Balance,
