@@ -16,10 +16,9 @@ func NewOrderRepository() *OrderRepository {
 
 func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Order) (result *model_response.Response[*model_response.OrderResponse], err error) {
 	rows, queryErr := begin.Query(
-		`INSERT INTO "orders"(id, user_id, name, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+		`INSERT INTO "orders"(id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 		orders.Id,
 		orders.UserId,
-		orders.Name,
 		orders.TotalPrice,
 		orders.TotalPaid,
 		orders.TotalReturn,

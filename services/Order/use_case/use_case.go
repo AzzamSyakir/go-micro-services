@@ -68,6 +68,8 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			totalProductPrice := products.Qty.Int64 * product.Data.Price.Int64
 			request.Products[i].TotalPrice.Int64 = totalProductPrice
 			totalOrderPrice += int(totalProductPrice)
+			finalStock := product.Data.Stock.Int64 - products.Qty.Int64
+			orderUseCase.UpdateStock(productId, finalStock)
 		}
 		//  User
 		user := orderUseCase.GetUser(userId)
@@ -100,7 +102,6 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 		orderData := &entity.Order{
 			Id:          null.NewString(uuid.New().String(), true),
 			UserId:      user.Data.Id,
-			Name:        user.Data.Name,
 			ReceiptCode: null.NewString(receiptCode, true),
 			TotalPrice:  null.NewInt(int64(totalOrderPrice), true),
 			TotalPaid:   request.TotalPaid,
@@ -121,7 +122,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			return err
 		}
 		//    orderProducts
-		_ = orderUseCase.OrderProducts(begin, request, order, totalOrderPrice)
+		_ = orderUseCase.OrderProducts(begin, request, order.Data.Id.String, totalOrderPrice)
 
 		err = begin.Commit()
 
@@ -250,12 +251,12 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 	return bodyResponseProduct
 }
 
-func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, order *model_response.Response[*model_response.OrderResponse], totalOrderPrice int) (result *model_response.Response[*model_response.OrderResponse]) {
+func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, orderId string, totalOrderPrice int) (result *model_response.Response[*model_response.OrderResponse]) {
 	for _, orderProduct := range request.Products {
 		productId := orderProduct.ProductId.String
 		orderProductsData := &entity.OrderProducts{
 			Id:         null.NewString(uuid.New().String(), true),
-			OrderId:    null.NewString(order.Data.Id.String, true),
+			OrderId:    null.NewString(orderId, true),
 			ProductId:  null.NewString(productId, true),
 			TotalPrice: null.NewInt(int64(totalOrderPrice), true),
 			Qty:        null.NewInt(orderProduct.Qty.Int64, true),
@@ -273,4 +274,46 @@ func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_re
 	}
 	result = nil
 	return result
+}
+
+func (orderUseCase OrderUseCase) UpdateStock(productId string, stock int64) (result *model_response.Response[*entity.Product]) {
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s/%s/%s", address, "products", "update-stock", productId)
+	payload := map[string]string{"stock": strconv.FormatInt(stock, 10)}
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: "OrderUseCase failed, UpdateStock product is failed," + newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: "OrderUseCase failed, UpdateStock product is failed," + doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: "orderUseCase fail, UpdateStock product is failed," + decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	result = nil
+	return result
+
 }
