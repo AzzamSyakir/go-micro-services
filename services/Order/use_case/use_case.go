@@ -1,6 +1,7 @@
 package use_case
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"go-micro-services/services/Order/repository"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -39,18 +41,8 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 		if err != nil {
 			return err
 		}
-		//    GetUser
-		user := orderUseCase.GetUser(userId)
-		if user.Data == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*model_response.OrderResponse]{
-				Code:    http.StatusBadRequest,
-				Message: "user not found",
-				Data:    nil,
-			}
-			return err
-		}
-		//    GetProduct
+
+		//   Products
 		var totalOrderPrice int
 		for i, products := range request.Products {
 			productId := products.ProductId.String
@@ -77,7 +69,29 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			request.Products[i].TotalPrice.Int64 = totalProductPrice
 			totalOrderPrice += int(totalProductPrice)
 		}
+		//  User
+		user := orderUseCase.GetUser(userId)
+		if user.Data == nil {
+			err = begin.Rollback()
+			result = &model_response.Response[*model_response.OrderResponse]{
+				Code:    http.StatusBadRequest,
+				Message: "user not found",
+				Data:    nil,
+			}
+			return err
+		}
+		finalBalance := user.Data.Balance.Int64 - int64(totalOrderPrice)
+		orderUseCase.UpdateBalance(userId, finalBalance)
 		//    orders
+		if request.TotalPaid.Int64 < int64(totalOrderPrice) {
+			err = begin.Rollback()
+			result = &model_response.Response[*model_response.OrderResponse]{
+				Code:    http.StatusBadRequest,
+				Message: "OrderUseCase fail, total payment alone is not enough, total payment required " + string(strconv.FormatInt(int64(totalOrderPrice), 10)),
+				Data:    nil,
+			}
+			return err
+		}
 		totalReturn := request.TotalPaid.Int64 - int64(totalOrderPrice)
 		firstLetter := strings.ToUpper(string(user.Data.Name.String[0]))
 		rand.Seed(time.Now().UnixNano())
@@ -163,6 +177,46 @@ func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response
 	return bodyResponseUser
 }
 
+func (orderUseCase OrderUseCase) UpdateBalance(userId string, balance int64) (result *model_response.Response[*entity.User]) {
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.UserPort)
+	url := fmt.Sprintf("%s/%s/%s/%s", address, "User", "update-balance", userId)
+	payload := map[string]string{"balance": strconv.FormatInt(balance, 10)}
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: "OrderUseCase failed, UpdateBalance user is failed," + newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: "OrderUseCase failed, UpdateBalance user is failed," + doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: "orderUseCase fail, UpdateBalance user is failed," + decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseUser
+}
+
 func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_response.Response[*entity.Product]) {
 	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.ProductPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
@@ -195,6 +249,7 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 	}
 	return bodyResponseProduct
 }
+
 func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, order *model_response.Response[*model_response.OrderResponse], totalOrderPrice int) (result *model_response.Response[*model_response.OrderResponse]) {
 	for _, orderProduct := range request.Products {
 		productId := orderProduct.ProductId.String
