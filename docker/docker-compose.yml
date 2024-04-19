@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   user-db:
     image: postgres:latest
@@ -14,7 +13,7 @@ services:
     ports:
       - ${POSTGRES_USER_PORT}:${POSTGRES_USER_PORT}
     volumes:
-      - ./migration/user-db/init.sql:/docker-entrypoint-initb.d
+      - ../db/postgres/user_db/migration:/docker-entrypoint-initdb.d
 
 
   product-db:
@@ -30,7 +29,7 @@ services:
     ports:
       - ${POSTGRES_PRODUCT_PORT}:${POSTGRES_PRODUCT_PORT}
     volumes:
-      - ./migration/product-db/init.sql:/docker-entrypoint-initb.d
+      - ../db/postgres/product_db/migration:/docker-entrypoint-initdb.d
 
   order-db:
     image: postgres:latest
@@ -45,4 +44,4 @@ services:
     ports:
       - ${POSTGRES_ORDER_PORT}:${POSTGRES_ORDER_PORT}
     volumes:
-      - ./migration/order-db/init.sql:/docker-entrypoint-initb.d
+      - ../db/postgres/order_db/migration:/docker-entrypoint-initdb.d
