@@ -1,17 +1,61 @@
-version: "3.8"
 services:
-  postgresql:
-    image: postgres
-    container_name: postgres_db
-    restart: unless-stopped
+  user-services:
+    container_name: user-services
+    build: ../src/User
+    expose:
+      - 8080
+    ports:
+     - ${USER_SERVICES_PORT}:${USER_SERVICES_PORT}
+    depends_on:
+      - user-db
+
+  user-db:
+    image: postgres:latest
+    container_name: user-db
+    restart: always
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_MULTIPLE_DATABASES: user_db, product_db, order_db
-
+      POSTGRES_DB: user_db
+      PGPORT: ${POSTGRES_USER_PORT}
+    expose:
+      - 5430
     ports:
-      - ${POSTGRES_PORT}:5432
+      - ${POSTGRES_USER_PORT}:${POSTGRES_USER_PORT}
     volumes:
-      - ./multiple-databases:/docker-entrypoint-initdb.d
+      - ../db/postgres/user_db/migration:/docker-entrypoint-initdb.d
 
+  product-db:
+    image: postgres:latest
+    container_name: product-db
+    restart: always
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: product_db
+      PGPORT: ${POSTGRES_PRODUCT_PORT}
+    expose:
+      - 5431
+    ports:
+      - ${POSTGRES_PRODUCT_PORT}:${POSTGRES_PRODUCT_PORT}
+    volumes:
+      - ../db/postgres/product_db/migration:/docker-entrypoint-initdb.d
+
+  order-db:
+    image: postgres:latest
+    container_name: order-db
+    restart: always
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: order_db
+      PGPORT: ${POSTGRES_ORDER_PORT}
+    expose:
+      - 5432
+    ports:
+      - ${POSTGRES_ORDER_PORT}:${POSTGRES_ORDER_PORT}
+    volumes:
+      - ../db/postgres/order_db/migration:/docker-entrypoint-initdb.d
