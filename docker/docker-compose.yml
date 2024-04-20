@@ -1,7 +1,9 @@
 services:
   user-services:
     container_name: user-services
-    build: ../src/User
+    build:
+      context: ../.
+      dockerfile: ./src/user-service/Dockerfile
     expose:
       - 8080
     ports:
