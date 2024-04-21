@@ -7,4 +7,5 @@
 /docker/postgres/data/postmaster.opts
 /docker/postgres/data/postmaster.pid
 /.idea/
+/.vscode/
 .env
