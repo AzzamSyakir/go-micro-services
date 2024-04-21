@@ -1,7 +1,7 @@
 package container
 
 import (
-	"go-micro-services/src/User/delivery/http"
+	"go-micro-services/src/user-service/delivery/http"
 )
 
 type ControllerContainer struct {
