@@ -1,7 +1,7 @@
 package container
 
 import (
-	"go-micro-services/src/User/use_case"
+	"go-micro-services/src/user-service/use_case"
 )
 
 type UseCaseContainer struct {

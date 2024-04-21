@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"go-micro-services/src/User/config"
-	httpdelivery "go-micro-services/src/User/delivery/http"
-	"go-micro-services/src/User/delivery/http/route"
-	"go-micro-services/src/User/repository"
-	"go-micro-services/src/User/use_case"
+	"go-micro-services/src/user-service/config"
+	httpdelivery "go-micro-services/src/user-service/delivery/http"
+	"go-micro-services/src/user-service/delivery/http/route"
+	"go-micro-services/src/user-service/repository"
+	"go-micro-services/src/user-service/use_case"
 )
 
 type WebContainer struct {

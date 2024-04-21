@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"go-micro-services/src/User/entity"
+	"go-micro-services/src/user-service/entity"
 )
 
 type UserRepository struct {

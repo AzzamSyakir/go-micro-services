@@ -3,9 +3,9 @@ package http
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	model_request "go-micro-services/src/User/model/request/controller"
-	"go-micro-services/src/User/model/response"
-	"go-micro-services/src/User/use_case"
+	model_request "go-micro-services/src/user-service/model/request/controller"
+	"go-micro-services/src/user-service/model/response"
+	"go-micro-services/src/user-service/use_case"
 	"net/http"
 )
 
