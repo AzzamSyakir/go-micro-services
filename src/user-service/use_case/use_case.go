@@ -5,7 +5,7 @@ import (
 	"go-micro-services/src/user-service/config"
 	"go-micro-services/src/user-service/entity"
 	model_request "go-micro-services/src/user-service/model/request/controller"
-	"go-micro-services/src/user-service/model/response"
+	model_response "go-micro-services/src/user-service/model/response"
 	"go-micro-services/src/user-service/repository"
 	"net/http"
 	"time"
@@ -31,11 +31,12 @@ func NewUserUseCase(
 	}
 	return userUseCase
 }
-func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response[*entity.User], err error) {
+
+func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Response[*entity.User], err error) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
-		result = &response.Response[*entity.User]{
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
@@ -43,11 +44,10 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 		err = nil
 		return result, err
 	}
-
 	GetOneById, GetOneByIdErr := userUseCase.UserRepository.GetOneById(transaction, id)
 	if GetOneByIdErr != nil {
 		errorMessage := fmt.Sprintf("UserUseCase GetOneById is failed, GetUser failed : %s", GetOneByIdErr)
-		result = &response.Response[*entity.User]{
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
@@ -57,7 +57,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 	}
 	if GetOneById == nil {
 		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, User is not found by id %s", id)
-		result = &response.Response[*entity.User]{
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
@@ -66,7 +66,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 		return result, err
 	}
 
-	result = &response.Response[*entity.User]{
+	result = &model_response.Response[*entity.User]{
 		Code:    http.StatusOK,
 		Message: "User UseCase FindOneById is succeed.",
 		Data:    GetOneById,
@@ -74,29 +74,35 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *response.Response
 	err = nil
 	return result, err
 }
-func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *model_request.UserPatchOneByIdRequest) (result *response.Response[*entity.User]) {
+
+func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
 	beginErr := crdb.Execute(func() (err error) {
-		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
 			return err
 		}
 
-		foundUser, err := userUseCase.UserRepository.GetOneById(begin, id)
+		foundUser, err := userUseCase.UserRepository.GetOneById(transaction, id)
 		if err != nil {
 			return err
 		}
 		if foundUser == nil {
-			err = begin.Rollback()
-			result = &response.Response[*entity.User]{
+			err = transaction.Rollback()
+			result = &model_response.Response[*entity.User]{
 				Code:    http.StatusNotFound,
 				Message: "UserUserCase PatchOneByIdFromRequest is failed, User is not found by id.",
 				Data:    nil,
 			}
 			return err
 		}
-
 		if request.Name.Valid {
 			foundUser.Name = request.Name
+		}
+		if request.Email.Valid {
+			foundUser.Email = request.Email
+		}
+		if request.Password.Valid {
+			foundUser.Password = request.Password
 		}
 		if request.Balance.Valid {
 			foundUser.Balance = request.Balance
@@ -104,13 +110,13 @@ func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *mode
 
 		foundUser.UpdatedAt = null.NewTime(time.Now(), true)
 
-		patchedUser, err := userUseCase.UserRepository.PatchOneById(begin, id, foundUser)
+		patchedUser, err := userUseCase.UserRepository.PatchOneById(transaction, id, foundUser)
 		if err != nil {
 			return err
 		}
 
-		err = begin.Commit()
-		result = &response.Response[*entity.User]{
+		err = transaction.Commit()
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusOK,
 			Message: "UserUserCase PatchOneByIdFromRequest is succeed.",
 			Data:    patchedUser,
@@ -119,7 +125,7 @@ func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *mode
 	})
 
 	if beginErr != nil {
-		result = &response.Response[*entity.User]{
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
 			Message: "UserUserCase PatchOneByIdFromRequest  is failed, " + beginErr.Error(),
 			Data:    nil,
@@ -129,7 +135,7 @@ func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *mode
 	return result
 }
 
-func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *response.Response[*entity.User]) {
+func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.User]) {
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
@@ -140,7 +146,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 		hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
 		if hashedPasswordErr != nil {
 			err = begin.Rollback()
-			result = &response.Response[*entity.User]{
+			result = &model_response.Response[*entity.User]{
 				Code:    http.StatusInternalServerError,
 				Message: "UserUseCase Register is failed, password hashing is failed.",
 				Data:    nil,
@@ -166,7 +172,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 		}
 
 		err = begin.Commit()
-		result = &response.Response[*entity.User]{
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusCreated,
 			Message: "UserUseCase Register is succeed.",
 			Data:    createdUser,
@@ -175,7 +181,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 	})
 
 	if beginErr != nil {
-		result = &response.Response[*entity.User]{
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
 			Message: "UserUseCase Register  is failed, " + beginErr.Error(),
 			Data:    nil,
@@ -184,7 +190,8 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 
 	return result
 }
-func (userUseCase *UserUseCase) DeleteUser(id string) (result *response.Response[*entity.User]) {
+
+func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User]) {
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
@@ -193,20 +200,26 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *response.Response
 
 		deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(begin, id)
 		if deletedUserErr != nil {
-			return deletedUserErr
+			err = begin.Rollback()
+			result = &model_response.Response[*entity.User]{
+				Code:    http.StatusNotFound,
+				Message: "UserUserCase DeleteOneById is failed, " + deletedUserErr.Error(),
+				Data:    nil,
+			}
+			return err
 		}
 		if deletedUser == nil {
 			err = begin.Rollback()
-			result = &response.Response[*entity.User]{
+			result = &model_response.Response[*entity.User]{
 				Code:    http.StatusNotFound,
-				Message: "UserUserCase DeleteOneById is failed, user is not deleted by id.",
+				Message: "UserUserCase DeleteOneById is failed, user is not deleted by id, " + id,
 				Data:    nil,
 			}
 			return err
 		}
 
 		err = begin.Commit()
-		result = &response.Response[*entity.User]{
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusOK,
 			Message: "UserUserCase DeleteOneById is succeed.",
 			Data:    deletedUser,
@@ -215,7 +228,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *response.Response
 	})
 
 	if beginErr != nil {
-		result = &response.Response[*entity.User]{
+		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
 			Message: "UserUserCase DeleteOneById is failed, " + beginErr.Error(),
 			Data:    nil,
@@ -223,4 +236,47 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *response.Response
 	}
 
 	return result
+}
+func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*entity.User], err error) {
+	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+		result = &model_response.Response[[]*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+
+	fetchUser, fetchUserErr := userUseCase.UserRepository.FetchUser(transaction)
+	if fetchUserErr != nil {
+		errorMessage := fmt.Sprintf("UserUseCase fetchUser is failed, GetUser failed : %s", fetchUserErr)
+		result = &model_response.Response[[]*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+
+	if fetchUser.Data == nil {
+		result = &model_response.Response[[]*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: "User UseCase FindOneById is failed, data User is empty ",
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+
+	result = &model_response.Response[[]*entity.User]{
+		Code:    http.StatusOK,
+		Message: "User UseCase FindOneById is succeed.",
+		Data:    fetchUser.Data,
+	}
+	err = nil
+	return result, err
 }

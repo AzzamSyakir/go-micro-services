@@ -29,8 +29,28 @@ func (userController *UserController) GetOneById(writer http.ResponseWriter, rea
 		response.NewResponse(writer, foundUser)
 	}
 }
+func (userController *UserController) FetchUser(writer http.ResponseWriter, reader *http.Request) {
+	fetchUser, fetchUserErr := userController.UserUseCase.FetchUser()
+	if fetchUserErr == nil {
+		response.NewResponse(writer, fetchUser)
+	}
+}
 
-func (userController *UserController) PatchOneById(writer http.ResponseWriter, reader *http.Request) {
+func (userController *UserController) UpdateBalance(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+
+	request := &model_request.UserPatchOneByIdRequest{}
+	decodeErr := json.NewDecoder(reader.Body).Decode(request)
+	if decodeErr != nil {
+		http.Error(writer, decodeErr.Error(), 404)
+	}
+
+	result := userController.UserUseCase.PatchOneByIdFromRequest(id, request)
+
+	response.NewResponse(writer, result)
+}
+func (userController *UserController) UpdateUser(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
 

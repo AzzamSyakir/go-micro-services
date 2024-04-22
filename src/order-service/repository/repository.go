@@ -3,8 +3,8 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"go-micro-services/src/Order/entity"
-	model_response "go-micro-services/src/Order/model/response"
+	"go-micro-services/src/order-service/entity"
+	model_response "go-micro-services/src/order-service/model/response"
 )
 
 type OrderRepository struct{}

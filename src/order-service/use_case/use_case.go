@@ -5,19 +5,20 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/cockroachdb/cockroach-go/v2/crdb"
-	"github.com/google/uuid"
-	"github.com/guregu/null"
-	"go-micro-services/src/Order/config"
-	"go-micro-services/src/Order/entity"
-	model_request "go-micro-services/src/Order/model/request/controller"
-	model_response "go-micro-services/src/Order/model/response"
-	"go-micro-services/src/Order/repository"
+	"go-micro-services/src/order-service/config"
+	"go-micro-services/src/order-service/entity"
+	model_request "go-micro-services/src/order-service/model/request/controller"
+	model_response "go-micro-services/src/order-service/model/response"
+	"go-micro-services/src/order-service/repository"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cockroachdb/cockroach-go/v2/crdb"
+	"github.com/google/uuid"
+	"github.com/guregu/null"
 )
 
 type OrderUseCase struct {
