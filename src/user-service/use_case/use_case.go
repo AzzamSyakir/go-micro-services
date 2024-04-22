@@ -2,8 +2,6 @@ package use_case
 
 import (
 	"fmt"
-	"github.com/cockroachdb/cockroach-go/v2/crdb"
-	"github.com/guregu/null"
 	"go-micro-services/src/user-service/config"
 	"go-micro-services/src/user-service/entity"
 	model_request "go-micro-services/src/user-service/model/request/controller"
@@ -11,6 +9,9 @@ import (
 	"go-micro-services/src/user-service/repository"
 	"net/http"
 	"time"
+
+	"github.com/cockroachdb/cockroach-go/v2/crdb"
+	"github.com/guregu/null"
 )
 
 type UserUseCase struct {

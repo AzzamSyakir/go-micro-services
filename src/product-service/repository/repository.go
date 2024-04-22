@@ -11,10 +11,10 @@ func NewProductRepository() *ProductRepository {
 	productRepository := &ProductRepository{}
 	return productRepository
 }
-func DeserializeProductRows(rows *sql.Rows) []*entity.Product {
-	var foundProducts []*entity.Product
+func DeserializeProductRows(rows *sql.Rows) []*entity.product-service {
+	var foundProducts []*entity.product-service
 	for rows.Next() {
-		foundProduct := &entity.Product{}
+		foundProduct := &entity.product-service{}
 		scanErr := rows.Scan(
 			&foundProduct.Id,
 			&foundProduct.Sku,
@@ -33,7 +33,7 @@ func DeserializeProductRows(rows *sql.Rows) []*entity.Product {
 	}
 	return foundProducts
 }
-func (productRepository ProductRepository) GetOneById(tx *sql.Tx, id string) (result *entity.Product, err error) {
+func (productRepository ProductRepository) GetOneById(tx *sql.Tx, id string) (result *entity.product-service, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
@@ -58,7 +58,7 @@ func (productRepository ProductRepository) GetOneById(tx *sql.Tx, id string) (re
 	err = nil
 	return result, err
 }
-func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id string, toPatchProduct *entity.Product) (result *entity.Product, err error) {
+func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id string, toPatchProduct *entity.product-service) (result *entity.product-service, err error) {
 	rows, queryErr := begin.Query(
 		`UPDATE "products" SET name=$1,  stock=$2, price=$3, updated_at=$4 WHERE id = $5 ;`,
 		toPatchProduct.Name,

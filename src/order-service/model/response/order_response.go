@@ -1,8 +1,9 @@
 package response
 
 import (
-	"github.com/guregu/null"
 	"go-micro-services/internal/entity"
+
+	"github.com/guregu/null"
 )
 
 type OrderResponse struct {
