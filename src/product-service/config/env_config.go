@@ -28,7 +28,7 @@ func NewEnvConfig() *EnvConfig {
 		},
 		ProductDB: &PostgresEnv{
 			Host:     os.Getenv("POSTGRES_HOST"),
-			Port:     os.Getenv("POSTGRES_PORT"),
+			Port:     os.Getenv("POSTGRES_PRODUCT_PORT"),
 			User:     os.Getenv("POSTGRES_USER"),
 			Password: os.Getenv("POSTGRES_PASSWORD"),
 			Database: "product_db",

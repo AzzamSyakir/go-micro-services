@@ -2,8 +2,8 @@ package use_case
 
 import (
 	"fmt"
-	"go-micro-services/src/Order/entity"
 	"go-micro-services/src/product-service/config"
+	"go-micro-services/src/product-service/entity"
 	model_request "go-micro-services/src/product-service/model/request/controller"
 	"go-micro-services/src/product-service/model/response"
 	"go-micro-services/src/product-service/repository"
@@ -30,11 +30,11 @@ func NewProductUseCase(
 	}
 	return productUseCase
 }
-func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Response[*entity.product], err error) {
+func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Response[*entity.Product], err error) {
 	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
-		result = &response.Response[*entity.product-service]{
+		result = &response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
@@ -45,7 +45,7 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Re
 	productFound, productFoundErr := productUseCase.ProductRepository.GetOneById(transaction, id)
 	if productFoundErr != nil {
 		errorMessage := fmt.Sprintf("ProductUseCase GetOneById is failed, GetProduct failed : %s", productFoundErr)
-		result = &response.Response[*entity.product-service]{
+		result = &response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
@@ -55,7 +55,7 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Re
 	}
 	errorMessage := fmt.Sprintf("productUseCase FindOneById is failed, product is not found by id %s", id)
 	if productFound == nil {
-		result = &response.Response[*entity.product-service]{
+		result = &response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
@@ -64,7 +64,7 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *response.Re
 		return result, err
 	}
 
-	result = &response.Response[*entity.product-service]{
+	result = &response.Response[*entity.Product]{
 		Code:    http.StatusOK,
 		Message: "product-service UseCase FindOneById is succeed.",
 		Data:    productFound,
@@ -85,7 +85,7 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 		}
 		if foundProduct == nil {
 			err = begin.Rollback()
-			result = &response.Response[*entity.product-service]{
+			result = &response.Response[*entity.Product]{
 				Code:    http.StatusNotFound,
 				Message: "ProductProductCase PatchOneByIdFromRequest is failed, product is not found by id.",
 				Data:    nil,
@@ -104,7 +104,7 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 		}
 
 		err = begin.Commit()
-		result = &response.Response[*entity.product-service]{
+		result = &response.Response[*entity.Product]{
 			Code:    http.StatusOK,
 			Message: "ProductProductCase PatchOneByIdFromRequest is succeed.",
 			Data:    patchedProduct,
@@ -113,7 +113,7 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 	})
 
 	if beginErr != nil {
-		result = &response.Response[*entity.product-service]{
+		result = &response.Response[*entity.Product]{
 			Code:    http.StatusInternalServerError,
 			Message: "ProductProductCase PatchOneByIdFromRequest  is failed, " + beginErr.Error(),
 			Data:    nil,
