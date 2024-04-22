@@ -1,6 +1,6 @@
 # Go Micro-Services 
 
-POS-API develop using microservices architecture patten 
+POS-API develop using microservices architecture pattern 
 # micro-services
 
 ## What are microservices?
