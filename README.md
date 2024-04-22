@@ -30,14 +30,14 @@ This project uses the ``micro-services`` architecture as explained above, this `
 
 ### first clone this repo
 ```bash
-git clone "githu repo links"
+git clone "github repo links"
 ```
 ### build and run docker compose 
 ```bash
 docker compose -f ./docker/docker-compose.yml build --no-cache
 ```
 ```bash
-docker compose -f ./docker/development/docker-compose.yml up -d
+docker compose -f ./docker/docker-compose.yml up -d
 ```
 ### run project
 ```bash
