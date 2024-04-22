@@ -2,11 +2,12 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
-	model_request "go-micro-services/src/Product/model/request/controller"
-	"go-micro-services/src/Product/model/response"
-	"go-micro-services/src/Product/use_case"
+	model_request "go-micro-services/src/product-service/model/request/controller"
+	"go-micro-services/src/product-service/model/response"
+	"go-micro-services/src/product-service/use_case"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type ProductController struct {

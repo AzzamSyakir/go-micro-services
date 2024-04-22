@@ -6,20 +6,16 @@ RUN apk update
 RUN apk add --no-cache git build-base
 
 #setup workdir
+RUN mkdir -p /app
 ENV WORKDIR /app
 WORKDIR $WORKDIR
 
 #copy source from host to workdir inside container
-COPY ./src/user-service .
-COPY .env .env
-COPY go.mod go.mod
-COPY go.sum go.sum
-
-# Install the modules.
-RUN go install -v ./...
-
-# Clean all the downloaded modules.
-RUN go clean -modcache
+COPY . .
+COPY go.mod  go.mod
+COPY go.sum  go.sum
 
 # Build the Go app.
-RUN go build -C $WORKDIR/cmd/web -o $WORKDIR/build
+RUN go build -a -o User  src/user-service/cmd/web/main.go
+#run go app
+CMD ["./User"]

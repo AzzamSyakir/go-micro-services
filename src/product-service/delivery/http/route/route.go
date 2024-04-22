@@ -1,8 +1,9 @@
 package route
 
 import (
+	"go-micro-services/src/product-service/delivery/http"
+
 	"github.com/gorilla/mux"
-	"go-micro-services/src/Product/delivery/http"
 )
 
 type RootRoute struct {
