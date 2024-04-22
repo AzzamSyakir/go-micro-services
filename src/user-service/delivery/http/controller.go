@@ -57,3 +57,11 @@ func (userController *UserController) CreateUser(writer http.ResponseWriter, rea
 
 	response.NewResponse(writer, result)
 }
+func (userController *UserController) DeleteUser(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+
+	result := userController.UserUseCase.DeleteUser(id)
+
+	response.NewResponse(writer, result)
+}

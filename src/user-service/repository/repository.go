@@ -19,6 +19,8 @@ func DeserializeUserRows(rows *sql.Rows) []*entity.User {
 		scanErr := rows.Scan(
 			&foundUser.Id,
 			&foundUser.Name,
+			&foundUser.Email,
+			&foundUser.Password,
 			&foundUser.Balance,
 			&foundUser.CreatedAt,
 			&foundUser.UpdatedAt,
@@ -105,4 +107,27 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *en
 	err = nil
 	return result, err
 
+}
+
+func (userRepository *UserRepository) DeleteUser(begin *sql.Tx, id string) (result *entity.User, err error) {
+	rows, queryErr := begin.Query(
+		`DELETE FROM "users" WHERE id=$1 RETURNING id, name,  email, password, balance, created_at, updated_at, deleted_at`,
+		id,
+	)
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return
+	}
+
+	foundUsers := DeserializeUserRows(rows)
+	if len(foundUsers) == 0 {
+		result = nil
+		err = nil
+		return result, err
+	}
+
+	result = foundUsers[0]
+	err = nil
+	return result, err
 }

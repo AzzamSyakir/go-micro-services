@@ -184,3 +184,43 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 
 	return result
 }
+func (userUseCase *UserUseCase) DeleteUser(id string) (result *response.Response[*entity.User]) {
+	beginErr := crdb.Execute(func() (err error) {
+		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+		if err != nil {
+			return err
+		}
+
+		deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(begin, id)
+		if deletedUserErr != nil {
+			return deletedUserErr
+		}
+		if deletedUser == nil {
+			err = begin.Rollback()
+			result = &response.Response[*entity.User]{
+				Code:    http.StatusNotFound,
+				Message: "UserUserCase DeleteOneById is failed, user is not deleted by id.",
+				Data:    nil,
+			}
+			return err
+		}
+
+		err = begin.Commit()
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusOK,
+			Message: "UserUserCase DeleteOneById is succeed.",
+			Data:    deletedUser,
+		}
+		return err
+	})
+
+	if beginErr != nil {
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusInternalServerError,
+			Message: "UserUserCase DeleteOneById is failed, " + beginErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return result
+}
