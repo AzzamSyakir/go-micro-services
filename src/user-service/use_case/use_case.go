@@ -11,7 +11,9 @@ import (
 	"time"
 
 	"github.com/cockroachdb/cockroach-go/v2/crdb"
+	"github.com/google/uuid"
 	"github.com/guregu/null"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserUseCase struct {
@@ -120,6 +122,62 @@ func (userUseCase *UserUseCase) PatchOneByIdFromRequest(id string, request *mode
 		result = &response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
 			Message: "UserUserCase PatchOneByIdFromRequest  is failed, " + beginErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return result
+}
+
+func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *response.Response[*entity.User]) {
+	beginErr := crdb.Execute(func() (err error) {
+		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+		if err != nil {
+			result = nil
+			return err
+		}
+
+		hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
+		if hashedPasswordErr != nil {
+			err = begin.Rollback()
+			result = &response.Response[*entity.User]{
+				Code:    http.StatusInternalServerError,
+				Message: "UserUseCase Register is failed, password hashing is failed.",
+				Data:    nil,
+			}
+			return err
+		}
+
+		currentTime := null.NewTime(time.Now(), true)
+		newUser := &entity.User{
+			Id:        null.NewString(uuid.NewString(), true),
+			Name:      request.Name,
+			Email:     request.Email,
+			Password:  null.NewString(string(hashedPassword), true),
+			Balance:   request.Balance,
+			CreatedAt: currentTime,
+			UpdatedAt: currentTime,
+			DeletedAt: null.NewTime(time.Time{}, false),
+		}
+
+		createdUser, err := userUseCase.UserRepository.CreateUser(begin, newUser)
+		if err != nil {
+			return err
+		}
+
+		err = begin.Commit()
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusCreated,
+			Message: "UserUseCase Register is succeed.",
+			Data:    createdUser,
+		}
+		return err
+	})
+
+	if beginErr != nil {
+		result = &response.Response[*entity.User]{
+			Code:    http.StatusInternalServerError,
+			Message: "UserUseCase Register  is failed, " + beginErr.Error(),
 			Data:    nil,
 		}
 	}

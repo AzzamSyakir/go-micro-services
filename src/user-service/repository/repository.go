@@ -82,3 +82,27 @@ func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toP
 	err = nil
 	return result, err
 }
+
+func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *entity.User) (result *entity.User, err error) {
+	_, queryErr := begin.Query(
+		`INSERT INTO "users" (id, name, email, password, balance, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
+		toCreateUser.Id,
+		toCreateUser.Name,
+		toCreateUser.Email,
+		toCreateUser.Password,
+		toCreateUser.Balance,
+		toCreateUser.CreatedAt,
+		toCreateUser.UpdatedAt,
+		toCreateUser.DeletedAt,
+	)
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return
+	}
+
+	result = toCreateUser
+	err = nil
+	return result, err
+
+}

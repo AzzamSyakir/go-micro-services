@@ -2,11 +2,12 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	model_request "go-micro-services/src/user-service/model/request/controller"
 	"go-micro-services/src/user-service/model/response"
 	"go-micro-services/src/user-service/use_case"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type UserController struct {
@@ -36,10 +37,23 @@ func (userController *UserController) PatchOneById(writer http.ResponseWriter, r
 	request := &model_request.UserPatchOneByIdRequest{}
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
-		panic(decodeErr)
+		http.Error(writer, decodeErr.Error(), 404)
 	}
 
 	result := userController.UserUseCase.PatchOneByIdFromRequest(id, request)
+
+	response.NewResponse(writer, result)
+}
+
+func (userController *UserController) CreateUser(writer http.ResponseWriter, reader *http.Request) {
+
+	request := &model_request.CreateUser{}
+	decodeErr := json.NewDecoder(reader.Body).Decode(request)
+	if decodeErr != nil {
+		http.Error(writer, decodeErr.Error(), 404)
+	}
+
+	result := userController.UserUseCase.CreateUser(request)
 
 	response.NewResponse(writer, result)
 }
