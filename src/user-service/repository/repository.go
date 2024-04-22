@@ -39,6 +39,49 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *en
 
 }
 
+func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_response.Response[[]*entity.User], err error) {
+	var rows *sql.Rows
+	var queryErr error
+	rows, queryErr = begin.Query(
+		`SELECT id, name, email, password, balance, created_at, updated_at, deleted_at FROM "users" `,
+	)
+
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return result, err
+
+	}
+	defer rows.Close()
+	var fetchUsers []*entity.User
+	for rows.Next() {
+		fetchUser := &entity.User{}
+		scanErr := rows.Scan(
+			&fetchUser.Id,
+			&fetchUser.Name,
+			&fetchUser.Email,
+			&fetchUser.Password,
+			&fetchUser.Balance,
+			&fetchUser.CreatedAt,
+			&fetchUser.UpdatedAt,
+			&fetchUser.DeletedAt,
+		)
+		if scanErr != nil {
+			result = nil
+			err = scanErr
+			return result, err
+		}
+		fetchUsers = append(fetchUsers, fetchUser)
+	}
+
+	result = &model_response.Response[[]*entity.User]{
+		Data: fetchUsers,
+	}
+	fmt.Println("rows fetchUser", rows)
+	err = nil
+	return result, err
+}
+
 func DeserializeUserRows(rows *sql.Rows) []*entity.User {
 	var foundUsers []*entity.User
 	for rows.Next() {
@@ -110,49 +153,6 @@ func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toP
 	defer rows.Close()
 
 	result = toPatchUser
-	err = nil
-	return result, err
-}
-
-func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_response.Response[[]*entity.User], err error) {
-	var rows *sql.Rows
-	var queryErr error
-	rows, queryErr = begin.Query(
-		`SELECT id, name, email, password, balance, created_at, updated_at, deleted_at FROM "users" `,
-	)
-
-	if queryErr != nil {
-		result = nil
-		err = queryErr
-		return result, err
-
-	}
-	defer rows.Close()
-	var fetchUsers []*entity.User
-	for rows.Next() {
-		fetchUser := &entity.User{}
-		scanErr := rows.Scan(
-			&fetchUser.Id,
-			&fetchUser.Name,
-			&fetchUser.Email,
-			&fetchUser.Password,
-			&fetchUser.Balance,
-			&fetchUser.CreatedAt,
-			&fetchUser.UpdatedAt,
-			&fetchUser.DeletedAt,
-		)
-		if scanErr != nil {
-			result = nil
-			err = scanErr
-			return result, err
-		}
-		fetchUsers = append(fetchUsers, fetchUser)
-	}
-
-	result = &model_response.Response[[]*entity.User]{
-		Data: fetchUsers,
-	}
-	fmt.Println("rows fetchUser", rows)
 	err = nil
 	return result, err
 }
