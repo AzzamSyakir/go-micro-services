@@ -2,7 +2,9 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"go-micro-services/src/user-service/entity"
+	model_response "go-micro-services/src/user-service/model/response"
 )
 
 type UserRepository struct {
@@ -12,6 +14,31 @@ func NewUserRepository() *UserRepository {
 	userRepository := &UserRepository{}
 	return userRepository
 }
+
+func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *entity.User) (result *entity.User, err error) {
+	_, queryErr := begin.Query(
+		`INSERT INTO "users" (id, name, email, password, balance, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
+		toCreateUser.Id,
+		toCreateUser.Name,
+		toCreateUser.Email,
+		toCreateUser.Password,
+		toCreateUser.Balance,
+		toCreateUser.CreatedAt,
+		toCreateUser.UpdatedAt,
+		toCreateUser.DeletedAt,
+	)
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return
+	}
+
+	result = toCreateUser
+	err = nil
+	return result, err
+
+}
+
 func DeserializeUserRows(rows *sql.Rows) []*entity.User {
 	var foundUsers []*entity.User
 	for rows.Next() {
@@ -19,8 +46,6 @@ func DeserializeUserRows(rows *sql.Rows) []*entity.User {
 		scanErr := rows.Scan(
 			&foundUser.Id,
 			&foundUser.Name,
-			&foundUser.Email,
-			&foundUser.Password,
 			&foundUser.Balance,
 			&foundUser.CreatedAt,
 			&foundUser.UpdatedAt,
@@ -85,28 +110,47 @@ func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toP
 	return result, err
 }
 
-func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *entity.User) (result *entity.User, err error) {
-	_, queryErr := begin.Query(
-		`INSERT INTO "users" (id, name, email, password, balance, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
-		toCreateUser.Id,
-		toCreateUser.Name,
-		toCreateUser.Email,
-		toCreateUser.Password,
-		toCreateUser.Balance,
-		toCreateUser.CreatedAt,
-		toCreateUser.UpdatedAt,
-		toCreateUser.DeletedAt,
+func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_response.Response[[]*entity.User], err error) {
+	var rows *sql.Rows
+	var queryErr error
+	rows, queryErr = begin.Query(
+		`SELECT id, name, email, password, balance, created_at, updated_at, deleted_at FROM "users" `,
 	)
+
 	if queryErr != nil {
 		result = nil
 		err = queryErr
-		return
+		return result, err
+
+	}
+	defer rows.Close()
+	var fetchUsers []*entity.User
+	for rows.Next() {
+		fetchUser := &entity.User{}
+		scanErr := rows.Scan(
+			&fetchUser.Id,
+			&fetchUser.Name,
+			&fetchUser.Email,
+			&fetchUser.Password,
+			&fetchUser.Balance,
+			&fetchUser.CreatedAt,
+			&fetchUser.UpdatedAt,
+			&fetchUser.DeletedAt,
+		)
+		if scanErr != nil {
+			result = nil
+			err = scanErr
+			return result, err
+		}
+		fetchUsers = append(fetchUsers, fetchUser)
 	}
 
-	result = toCreateUser
+	result = &model_response.Response[[]*entity.User]{
+		Data: fetchUsers,
+	}
+	fmt.Println("rows fetchUser", rows)
 	err = nil
 	return result, err
-
 }
 
 func (userRepository *UserRepository) DeleteUser(begin *sql.Tx, id string) (result *entity.User, err error) {

@@ -1,5 +1,5 @@
 start-user:
-	go run src/user-service/cmd/web/main.go
+	clear && go run src/user-service/cmd/web/main.go
 
 start-product:
 	go run src/product-service/cmd/web/main.go
