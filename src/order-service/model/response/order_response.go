@@ -1,7 +1,7 @@
 package response
 
 import (
-	"go-micro-services/internal/entity"
+	"go-micro-services/src/order-service/entity"
 
 	"github.com/guregu/null"
 )

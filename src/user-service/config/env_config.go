@@ -1,6 +1,8 @@
 package config
 
-import "os"
+import (
+	"os"
+)
 
 type AppEnv struct {
 	Host string

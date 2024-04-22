@@ -12,6 +12,7 @@ WORKDIR $WORKDIR
 
 #copy source from host to workdir inside container
 COPY . .
+COPY .env .env
 COPY go.mod  go.mod
 COPY go.sum  go.sum
 
