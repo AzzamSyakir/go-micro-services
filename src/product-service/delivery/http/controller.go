@@ -20,7 +20,7 @@ func NewProductController(productUseCase *use_case.ProductUseCase) *ProductContr
 	}
 	return productController
 }
-func (ProductController *ProductController) GetOneById(writer http.ResponseWriter, reader *http.Request) {
+func (ProductController *ProductController) GetProduct(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
 	foundProduct, foundProductErr := ProductController.ProductUseCase.GetOneById(id)
@@ -28,7 +28,8 @@ func (ProductController *ProductController) GetOneById(writer http.ResponseWrite
 		response.NewResponse(writer, foundProduct)
 	}
 }
-func (ProductController *ProductController) PatchOneById(writer http.ResponseWriter, reader *http.Request) {
+
+func (ProductController *ProductController) UpdateStock(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
@@ -41,6 +42,7 @@ func (ProductController *ProductController) PatchOneById(writer http.ResponseWri
 
 	response.NewResponse(writer, result)
 }
+
 func (productController *ProductController) CreateProduct(writer http.ResponseWriter, reader *http.Request) {
 
 	request := &model_request.CreateProduct{}
@@ -55,9 +57,19 @@ func (productController *ProductController) CreateProduct(writer http.ResponseWr
 
 	response.NewResponse(writer, result)
 }
+
 func (productController *ProductController) ListProduct(writer http.ResponseWriter, reader *http.Request) {
 	product, productErr := productController.ProductUseCase.ListProduct()
 	if productErr == nil {
 		response.NewResponse(writer, product)
 	}
+}
+
+func (productController *ProductController) DeleteProduct(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+
+	result := productController.ProductUseCase.DeleteProduct(id)
+
+	response.NewResponse(writer, result)
 }

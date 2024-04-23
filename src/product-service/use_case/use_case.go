@@ -90,6 +90,7 @@ func (productUseCase *ProductUseCase) Createproduct(request *model_request.Creat
 	}
 	return result
 }
+
 func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_response.Response[*entity.Product], err error) {
 	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if transactionErr != nil {
@@ -132,6 +133,7 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_respo
 	err = nil
 	return result, err
 }
+
 func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
@@ -181,6 +183,7 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 	}
 	return result
 }
+
 func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Response[[]*entity.Product], err error) {
 	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if transactionErr != nil {
@@ -223,4 +226,51 @@ func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Resp
 	}
 	err = nil
 	return result, err
+}
+
+func (productUseCase *ProductUseCase) DeleteProduct(id string) (result *model_response.Response[*entity.Product]) {
+	beginErr := crdb.Execute(func() (err error) {
+		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+		if err != nil {
+			return err
+		}
+
+		deletedproduct, deletedproductErr := productUseCase.ProductRepository.DeleteOneById(begin, id)
+		if deletedproductErr != nil {
+			err = begin.Rollback()
+			result = &model_response.Response[*entity.Product]{
+				Code:    http.StatusNotFound,
+				Message: "productproductCase DeleteProduct is failed, " + deletedproductErr.Error(),
+				Data:    nil,
+			}
+			return err
+		}
+		if deletedproduct == nil {
+			err = begin.Rollback()
+			result = &model_response.Response[*entity.Product]{
+				Code:    http.StatusNotFound,
+				Message: "productproductCase DeleteProduct is failed, product is not deleted by id, " + id,
+				Data:    nil,
+			}
+			return err
+		}
+
+		err = begin.Commit()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusOK,
+			Message: "productproductCase DeleteProduct is succeed.",
+			Data:    deletedproduct,
+		}
+		return err
+	})
+
+	if beginErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusInternalServerError,
+			Message: "productproductCase DeleteProduct is failed, " + beginErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return result
 }
