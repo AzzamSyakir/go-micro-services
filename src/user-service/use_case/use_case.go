@@ -265,7 +265,7 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 	if fetchUser.Data == nil {
 		result = &model_response.Response[[]*entity.User]{
 			Code:    http.StatusNotFound,
-			Message: "User UseCase FindOneById is failed, data User is empty ",
+			Message: "User UseCase FetchUser is failed, data User is empty ",
 			Data:    nil,
 		}
 		err = nil
@@ -274,7 +274,7 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 
 	result = &model_response.Response[[]*entity.User]{
 		Code:    http.StatusOK,
-		Message: "User UseCase FindOneById is succeed.",
+		Message: "User UseCase FetchUser is succeed.",
 		Data:    fetchUser.Data,
 	}
 	err = nil

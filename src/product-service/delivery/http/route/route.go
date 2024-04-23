@@ -42,6 +42,7 @@ func NewProductRoute(router *mux.Router, productController *http.ProductControll
 
 func (productRoute *ProductRoute) Register() {
 	productRoute.Router.HandleFunc("", productRoute.ProductController.CreateProduct).Methods("POST")
+	productRoute.Router.HandleFunc("", productRoute.ProductController.ListProduct).Methods("GET")
 	productRoute.Router.HandleFunc("/{id}", productRoute.ProductController.GetOneById).Methods("GET")
 	productRoute.Router.HandleFunc("/update-stock/{id}", productRoute.ProductController.PatchOneById).Methods("PATCH")
 }

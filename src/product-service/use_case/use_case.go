@@ -181,3 +181,46 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 	}
 	return result
 }
+func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Response[[]*entity.Product], err error) {
+	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+		result = &model_response.Response[[]*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+
+	fetchproduct, fetchproductErr := productUseCase.ProductRepository.ListProduct(transaction)
+	if fetchproductErr != nil {
+		errorMessage := fmt.Sprintf("productUseCase fetchproduct is failed, Getproduct failed : %s", fetchproductErr)
+		result = &model_response.Response[[]*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+
+	if fetchproduct.Data == nil {
+		result = &model_response.Response[[]*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: "product UseCase ListProduct is failed, data product is empty ",
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+
+	result = &model_response.Response[[]*entity.Product]{
+		Code:    http.StatusOK,
+		Message: "product UseCase ListProduct is succeed.",
+		Data:    fetchproduct.Data,
+	}
+	err = nil
+	return result, err
+}

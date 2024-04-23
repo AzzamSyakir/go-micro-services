@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"go-micro-services/src/product-service/entity"
+	model_response "go-micro-services/src/user-service/model/response"
 )
 
 type ProductRepository struct{}
@@ -99,6 +100,48 @@ func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id strin
 	defer rows.Close()
 
 	result = toPatchProduct
+	err = nil
+	return result, err
+}
+func (productRepository *ProductRepository) ListProduct(begin *sql.Tx) (result *model_response.Response[[]*entity.Product], err error) {
+	var rows *sql.Rows
+	var queryErr error
+	rows, queryErr = begin.Query(
+		`SELECT id, name, sku, stock, price, category_id created_at, updated_at, deleted_at FROM "products" `,
+	)
+
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return result, err
+
+	}
+	defer rows.Close()
+	var products []*entity.Product
+	for rows.Next() {
+		product := &entity.Product{}
+		scanErr := rows.Scan(
+			&product.Id,
+			&product.Name,
+			&product.Sku,
+			&product.Stock,
+			&product.Price,
+			&product.CategoryId,
+			&product.CreatedAt,
+			&product.UpdatedAt,
+			&product.DeletedAt,
+		)
+		if scanErr != nil {
+			result = nil
+			err = scanErr
+			return result, err
+		}
+		products = append(products, product)
+	}
+
+	result = &model_response.Response[[]*entity.Product]{
+		Data: products,
+	}
 	err = nil
 	return result, err
 }

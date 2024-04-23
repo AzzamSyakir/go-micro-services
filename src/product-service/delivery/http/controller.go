@@ -54,5 +54,10 @@ func (productController *ProductController) CreateProduct(writer http.ResponseWr
 	result := productController.ProductUseCase.Createproduct(request)
 
 	response.NewResponse(writer, result)
-
+}
+func (productController *ProductController) ListProduct(writer http.ResponseWriter, reader *http.Request) {
+	product, productErr := productController.ProductUseCase.ListProduct()
+	if productErr == nil {
+		response.NewResponse(writer, product)
+	}
 }
