@@ -134,7 +134,7 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_respo
 	return result, err
 }
 
-func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
+func (productUseCase *ProductUseCase) UpdateStock(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 		if err != nil {
@@ -149,7 +149,7 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 			err = begin.Rollback()
 			result = &model_response.Response[*entity.Product]{
 				Code:    http.StatusNotFound,
-				Message: "ProductProductCase PatchOneByIdFromRequest is failed, product is not found by id.",
+				Message: "ProductProductCase Update Stock is failed, product is not found by id.",
 				Data:    nil,
 			}
 			return err
@@ -168,7 +168,7 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 		err = begin.Commit()
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusOK,
-			Message: "ProductProductCase PatchOneByIdFromRequest is succeed.",
+			Message: "ProductProductCase Update Stock is succeed.",
 			Data:    patchedProduct,
 		}
 		return err
@@ -177,7 +177,66 @@ func (productUseCase *ProductUseCase) PatchOneByIdFromRequest(id string, request
 	if beginErr != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusInternalServerError,
-			Message: "ProductProductCase PatchOneByIdFromRequest  is failed, " + beginErr.Error(),
+			Message: "ProductProductCase Update Stock  is failed, " + beginErr.Error(),
+			Data:    nil,
+		}
+	}
+	return result
+}
+
+func (productUseCase *ProductUseCase) UpdateProduct(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
+	beginErr := crdb.Execute(func() (err error) {
+		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+		if err != nil {
+			return err
+		}
+
+		foundProduct, err := productUseCase.ProductRepository.GetOneById(begin, id)
+		if err != nil {
+			return err
+		}
+		if foundProduct == nil {
+			err = begin.Rollback()
+			result = &model_response.Response[*entity.Product]{
+				Code:    http.StatusNotFound,
+				Message: "ProductProductCase Update Stock is failed, product is not found by id.",
+				Data:    nil,
+			}
+			return err
+		}
+
+		if request.Name.Valid {
+			foundProduct.Name = request.Name
+		}
+		if request.Stock.Valid {
+			foundProduct.Stock = request.Stock
+		}
+		if request.Price.Valid {
+			foundProduct.Price = request.Price
+		}
+		if request.CategoryId.Valid {
+			foundProduct.CategoryId = request.CategoryId
+		}
+		foundProduct.UpdatedAt = null.NewTime(time.Now(), true)
+
+		patchedProduct, err := productUseCase.ProductRepository.PatchOneById(begin, id, foundProduct)
+		if err != nil {
+			return err
+		}
+
+		err = begin.Commit()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusOK,
+			Message: "ProductProductCase Update Stock is succeed.",
+			Data:    patchedProduct,
+		}
+		return err
+	})
+
+	if beginErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusInternalServerError,
+			Message: "ProductProductCase Update Stock  is failed, " + beginErr.Error(),
 			Data:    nil,
 		}
 	}

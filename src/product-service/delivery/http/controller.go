@@ -38,7 +38,20 @@ func (ProductController *ProductController) UpdateStock(writer http.ResponseWrit
 	if decodeErr != nil {
 		panic(decodeErr)
 	}
-	result := ProductController.ProductUseCase.PatchOneByIdFromRequest(id, request)
+	result := ProductController.ProductUseCase.UpdateStock(id, request)
+
+	response.NewResponse(writer, result)
+}
+func (ProductController *ProductController) UpdateProduct(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+
+	request := &model_request.ProductPatchOneByIdRequest{}
+	decodeErr := json.NewDecoder(reader.Body).Decode(request)
+	if decodeErr != nil {
+		panic(decodeErr)
+	}
+	result := ProductController.ProductUseCase.UpdateProduct(id, request)
 
 	response.NewResponse(writer, result)
 }
