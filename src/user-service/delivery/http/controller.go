@@ -46,7 +46,7 @@ func (userController *UserController) UpdateBalance(writer http.ResponseWriter, 
 		http.Error(writer, decodeErr.Error(), 404)
 	}
 
-	result := userController.UserUseCase.PatchOneByIdFromRequest(id, request)
+	result := userController.UserUseCase.UpdateBalance(id, request)
 
 	response.NewResponse(writer, result)
 }
@@ -60,7 +60,7 @@ func (userController *UserController) UpdateUser(writer http.ResponseWriter, rea
 		http.Error(writer, decodeErr.Error(), 404)
 	}
 
-	result := userController.UserUseCase.PatchOneByIdFromRequest(id, request)
+	result := userController.UserUseCase.UpdateUser(id, request)
 
 	response.NewResponse(writer, result)
 }
