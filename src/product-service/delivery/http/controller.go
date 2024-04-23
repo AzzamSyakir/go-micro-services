@@ -41,3 +41,18 @@ func (ProductController *ProductController) PatchOneById(writer http.ResponseWri
 
 	response.NewResponse(writer, result)
 }
+func (productController *ProductController) CreateProduct(writer http.ResponseWriter, reader *http.Request) {
+
+	request := &model_request.CreateProduct{}
+
+	decodeErr := json.NewDecoder(reader.Body).Decode(request)
+	if decodeErr != nil {
+		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result := productController.ProductUseCase.Createproduct(request)
+
+	response.NewResponse(writer, result)
+
+}

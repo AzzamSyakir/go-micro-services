@@ -19,4 +19,4 @@ create table IF NOT EXISTS products
     updated_at timestamp not null ,
     deleted_at timestamp,
     foreign key(category_id) references categories(id)
-    );
+);

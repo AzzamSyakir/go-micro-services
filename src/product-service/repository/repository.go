@@ -11,6 +11,29 @@ func NewProductRepository() *ProductRepository {
 	productRepository := &ProductRepository{}
 	return productRepository
 }
+func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreateproduct *entity.Product) (result *entity.Product, err error) {
+	_, queryErr := begin.Query(
+		`INSERT INTO "products" (id, sku, name, stock, price, category_id, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
+		toCreateproduct.Id,
+		toCreateproduct.Sku,
+		toCreateproduct.Name,
+		toCreateproduct.Stock,
+		toCreateproduct.Price,
+		toCreateproduct.CategoryId,
+		toCreateproduct.CreatedAt,
+		toCreateproduct.UpdatedAt,
+		toCreateproduct.DeletedAt,
+	)
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return
+	}
+
+	result = toCreateproduct
+	err = nil
+	return result, err
+}
 func DeserializeProductRows(rows *sql.Rows) []*entity.Product {
 	var foundProducts []*entity.Product
 	for rows.Next() {

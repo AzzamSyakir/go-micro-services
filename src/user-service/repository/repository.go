@@ -36,7 +36,6 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *en
 	result = toCreateUser
 	err = nil
 	return result, err
-
 }
 
 func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_response.Response[[]*entity.User], err error) {
