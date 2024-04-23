@@ -5,15 +5,18 @@ import (
 )
 
 type UseCaseContainer struct {
-	product *use_case.ProductUseCase
+	product  *use_case.ProductUseCase
+	Category *use_case.CategoryUseCase
 }
 
 func NewUseCaseContainer(
 	product *use_case.ProductUseCase,
+	category *use_case.CategoryUseCase,
 
 ) *UseCaseContainer {
 	useCaseContainer := &UseCaseContainer{
-		product: product,
+		product:  product,
+		Category: category,
 	}
 	return useCaseContainer
 }
