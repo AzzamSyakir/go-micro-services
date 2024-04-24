@@ -15,4 +15,4 @@ COPY . .
 RUN go mod download
 
 # run the Go app.
-CMD [ "make", "start-user" ] 
+CMD [ "make", "start-product" ] 
