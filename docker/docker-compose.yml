@@ -2,7 +2,7 @@ services:
   user-services:
     container_name: user-services
     build:
-      context: ../.
+      context: ../
       dockerfile: ./src/user-service/Dockerfile
     environment:
       POSTGRES_HOST: user-db
@@ -12,7 +12,8 @@ services:
      - ${USER_SERVICES_PORT}:${USER_SERVICES_PORT}
     depends_on:
       - user-db
-
+    volumes:
+      - ../:/app
   user-db:
     image: postgres:latest
     container_name: user-db

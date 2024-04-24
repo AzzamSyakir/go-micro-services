@@ -10,13 +10,24 @@ RUN mkdir -p /app
 ENV WORKDIR /app
 WORKDIR $WORKDIR
 
-#copy source from host to workdir inside container
 COPY . .
-COPY .env .env
-COPY go.mod  go.mod
-COPY go.sum  go.sum
+# install dependencies project
+RUN go mod download
 
-# Build the Go app.
-RUN go build -a -o User  src/user-service/cmd/web/main.go
-#run go app
-CMD ["./User"]
+# run the Go app.
+CMD [ "make", "start-user" ] 
+
+# nanti coba yng ini
+# FROM golang:1.22-alpine
+
+# WORKDIR /app
+
+# RUN go install github.com/cosmtrek/air@latest
+# COPY . .
+# COPY .env .env
+# COPY go.mod  go.mod
+# COPY go.sum  go.sum
+
+# RUN go mod download
+
+# CMD ["air", "-c", ".air.toml"] 
