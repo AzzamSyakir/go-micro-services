@@ -4,11 +4,14 @@ import (
 	"github.com/guregu/null"
 )
 
-type User struct {
-	Id        null.String `json:"id" bson:"id"`
-	Name      null.String `json:"name" bson:"name"`
-	Balance   null.Int    `json:"balance" bson:"balance"`
-	CreatedAt null.Time   `json:"created_at" bson:"created_at"`
-	UpdatedAt null.Time   `json:"updated_at" bson:"updated_at"`
-	DeletedAt null.Time   `json:"deleted_at" bson:"deleted_at"`
+type Product struct {
+	Id         null.String `json:"id"`
+	Sku        null.String `json:"sku"`
+	Name       null.String `json:"name"`
+	Stock      null.Int    `json:"stock"`
+	Price      null.Int    `json:"price"`
+	CategoryId null.String `json:"category_id"`
+	CreatedAt  null.Time   `json:"created_at"`
+	UpdatedAt  null.Time   `json:"updated_at"`
+	DeletedAt  null.Time   `json:"deleted_at"`
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go-micro-services/src/Product/container"
+	"go-micro-services/src/product-service/container"
 	"net/http"
 )
 

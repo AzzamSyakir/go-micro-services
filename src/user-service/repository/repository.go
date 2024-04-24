@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"go-micro-services/src/user-service/entity"
 	model_response "go-micro-services/src/user-service/model/response"
 )
@@ -36,7 +35,6 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *en
 	result = toCreateUser
 	err = nil
 	return result, err
-
 }
 
 func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_response.Response[[]*entity.User], err error) {
@@ -77,7 +75,6 @@ func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_re
 	result = &model_response.Response[[]*entity.User]{
 		Data: fetchUsers,
 	}
-	fmt.Println("rows fetchUser", rows)
 	err = nil
 	return result, err
 }

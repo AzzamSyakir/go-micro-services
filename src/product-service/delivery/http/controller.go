@@ -20,7 +20,7 @@ func NewProductController(productUseCase *use_case.ProductUseCase) *ProductContr
 	}
 	return productController
 }
-func (ProductController *ProductController) GetOneById(writer http.ResponseWriter, reader *http.Request) {
+func (ProductController *ProductController) GetProduct(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
 	foundProduct, foundProductErr := ProductController.ProductUseCase.GetOneById(id)
@@ -28,7 +28,8 @@ func (ProductController *ProductController) GetOneById(writer http.ResponseWrite
 		response.NewResponse(writer, foundProduct)
 	}
 }
-func (ProductController *ProductController) PatchOneById(writer http.ResponseWriter, reader *http.Request) {
+
+func (ProductController *ProductController) UpdateStock(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
@@ -37,7 +38,51 @@ func (ProductController *ProductController) PatchOneById(writer http.ResponseWri
 	if decodeErr != nil {
 		panic(decodeErr)
 	}
-	result := ProductController.ProductUseCase.PatchOneByIdFromRequest(id, request)
+	result := ProductController.ProductUseCase.UpdateStock(id, request)
+
+	response.NewResponse(writer, result)
+}
+func (ProductController *ProductController) UpdateProduct(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+
+	request := &model_request.ProductPatchOneByIdRequest{}
+	decodeErr := json.NewDecoder(reader.Body).Decode(request)
+	if decodeErr != nil {
+		panic(decodeErr)
+	}
+	result := ProductController.ProductUseCase.UpdateProduct(id, request)
+
+	response.NewResponse(writer, result)
+}
+
+func (productController *ProductController) CreateProduct(writer http.ResponseWriter, reader *http.Request) {
+
+	request := &model_request.CreateProduct{}
+
+	decodeErr := json.NewDecoder(reader.Body).Decode(request)
+	if decodeErr != nil {
+		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result := productController.ProductUseCase.Createproduct(request)
+
+	response.NewResponse(writer, result)
+}
+
+func (productController *ProductController) ListProduct(writer http.ResponseWriter, reader *http.Request) {
+	product, productErr := productController.ProductUseCase.ListProduct()
+	if productErr == nil {
+		response.NewResponse(writer, product)
+	}
+}
+
+func (productController *ProductController) DeleteProduct(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+
+	result := productController.ProductUseCase.DeleteProduct(id)
 
 	response.NewResponse(writer, result)
 }

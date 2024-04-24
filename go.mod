@@ -11,7 +11,4 @@ require (
 	github.com/lib/pq v1.10.9
 )
 
-require (
-	golang.org/x/crypto v0.22.0
-	golang.org/x/sys v0.19.0 // indirect
-)
+require golang.org/x/crypto v0.22.0
