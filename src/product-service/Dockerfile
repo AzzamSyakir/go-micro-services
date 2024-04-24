@@ -10,9 +10,16 @@ RUN mkdir -p /app
 ENV WORKDIR /app
 WORKDIR $WORKDIR
 
-COPY . .
+COPY ./src/product-service/ ./src/product-service/
+COPY .env ./
+COPY go.mod ./
+COPY go.sum ./
+COPY Makefile ./
+
 # install dependencies project
+WORKDIR $WORKDIR/src/product-service/
 RUN go mod download
 
 # run the Go app.
-CMD [ "make", "start-product" ] 
+WORKDIR $WORKDIR
+CMD ["make","start-product"]
