@@ -90,7 +90,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			err = begin.Rollback()
 			result = &model_response.Response[*model_response.OrderResponse]{
 				Code:    http.StatusBadRequest,
-				Message: "OrderUseCase fail, total payment alone is not enough, total payment required " + string(strconv.FormatInt(int64(totalOrderPrice), 10)),
+				Message: "OrderUseCase fail,  total paid is not enough, total paid	 required " + string(strconv.FormatInt(int64(totalOrderPrice), 10)),
 				Data:    nil,
 			}
 			return err

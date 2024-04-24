@@ -2,13 +2,14 @@ package container
 
 import (
 	"fmt"
+	"go-micro-services/src/order-service/config"
+	httpdelivery "go-micro-services/src/order-service/delivery/http"
+	"go-micro-services/src/order-service/delivery/http/route"
+	"go-micro-services/src/order-service/repository"
+	"go-micro-services/src/order-service/use_case"
+
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"go-micro-services/src/Order/config"
-	httpdelivery "go-micro-services/src/Order/delivery/http"
-	"go-micro-services/src/Order/delivery/http/route"
-	"go-micro-services/src/Order/repository"
-	"go-micro-services/src/Order/use_case"
 )
 
 type WebContainer struct {

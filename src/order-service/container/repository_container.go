@@ -1,7 +1,7 @@
 package container
 
 import (
-	"go-micro-services/src/Order/repository"
+	"go-micro-services/src/order-service/repository"
 )
 
 type RepositoryContainer struct {

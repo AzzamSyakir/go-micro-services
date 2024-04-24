@@ -2,11 +2,12 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
-	model_request "go-micro-services/src/Order/model/request/controller"
-	"go-micro-services/src/Order/model/response"
-	"go-micro-services/src/Order/use_case"
+	model_request "go-micro-services/src/order-service/model/request/controller"
+	"go-micro-services/src/order-service/model/response"
+	"go-micro-services/src/order-service/use_case"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type OrderController struct {
