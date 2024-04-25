@@ -1,3 +1,6 @@
+start-auth:
+	clear && go run src/auth-service/cmd/web/main.go
+
 start-user:
 	clear && go run src/user-service/cmd/web/main.go
 
