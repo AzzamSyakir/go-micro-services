@@ -31,7 +31,23 @@ services:
       - product-db
     volumes:
       - ../src/product-service/:/app/src/product-service/
-    
+
+  order-services:
+    container_name: order-services
+    build:
+      context: ../
+      dockerfile: ./src/order-service/Dockerfile
+    environment:
+      POSTGRES_HOST: order-db
+    expose:
+      - 8080
+    ports:
+     - ${ORDER_SERVICES_PORT}:${ORDER_SERVICES_PORT}
+    depends_on:
+      - order-db
+    volumes:
+      - ../src/order-service/:/app/src/order-service/
+
   user-db:
     image: postgres:latest
     container_name: user-db

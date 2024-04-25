@@ -14,11 +14,11 @@ RUN go install github.com/cosmtrek/air@latest
 
 
 COPY ./src/product-service/ ./src/product-service/
-COPY product.air.toml ./
-COPY .env ./
-COPY go.mod ./
-COPY go.sum ./
-COPY Makefile ./
+COPY product.air.toml .
+COPY .env .
+COPY go.mod .
+COPY go.sum .
+COPY Makefile .
 
 # install dependencies project
 WORKDIR $WORKDIR/src/product-service/
