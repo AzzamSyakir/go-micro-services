@@ -5,11 +5,11 @@ import (
 )
 
 type UseCaseContainer struct {
-	Auth *use_case.UserUseCase
+	Auth *use_case.AuthUseCase
 }
 
 func NewUseCaseContainer(
-	auth *use_case.UserUseCase,
+	auth *use_case.AuthUseCase,
 
 ) *UseCaseContainer {
 	useCaseContainer := &UseCaseContainer{

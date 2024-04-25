@@ -35,11 +35,11 @@ func NewWebContainer() *WebContainer {
 	userRepository := repository.NewUserRepository()
 	repositoryContainer := NewRepositoryContainer(userRepository)
 
-	userUseCase := use_case.NewUserUseCase(userDBConfig, userRepository)
+	userUseCase := use_case.NewAuthUseCase(userDBConfig, userRepository)
 
 	useCaseContainer := NewUseCaseContainer(userUseCase)
 
-	userController := httpdelivery.NewUserController(userUseCase)
+	userController := httpdelivery.NewAuthController(userUseCase)
 
 	controllerContainer := NewControllerContainer(userController)
 

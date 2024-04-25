@@ -29,22 +29,17 @@ func (rootRoute *RootRoute) Register() {
 
 type UserRoute struct {
 	Router         *mux.Router
-	UserController *http.UserController
+	UserController *http.AuthController
 }
 
-func NewUserRoute(router *mux.Router, userController *http.UserController) *UserRoute {
+func NewUserRoute(router *mux.Router, userController *http.AuthController) *UserRoute {
 	userRoute := &UserRoute{
-		Router:         router.PathPrefix("/Auth").Subrouter(),
+		Router:         router.PathPrefix("/auth").Subrouter(),
 		UserController: userController,
 	}
 	return userRoute
 }
 
 func (userRoute *UserRoute) Register() {
-	userRoute.Router.HandleFunc("", userRoute.UserController.CreateUser).Methods("POST")
-	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.GetOneById).Methods("GET")
-	userRoute.Router.HandleFunc("/", userRoute.UserController.FetchUser).Methods("GET")
-	userRoute.Router.HandleFunc("/update-balance/{id}", userRoute.UserController.UpdateBalance).Methods("PATCH")
-	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.UpdateUser).Methods("PATCH")
-	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.DeleteUser).Methods("DELETE")
+	userRoute.Router.HandleFunc("/login", userRoute.UserController.Login).Methods("POST")
 }

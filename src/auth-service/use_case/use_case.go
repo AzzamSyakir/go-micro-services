@@ -16,23 +16,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserUseCase struct {
+type AuthUseCase struct {
 	DatabaseConfig *config.DatabaseConfig
-	UserRepository *repository.UserRepository
+	AuthRepository *repository.UserRepository
 }
 
-func NewUserUseCase(
+func NewAuthUseCase(
 	databaseConfig *config.DatabaseConfig,
-	userRepository *repository.UserRepository,
-) *UserUseCase {
-	userUseCase := &UserUseCase{
+	authRepository *repository.UserRepository,
+) *AuthUseCase {
+	authUseCase := &AuthUseCase{
 		DatabaseConfig: databaseConfig,
-		UserRepository: userRepository,
+		AuthRepository: authRepository,
 	}
-	return userUseCase
+	return authUseCase
 }
 
-func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Response[*entity.Auth], err error) {
+func (userUseCase *AuthUseCase) GetOneById(id string) (result *model_response.Response[*entity.Auth], err error) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -44,7 +44,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 		err = nil
 		return result, err
 	}
-	GetOneById, GetOneByIdErr := userUseCase.UserRepository.GetOneById(transaction, id)
+	GetOneById, GetOneByIdErr := userUseCase.AuthRepository.GetOneById(transaction, id)
 	if GetOneByIdErr != nil {
 		errorMessage := fmt.Sprintf("UserUseCase GetOneById is failed, GetUser failed : %s", GetOneByIdErr)
 		result = &model_response.Response[*entity.Auth]{
@@ -75,14 +75,14 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 	return result, err
 }
 
-func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.Auth]) {
+func (userUseCase *AuthUseCase) UpdateBalance(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.Auth]) {
 	beginErr := crdb.Execute(func() (err error) {
 		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
 			return err
 		}
 
-		foundUser, err := userUseCase.UserRepository.GetOneById(transaction, id)
+		foundUser, err := userUseCase.AuthRepository.GetOneById(transaction, id)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.
 
 		foundUser.UpdatedAt = null.NewTime(time.Now(), true)
 
-		patchedUser, err := userUseCase.UserRepository.PatchOneById(transaction, id, foundUser)
+		patchedUser, err := userUseCase.AuthRepository.PatchOneById(transaction, id, foundUser)
 		if err != nil {
 			return err
 		}
@@ -134,14 +134,14 @@ func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.
 	return result
 }
 
-func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.Auth]) {
+func (userUseCase *AuthUseCase) UpdateUser(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.Auth]) {
 	beginErr := crdb.Execute(func() (err error) {
 		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
 			return err
 		}
 
-		foundUser, err := userUseCase.UserRepository.GetOneById(transaction, id)
+		foundUser, err := userUseCase.AuthRepository.GetOneById(transaction, id)
 		if err != nil {
 			return err
 		}
@@ -169,7 +169,7 @@ func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.Use
 
 		foundUser.UpdatedAt = null.NewTime(time.Now(), true)
 
-		patchedUser, err := userUseCase.UserRepository.PatchOneById(transaction, id, foundUser)
+		patchedUser, err := userUseCase.AuthRepository.PatchOneById(transaction, id, foundUser)
 		if err != nil {
 			return err
 		}
@@ -194,7 +194,7 @@ func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.Use
 	return result
 }
 
-func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.Auth]) {
+func (userUseCase *AuthUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.Auth]) {
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
@@ -225,7 +225,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 			DeletedAt: null.NewTime(time.Time{}, false),
 		}
 
-		createdUser, err := userUseCase.UserRepository.CreateUser(begin, newUser)
+		createdUser, err := userUseCase.AuthRepository.CreateUser(begin, newUser)
 		if err != nil {
 			return err
 		}
@@ -250,14 +250,14 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 	return result
 }
 
-func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Response[*entity.Auth]) {
+func (userUseCase *AuthUseCase) DeleteUser(id string) (result *model_response.Response[*entity.Auth]) {
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
 			return err
 		}
 
-		deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(begin, id)
+		deletedUser, deletedUserErr := userUseCase.AuthRepository.DeleteUser(begin, id)
 		if deletedUserErr != nil {
 			err = begin.Rollback()
 			result = &model_response.Response[*entity.Auth]{
@@ -297,7 +297,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 	return result
 }
 
-func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*entity.Auth], err error) {
+func (userUseCase *AuthUseCase) FetchUser() (result *model_response.Response[[]*entity.Auth], err error) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -310,7 +310,7 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 		return result, err
 	}
 
-	fetchUser, fetchUserErr := userUseCase.UserRepository.FetchUser(transaction)
+	fetchUser, fetchUserErr := userUseCase.AuthRepository.FetchUser(transaction)
 	if fetchUserErr != nil {
 		errorMessage := fmt.Sprintf("UserUseCase fetchUser is failed, GetUser failed : %s", fetchUserErr)
 		result = &model_response.Response[[]*entity.Auth]{
