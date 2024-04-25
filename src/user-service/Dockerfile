@@ -10,9 +10,20 @@ RUN mkdir -p /app
 ENV WORKDIR /app
 WORKDIR $WORKDIR
 
-COPY . .
+RUN go install github.com/cosmtrek/air@latest
+
+
+COPY ./src/user-service/ ./src/user-service/
+COPY user.air.toml ./
+COPY .env ./
+COPY go.mod ./
+COPY go.sum ./
+COPY Makefile ./
+
 # install dependencies project
+WORKDIR $WORKDIR/src/user-service/
 RUN go mod download
 
 # run the Go app.
-CMD [ "make", "start-user" ] 
+WORKDIR $WORKDIR
+CMD ["air", "-c", "user.air.toml"]

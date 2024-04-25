@@ -13,7 +13,9 @@ services:
     depends_on:
       - user-db
     volumes:
-      - ../:/app
+      - ../src/user-service/:/app/src/user-service/
+
+      
   product-services:
     container_name: product-services
     build:
@@ -26,9 +28,10 @@ services:
     ports:
      - ${PRODUCT_SERVICES_PORT}:${PRODUCT_SERVICES_PORT}
     depends_on:
-      - user-db
+      - product-db
     volumes:
-      - ../:/app
+      - ../src/product-service/:/app/src/product-service/
+    
   user-db:
     image: postgres:latest
     container_name: user-db
