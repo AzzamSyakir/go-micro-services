@@ -14,6 +14,8 @@ RUN go install github.com/cosmtrek/air@latest
 
 
 COPY ./src/user-service/ ./src/user-service/
+COPY user.air.toml ./
+COPY .env ./
 COPY go.mod ./
 COPY go.sum ./
 COPY Makefile ./
@@ -23,4 +25,5 @@ WORKDIR $WORKDIR/src/user-service/
 RUN go mod download
 
 # run the Go app.
-CMD ["air"]
+WORKDIR $WORKDIR
+CMD ["air", "-c", "user.air.toml"]
