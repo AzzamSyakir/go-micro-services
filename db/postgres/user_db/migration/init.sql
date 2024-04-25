@@ -5,7 +5,7 @@ create table IF NOT EXISTS users
     password TEXT not null  ,
     email TEXT not null unique ,
     Balance int not null ,
-    created_at timestamp not null ,
-    updated_at timestamp not null ,
-    deleted_at timestamp
+    created_at timestamptz not null ,
+    updated_at timestamptz not null ,
+    deleted_at timestamptz
 );
