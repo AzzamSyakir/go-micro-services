@@ -1,11 +1,11 @@
 create table IF NOT EXISTS users
 (
-    id varchar not null primary key,
-    name varchar not null unique ,
-    password varchar not null  ,
-    email varchar not null unique ,
+    id uuid not null primary key,
+    name text not null unique ,
+    password TEXT not null  ,
+    email TEXT not null unique ,
     Balance int not null ,
-    created_at timestamp not null ,
-    updated_at timestamp not null ,
-    deleted_at timestamp
+    created_at timestamptz not null ,
+    updated_at timestamptz not null ,
+    deleted_at timestamptz
 );

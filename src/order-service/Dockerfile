@@ -11,10 +11,11 @@ ENV WORKDIR /app
 WORKDIR $WORKDIR
 
 COPY ./src/order-service/ ./src/order-service/
-COPY .env ./
-COPY go.mod ./
-COPY go.sum ./
-COPY Makefile ./
+COPY order.air.toml .
+COPY .env .
+COPY go.mod .
+COPY go.sum .
+COPY Makefile .
 
 # install dependencies project
 WORKDIR $WORKDIR/src/order-service/

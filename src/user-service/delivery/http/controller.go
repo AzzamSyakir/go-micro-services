@@ -29,6 +29,15 @@ func (userController *UserController) GetOneById(writer http.ResponseWriter, rea
 		response.NewResponse(writer, foundUser)
 	}
 }
+func (userController *UserController) GetOneByEmail(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	email := vars["email"]
+
+	foundUser, foundUserErr := userController.UserUseCase.GetOneByEmail(email)
+	if foundUserErr == nil {
+		response.NewResponse(writer, foundUser)
+	}
+}
 func (userController *UserController) FetchUser(writer http.ResponseWriter, reader *http.Request) {
 	fetchUser, fetchUserErr := userController.UserUseCase.FetchUser()
 	if fetchUserErr == nil {

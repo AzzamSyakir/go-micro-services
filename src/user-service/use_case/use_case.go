@@ -75,6 +75,49 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 	return result, err
 }
 
+func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User], err error) {
+	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+	GetOneByEmail, GetOneByEmailErr := userUseCase.UserRepository.GetOneByEmail(transaction, email)
+	if GetOneByEmailErr != nil {
+		errorMessage := fmt.Sprintf("UserUseCase GetOneByEmail is failed, GetUser failed : %s", GetOneByEmailErr)
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+	if GetOneByEmail == nil {
+		errorMessage := fmt.Sprintf("User UseCase FindOneByemail is failed, User is not found by email %s", email)
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		err = nil
+		return result, err
+	}
+
+	result = &model_response.Response[*entity.User]{
+		Code:    http.StatusOK,
+		Message: "User UseCase FindOneById is succeed.",
+		Data:    GetOneByEmail,
+	}
+	err = nil
+	return result, err
+}
+
 func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
 	beginErr := crdb.Execute(func() (err error) {
 		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()

@@ -1,0 +1,31 @@
+feat: add login api AuthService
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Date:      Fri Apr 26 16:46:50 2024 +0700
+#
+# On branch develop
+# Your branch is ahead of 'origin/develop' by 2 commits.
+#   (use "git push" to publish your local commits)
+#
+# Changes to be committed:
+#	modified:   Makefile
+#	modified:   db/postgres/auth_db/migration/init.sql
+#	modified:   src/auth-service/cmd/web/main.go
+#	modified:   src/auth-service/config/database_config.go
+#	modified:   src/auth-service/config/env_config.go
+#	modified:   src/auth-service/container/repository_container.go
+#	modified:   src/auth-service/container/web_container.go
+#	modified:   src/auth-service/delivery/http/controller.go
+#	modified:   src/auth-service/delivery/http/expose_controller.go
+#	modified:   src/auth-service/delivery/http/route/route.go
+#	modified:   src/auth-service/entity/entity.go
+#	modified:   src/auth-service/model/response/fetch_user_response.go
+#	modified:   src/auth-service/repository/repository.go
+#	modified:   src/auth-service/use_case/expose_use_case.go
+#	modified:   src/auth-service/use_case/use_case.go
+#	modified:   src/order-service/entity/entity.go
+#	modified:   src/user-service/entity/entity.go
+#	modified:   tmp/main
+#

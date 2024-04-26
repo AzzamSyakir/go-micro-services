@@ -31,7 +31,41 @@ services:
       - product-db
     volumes:
       - ../src/product-service/:/app/src/product-service/
-    
+
+  order-services:
+    container_name: order-services
+    build:
+      context: ../
+      dockerfile: ./src/order-service/Dockerfile
+    environment:
+      POSTGRES_HOST: order-db
+    expose:
+      - 8080
+    ports:
+     - ${ORDER_SERVICES_PORT}:${ORDER_SERVICES_PORT}
+    depends_on:
+      - order-db
+    volumes:
+      - ../src/order-service/:/app/src/order-service/
+
+  auth-db:
+    image: postgres:latest
+    container_name: auth-db
+    restart: always
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: auth_db
+      PGPORT: ${POSTGRES_AUTH_PORT}
+    expose:
+      - 5432
+    ports:
+      - ${POSTGRES_AUTH_PORT}:${POSTGRES_AUTH_PORT}
+    volumes:
+      - ../db/postgres/auth_db/migration:/docker-entrypoint-initdb.d
+
+
   user-db:
     image: postgres:latest
     container_name: user-db
