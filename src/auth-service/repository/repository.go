@@ -58,6 +58,7 @@ func (sessionRepository *AuthRepository) CreateSession(begin *sql.Tx, toCreateSe
 	err = nil
 	return result, err
 }
+
 func (sessionRepository *AuthRepository) FindOneByAccToken(begin *sql.Tx, accessToken string) (result *entity.Session, err error) {
 	rows, queryErr := begin.Query(
 		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at FROM sessions WHERE access_token=$1 LIMIT 1;`,
@@ -80,10 +81,34 @@ func (sessionRepository *AuthRepository) FindOneByAccToken(begin *sql.Tx, access
 	err = nil
 	return result, err
 }
-func (sessionRepository *AuthRepository) FindOneByUserId(begin *sql.Tx, userId string) (result *entity.Session, err error) {
+
+func (sessionRepository *AuthRepository) GetOneByUserId(begin *sql.Tx, userId string) (result *entity.Session, err error) {
 	rows, queryErr := begin.Query(
 		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at FROM sessions WHERE user_id=$1 LIMIT 1;`,
 		userId,
+	)
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return result, err
+	}
+
+	foundSessions := DeserializeSessionRows(rows)
+	if len(foundSessions) == 0 {
+		result = nil
+		err = nil
+		return result, err
+	}
+
+	result = foundSessions[0]
+	err = nil
+	return result, err
+}
+
+func (sessionRepository *AuthRepository) FindOneByRefToken(begin *sql.Tx, refreshToken string) (result *entity.Session, err error) {
+	rows, queryErr := begin.Query(
+		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at FROM "session" WHERE refresh_token=$1 LIMIT 1;`,
+		refreshToken,
 	)
 	if queryErr != nil {
 		result = nil
@@ -124,6 +149,28 @@ func (sessionRepository *AuthRepository) PatchOneById(begin *sql.Tx, id string, 
 	}
 
 	result = toPatchSession
+	err = nil
+	return result, err
+}
+func (sessionRepository *AuthRepository) DeleteOneById(begin *sql.Tx, id string) (result *entity.Session, err error) {
+	rows, queryErr := begin.Query(
+		`DELETE FROM "session" WHERE id=$1 LIMIT 1 RETURNING id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at;`,
+		id,
+	)
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return
+	}
+
+	foundSessions := DeserializeSessionRows(rows)
+	if len(foundSessions) == 0 {
+		result = nil
+		err = nil
+		return result, err
+	}
+
+	result = foundSessions[0]
 	err = nil
 	return result, err
 }

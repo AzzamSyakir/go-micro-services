@@ -73,7 +73,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		accessTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Minute*10), true)
 		refreshTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Hour*24*2), true)
 
-		foundSession, err := authUseCase.AuthRepository.FindOneByUserId(begin, foundUser.Data.Id.String)
+		foundSession, err := authUseCase.AuthRepository.GetOneByUserId(begin, foundUser.Data.Id.String)
 		if err != nil {
 			return err
 		}
@@ -135,6 +135,104 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 
 	return result
 }
+
+func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_response.Response[*entity.Session]) {
+	beginErr := crdb.Execute(func() (err error) {
+		begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+		if err != nil {
+			return err
+		}
+
+		foundSession, err := authUseCase.AuthRepository.FindOneByAccToken(begin, accessToken)
+		if err != nil {
+			return err
+		}
+
+		if foundSession == nil {
+			err = begin.Rollback()
+			result = &model_response.Response[*entity.Session]{
+				Code:    http.StatusNotFound,
+				Message: "AuthUseCase Logout is failed, session is not found by access token.",
+				Data:    nil,
+			}
+			return err
+		}
+
+		deletedSession, err := authUseCase.AuthRepository.DeleteOneById(begin, foundSession.Id.String)
+		if err != nil {
+			return err
+		}
+
+		err = begin.Commit()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusOK,
+			Message: "AuthUseCase Logout is succeed.",
+			Data:    deletedSession,
+		}
+		return err
+	})
+
+	if beginErr != nil {
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "AuthUseCase Logout  is failed, " + beginErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return result
+}
+
+func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *model_response.Response[*entity.Session]) {
+	beginErr := crdb.Execute(func() (err error) {
+		begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+		if err != nil {
+			return err
+		}
+
+		foundSession, err := authUseCase.AuthRepository.FindOneByRefToken(begin, refreshToken)
+		if err != nil {
+			return err
+		}
+
+		if foundSession.RefreshTokenExpiredAt.Time.Before(time.Now()) {
+			err = begin.Rollback()
+			result = &model_response.Response[*entity.Session]{
+				Code:    http.StatusNotFound,
+				Message: "AuthUseCase GetNewAccessToken is failed, refresh token is expired.",
+				Data:    nil,
+			}
+			return err
+
+		}
+
+		foundSession.AccessToken = null.NewString(uuid.NewString(), true)
+		foundSession.UpdatedAt = null.NewTime(time.Now(), true)
+		patchedSession, err := authUseCase.AuthRepository.PatchOneById(begin, foundSession.Id.String, foundSession)
+		if err != nil {
+			return err
+		}
+
+		err = begin.Commit()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusOK,
+			Message: "AuthUseCase GetNewAccessToken is succeed.",
+			Data:    patchedSession,
+		}
+		return err
+	})
+
+	if beginErr != nil {
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "AuthUseCase GetNewAccessToken is failed, " + beginErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return result
+}
+
 func (authUseCase *AuthUseCase) FindUserByEmail(email string) (result *model_response.Response[*entity.User]) {
 	address := fmt.Sprintf("http://%s:%s", authUseCase.Env.App.Host, authUseCase.Env.App.UserPort)
 	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "email", email)

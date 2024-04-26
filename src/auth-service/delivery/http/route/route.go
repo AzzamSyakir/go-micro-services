@@ -25,6 +25,7 @@ func NewRootRoute(
 
 func (rootRoute *RootRoute) Register() {
 	rootRoute.AuthRoute.Register()
+	rootRoute..Register()
 }
 
 type AuthRoute struct {
@@ -42,4 +43,6 @@ func NewAuthRoute(router *mux.Router, AuthController *http.AuthController) *Auth
 
 func (AuthRoute *AuthRoute) Register() {
 	AuthRoute.Router.HandleFunc("/login", AuthRoute.AuthController.Login).Methods("POST")
+	AuthRoute.Router.HandleFunc("/access-token", AuthRoute.AuthController.Login).Methods("POST")
+	AuthRoute.Router.HandleFunc("/logout", AuthRoute.AuthController.Login).Methods("POST")
 }

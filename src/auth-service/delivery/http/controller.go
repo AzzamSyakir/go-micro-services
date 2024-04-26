@@ -2,10 +2,12 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	"go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/use_case"
 	"net/http"
+	"strings"
 )
 
 type AuthController struct {
@@ -26,4 +28,20 @@ func (authController *AuthController) Login(writer http.ResponseWriter, reader *
 	}
 	foundUser := authController.AuthUseCase.Login(request)
 	response.NewResponse(writer, foundUser)
+}
+func (authController *AuthController) Logout(writer http.ResponseWriter, reader *http.Request) {
+	token := reader.Header.Get("Authorization")
+	tokenString := strings.Replace(token, "Bearer ", "", 1)
+	fmt.Println(tokenString)
+
+	result := authController.AuthUseCase.Logout(tokenString)
+	response.NewResponse(writer, result)
+}
+
+func (authController *AuthController) GetNewAccessToken(writer http.ResponseWriter, reader *http.Request) {
+	token := reader.Header.Get("Authorization")
+	tokenString := strings.Replace(token, "Bearer ", "", 1)
+
+	result := authController.AuthUseCase.GetNewAccessToken(tokenString)
+	response.NewResponse(writer, result)
 }
