@@ -15,7 +15,7 @@ type PostgresDatabase struct {
 	Connection *sql.DB
 }
 
-func NewUserDBConfig(envConfig *EnvConfig) *DatabaseConfig {
+func NewAuthDBConfig(envConfig *EnvConfig) *DatabaseConfig {
 	databaseConfig := &DatabaseConfig{
 		AuthDB: NewAuthDB(envConfig),
 	}

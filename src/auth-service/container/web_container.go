@@ -14,7 +14,7 @@ import (
 
 type WebContainer struct {
 	Env             *config.EnvConfig
-	UserDatabase    *config.DatabaseConfig
+	AuthDatabase    *config.DatabaseConfig
 	ProductDatabase *config.DatabaseConfig
 	OrderDatabase   *config.DatabaseConfig
 	Repository      *RepositoryContainer
@@ -30,32 +30,32 @@ func NewWebContainer() *WebContainer {
 	}
 
 	envConfig := config.NewEnvConfig()
-	userDBConfig := config.NewUserDBConfig(envConfig)
+	authDBConfig := config.NewAuthDBConfig(envConfig)
 
-	userRepository := repository.NewUserRepository()
-	repositoryContainer := NewRepositoryContainer(userRepository)
+	authRepository := repository.NewAuthRepository()
+	repositoryContainer := NewRepositoryContainer(authRepository)
 
-	userUseCase := use_case.NewAuthUseCase(userDBConfig, userRepository)
+	authUseCase := use_case.NewAuthUseCase(authDBConfig, authRepository, envConfig)
 
-	useCaseContainer := NewUseCaseContainer(userUseCase)
+	useCaseContainer := NewUseCaseContainer(authUseCase)
 
-	userController := httpdelivery.NewAuthController(userUseCase)
+	AuthController := httpdelivery.NewAuthController(authUseCase)
 
-	controllerContainer := NewControllerContainer(userController)
+	controllerContainer := NewControllerContainer(AuthController)
 
 	router := mux.NewRouter()
-	userRoute := route.NewUserRoute(router, userController)
+	AuthRoute := route.NewAuthRoute(router, AuthController)
 
 	rootRoute := route.NewRootRoute(
 		router,
-		userRoute,
+		AuthRoute,
 	)
 
 	rootRoute.Register()
 
 	webContainer := &WebContainer{
 		Env:          envConfig,
-		UserDatabase: userDBConfig,
+		AuthDatabase: authDBConfig,
 		Repository:   repositoryContainer,
 		UseCase:      useCaseContainer,
 		Controller:   controllerContainer,

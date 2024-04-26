@@ -34,7 +34,7 @@ type AuthRoute struct {
 
 func NewAuthRoute(router *mux.Router, AuthController *http.AuthController) *AuthRoute {
 	AuthRoute := &AuthRoute{
-		Router:         router.PathPrefix("/auth").Subrouter(),
+		Router:         router.PathPrefix("/auths").Subrouter(),
 		AuthController: AuthController,
 	}
 	return AuthRoute

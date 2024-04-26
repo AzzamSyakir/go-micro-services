@@ -39,7 +39,7 @@ func NewEnvConfig() *EnvConfig {
 			Port:     os.Getenv("POSTGRES_AUTH_PORT"),
 			Auth:     os.Getenv("POSTGRES_USER"),
 			Password: os.Getenv("POSTGRES_PASSWORD"),
-			Database: "order_db",
+			Database: "auth_db",
 		},
 	}
 	return envConfig

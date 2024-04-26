@@ -6,9 +6,8 @@ import (
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
-	"go-micro-services/src/auth-service/model/response"
+	model_response "go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/repository"
-	model_response "go-micro-services/src/order-service/model/response"
 	"net/http"
 	"time"
 
@@ -27,15 +26,17 @@ type AuthUseCase struct {
 func NewAuthUseCase(
 	databaseConfig *config.DatabaseConfig,
 	authRepository *repository.AuthRepository,
+	env *config.EnvConfig,
 ) *AuthUseCase {
 	authUseCase := &AuthUseCase{
 		DatabaseConfig: databaseConfig,
 		AuthRepository: authRepository,
+		Env:            env,
 	}
 	return authUseCase
 }
 
-func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (result *response.Response[*entity.Session]) {
+func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (result *model_response.Response[*entity.Session]) {
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
 		if err != nil {
@@ -43,13 +44,13 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 			return err
 		}
 
-		foundUser := authUseCase.FindOneByEmail(request.Email.String)
+		foundUser := authUseCase.FindUserByEmail(request.Email.String)
 
-		if foundUser == nil {
+		if foundUser.Errors == true {
 			err = begin.Rollback()
-			result = &response.Response[*entity.Session]{
+			result = &model_response.Response[*entity.Session]{
 				Code:    http.StatusNotFound,
-				Message: "AuthUseCase Login is failed, user is not found by email.",
+				Message: foundUser.Message,
 				Data:    nil,
 			}
 			return err
@@ -58,7 +59,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		comparePasswordErr := bcrypt.CompareHashAndPassword([]byte(foundUser.Data.Password.String), []byte(request.Password.String))
 		if comparePasswordErr != nil {
 			err = begin.Rollback()
-			result = &response.Response[*entity.Session]{
+			result = &model_response.Response[*entity.Session]{
 				Code:    http.StatusNotFound,
 				Message: "AuthUseCase Login is failed, password is not match.",
 				Data:    nil,
@@ -72,24 +73,25 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		accessTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Minute*10), true)
 		refreshTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Hour*24*2), true)
 
-		foundSession, err := authUseCase.FindOneByUserId(foundUser.Data.Id.String)
+		foundSession, err := authUseCase.AuthRepository.FindOneByUserId(begin, foundUser.Data.Id.String)
 		if err != nil {
 			return err
 		}
 
 		if foundSession != nil {
+
 			foundSession.AccessToken = accessToken
 			foundSession.RefreshToken = refreshToken
 			foundSession.AccessTokenExpiredAt = accessTokenExpiredAt
 			foundSession.RefreshTokenExpiredAt = refreshTokenExpiredAt
 			foundSession.UpdatedAt = currentTime
-			patchedSession, err := authUseCase.PatchOneById(foundSession.Id.String, foundSession)
+			patchedSession, err := authUseCase.AuthRepository.PatchOneById(begin, foundSession.Id.String, foundSession)
 			if err != nil {
 				return err
 			}
 
 			err = begin.Commit()
-			result = &response.Response[*entity.Session]{
+			result = &model_response.Response[*entity.Session]{
 				Code:    http.StatusOK,
 				Message: "AuthUseCase Login is succeed.",
 				Data:    patchedSession,
@@ -115,7 +117,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		}
 
 		err = begin.Commit()
-		result = &response.Response[*entity.Session]{
+		result = &model_response.Response[*entity.Session]{
 			Code:    http.StatusCreated,
 			Message: "AuthUseCase Login is succeed.",
 			Data:    createdSession,
@@ -124,7 +126,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 	})
 
 	if beginErr != nil {
-		result = &response.Response[*entity.Session]{
+		result = &model_response.Response[*entity.Session]{
 			Code:    http.StatusInternalServerError,
 			Message: "AuthUseCase Login  is failed, " + beginErr.Error(),
 			Data:    nil,
@@ -133,19 +135,18 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 
 	return result
 }
-func (authUseCase *AuthUseCase) FindOneByEmail(email string) (result *model_response.Response[*entity.User]) {
+func (authUseCase *AuthUseCase) FindUserByEmail(email string) (result *model_response.Response[*entity.User]) {
 	address := fmt.Sprintf("http://%s:%s", authUseCase.Env.App.Host, authUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", email)
+	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "email", email)
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-
 	if newRequestErr != nil {
-		err = nil
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: "OrderUseCase failed, UpdateBalance user is failed," + newRequestErr.Error(),
+			Message: "AuthUseCase failed, GetUser by email user is failed," + newRequestErr.Error(),
 			Data:    nil,
+			Errors:  true,
 		}
-		return result, err
+		return result
 	}
 
 	responseRequest, doErr := http.DefaultClient.Do(newRequest)
@@ -154,6 +155,7 @@ func (authUseCase *AuthUseCase) FindOneByEmail(email string) (result *model_resp
 			Code:    http.StatusBadRequest,
 			Message: "AuthUseCase failed, GetUser by email user is failed," + doErr.Error(),
 			Data:    nil,
+			Errors:  true,
 		}
 		return result
 	}
@@ -164,13 +166,9 @@ func (authUseCase *AuthUseCase) FindOneByEmail(email string) (result *model_resp
 			Code:    http.StatusBadRequest,
 			Message: "AuthUseCase fail, GetUser by email user is failed," + decodeErr.Error(),
 			Data:    nil,
+			Errors:  true,
 		}
+		return result
 	}
 	return bodyResponseUser
-}
-func (authUseCase *AuthUseCase) FindOneByUserId(id string) (result *entity.Session, err error) {
-	return
-}
-func (authUseCase *AuthUseCase) PatchOneById(id string, toPatchSession *entity.Session) (result *entity.Session, err error) {
-	return
 }

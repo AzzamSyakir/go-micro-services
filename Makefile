@@ -15,7 +15,7 @@ start-docker:
 stop-docker:
 	clear && docker compose -f ./docker/docker-compose.yml down --remove-orphans
 start-db:
-	clear && docker compose -f ./docker/docker-compose.yml up user-db product-db order-db -d
+	clear && docker compose -f ./docker/docker-compose.yml up user-db product-db order-db auth-db -d
 
 clean-docker:
 	clear && docker system prune && docker volume prune && docker image prune -a -f && docker container prune && docker buildx prune

@@ -18,7 +18,7 @@ type Session struct {
 
 type User struct {
 	Id        null.String `json:"id"`
-	Name      null.String `json:"name"`
+	Name      null.String `json:"name" `
 	Email     null.String `json:"email"`
 	Password  null.String `json:"password"`
 	Balance   null.Int    `json:"balance"`
