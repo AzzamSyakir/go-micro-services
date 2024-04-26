@@ -1,11 +1,10 @@
 package http
 
 import (
+	model_request "go-micro-services/src/auth-service/model/request/controller"
 	"go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/use_case"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 type AuthController struct {
@@ -19,10 +18,8 @@ func NewAuthController(authUseCase *use_case.AuthUseCase) *AuthController {
 	return authController
 }
 func (authController *AuthController) Login(writer http.ResponseWriter, reader *http.Request) {
-	vars := mux.Vars(reader)
-	id := vars["id"]
-
-	foundUser, foundUserErr := authController.AuthUseCase.GetOneById(id)
+	request := model_request.LoginRequest{}
+	foundUser, foundUserErr := authController.AuthUseCase.Login(request)
 	if foundUserErr == nil {
 		response.NewResponse(writer, foundUser)
 	}

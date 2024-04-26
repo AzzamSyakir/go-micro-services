@@ -8,38 +8,38 @@ import (
 
 type RootRoute struct {
 	Router    *mux.Router
-	UserRoute *UserRoute
+	AuthRoute *AuthRoute
 }
 
 func NewRootRoute(
 	router *mux.Router,
-	userRoute *UserRoute,
+	AuthRoute *AuthRoute,
 
 ) *RootRoute {
 	rootRoute := &RootRoute{
 		Router:    router,
-		UserRoute: userRoute,
+		AuthRoute: AuthRoute,
 	}
 	return rootRoute
 }
 
 func (rootRoute *RootRoute) Register() {
-	rootRoute.UserRoute.Register()
+	rootRoute.AuthRoute.Register()
 }
 
-type UserRoute struct {
+type AuthRoute struct {
 	Router         *mux.Router
-	UserController *http.AuthController
+	AuthController *http.AuthController
 }
 
-func NewUserRoute(router *mux.Router, userController *http.AuthController) *UserRoute {
-	userRoute := &UserRoute{
+func NewAuthRoute(router *mux.Router, AuthController *http.AuthController) *AuthRoute {
+	AuthRoute := &AuthRoute{
 		Router:         router.PathPrefix("/auth").Subrouter(),
-		UserController: userController,
+		AuthController: AuthController,
 	}
-	return userRoute
+	return AuthRoute
 }
 
-func (userRoute *UserRoute) Register() {
-	userRoute.Router.HandleFunc("/login", userRoute.UserController.Login).Methods("POST")
+func (AuthRoute *AuthRoute) Register() {
+	AuthRoute.Router.HandleFunc("/login", AuthRoute.AuthController.Login).Methods("POST")
 }

@@ -147,7 +147,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 }
 func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response.Response[*entity.User]) {
 	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "User", userId)
+	url := fmt.Sprintf("%s/%s/%s", address, "users", userId)
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 	if newRequestErr != nil {
 		result = &model_response.Response[*entity.User]{
@@ -181,7 +181,7 @@ func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response
 
 func (orderUseCase OrderUseCase) UpdateBalance(userId string, balance int64) (result *model_response.Response[*entity.User]) {
 	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s/%s", address, "User", "update-balance", userId)
+	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "update-balance", userId)
 	payload := map[string]string{"balance": strconv.FormatInt(balance, 10)}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {

@@ -1,12 +1,14 @@
 package use_case
 
 import (
+	"encoding/json"
 	"fmt"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
-	model_response "go-micro-services/src/auth-service/model/response"
+	"go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/repository"
+	model_response "go-micro-services/src/order-service/model/response"
 	"net/http"
 	"time"
 
@@ -18,12 +20,13 @@ import (
 
 type AuthUseCase struct {
 	DatabaseConfig *config.DatabaseConfig
-	AuthRepository *repository.UserRepository
+	AuthRepository *repository.AuthRepository
+	Env            *config.EnvConfig
 }
 
 func NewAuthUseCase(
 	databaseConfig *config.DatabaseConfig,
-	authRepository *repository.UserRepository,
+	authRepository *repository.AuthRepository,
 ) *AuthUseCase {
 	authUseCase := &AuthUseCase{
 		DatabaseConfig: databaseConfig,
@@ -32,311 +35,142 @@ func NewAuthUseCase(
 	return authUseCase
 }
 
-func (userUseCase *AuthUseCase) GetOneById(id string) (result *model_response.Response[*entity.Auth], err error) {
-	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusNotFound,
-			Message: errorMessage,
-			Data:    nil,
-		}
-		err = nil
-		return result, err
-	}
-	GetOneById, GetOneByIdErr := userUseCase.AuthRepository.GetOneById(transaction, id)
-	if GetOneByIdErr != nil {
-		errorMessage := fmt.Sprintf("UserUseCase GetOneById is failed, GetUser failed : %s", GetOneByIdErr)
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusNotFound,
-			Message: errorMessage,
-			Data:    nil,
-		}
-		err = nil
-		return result, err
-	}
-	if GetOneById == nil {
-		errorMessage := fmt.Sprintf("Auth UseCase FindOneById is failed, Auth is not found by id %s", id)
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusNotFound,
-			Message: errorMessage,
-			Data:    nil,
-		}
-		err = nil
-		return result, err
-	}
-
-	result = &model_response.Response[*entity.Auth]{
-		Code:    http.StatusOK,
-		Message: "Auth UseCase FindOneById is succeed.",
-		Data:    GetOneById,
-	}
-	err = nil
-	return result, err
-}
-
-func (userUseCase *AuthUseCase) UpdateBalance(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.Auth]) {
+func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (result *response.Response[*entity.Session]) {
 	beginErr := crdb.Execute(func() (err error) {
-		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		foundUser, err := userUseCase.AuthRepository.GetOneById(transaction, id)
-		if err != nil {
-			return err
-		}
-		if foundUser == nil {
-			err = transaction.Rollback()
-			result = &model_response.Response[*entity.Auth]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase UpdateBalance is failed, Auth is not found by id.",
-				Data:    nil,
-			}
-			return err
-		}
-		if request.Balance.Valid {
-			foundUser.Balance = request.Balance
-		} else {
-			err = transaction.Rollback()
-			result = &model_response.Response[*entity.Auth]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase UpdateBalance is failed, balance is not provided ",
-				Data:    nil,
-			}
-			return err
-		}
-
-		foundUser.UpdatedAt = null.NewTime(time.Now(), true)
-
-		patchedUser, err := userUseCase.AuthRepository.PatchOneById(transaction, id, foundUser)
-		if err != nil {
-			return err
-		}
-
-		err = transaction.Commit()
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusOK,
-			Message: "UserUserCase UpdateBalance is succeed.",
-			Data:    patchedUser,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase UpdateBalance  is failed, " + beginErr.Error(),
-			Data:    nil,
-		}
-	}
-
-	return result
-}
-
-func (userUseCase *AuthUseCase) UpdateUser(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.Auth]) {
-	beginErr := crdb.Execute(func() (err error) {
-		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		foundUser, err := userUseCase.AuthRepository.GetOneById(transaction, id)
-		if err != nil {
-			return err
-		}
-		if foundUser == nil {
-			err = transaction.Rollback()
-			result = &model_response.Response[*entity.Auth]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase UpdateUser is failed, Auth is not found by id.",
-				Data:    nil,
-			}
-			return err
-		}
-		if request.Name.Valid {
-			foundUser.Name = request.Name
-		}
-		if request.Email.Valid {
-			foundUser.Email = request.Email
-		}
-		if request.Password.Valid {
-			foundUser.Password = request.Password
-		}
-		if request.Balance.Valid {
-			foundUser.Balance = request.Balance
-		}
-
-		foundUser.UpdatedAt = null.NewTime(time.Now(), true)
-
-		patchedUser, err := userUseCase.AuthRepository.PatchOneById(transaction, id, foundUser)
-		if err != nil {
-			return err
-		}
-
-		err = transaction.Commit()
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusOK,
-			Message: "UserUserCase UpdateUser is succeed.",
-			Data:    patchedUser,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase UpdateUser  is failed, " + beginErr.Error(),
-			Data:    nil,
-		}
-	}
-
-	return result
-}
-
-func (userUseCase *AuthUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.Auth]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+		begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
 		if err != nil {
 			result = nil
 			return err
 		}
 
-		hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
-		if hashedPasswordErr != nil {
+		foundUser := authUseCase.FindOneByEmail(request.Email.String)
+
+		if foundUser == nil {
 			err = begin.Rollback()
-			result = &model_response.Response[*entity.Auth]{
-				Code:    http.StatusInternalServerError,
-				Message: "UserUseCase Register is failed, password hashing is failed.",
+			result = &response.Response[*entity.Session]{
+				Code:    http.StatusNotFound,
+				Message: "AuthUseCase Login is failed, user is not found by email.",
 				Data:    nil,
 			}
 			return err
 		}
 
+		comparePasswordErr := bcrypt.CompareHashAndPassword([]byte(foundUser.Data.Password.String), []byte(request.Password.String))
+		if comparePasswordErr != nil {
+			err = begin.Rollback()
+			result = &response.Response[*entity.Session]{
+				Code:    http.StatusNotFound,
+				Message: "AuthUseCase Login is failed, password is not match.",
+				Data:    nil,
+			}
+			return err
+		}
+
+		accessToken := null.NewString(uuid.NewString(), true)
+		refreshToken := null.NewString(uuid.NewString(), true)
 		currentTime := null.NewTime(time.Now(), true)
-		newUser := &entity.Auth{
-			Id:        null.NewString(uuid.NewString(), true),
-			Name:      request.Name,
-			Email:     request.Email,
-			Password:  null.NewString(string(hashedPassword), true),
-			Balance:   request.Balance,
-			CreatedAt: currentTime,
-			UpdatedAt: currentTime,
-			DeletedAt: null.NewTime(time.Time{}, false),
+		accessTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Minute*10), true)
+		refreshTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Hour*24*2), true)
+
+		foundSession, err := authUseCase.FindOneByUserId(foundUser.Data.Id.String)
+		if err != nil {
+			return err
 		}
 
-		createdUser, err := userUseCase.AuthRepository.CreateUser(begin, newUser)
+		if foundSession != nil {
+			foundSession.AccessToken = accessToken
+			foundSession.RefreshToken = refreshToken
+			foundSession.AccessTokenExpiredAt = accessTokenExpiredAt
+			foundSession.RefreshTokenExpiredAt = refreshTokenExpiredAt
+			foundSession.UpdatedAt = currentTime
+			patchedSession, err := authUseCase.PatchOneById(foundSession.Id.String, foundSession)
+			if err != nil {
+				return err
+			}
+
+			err = begin.Commit()
+			result = &response.Response[*entity.Session]{
+				Code:    http.StatusOK,
+				Message: "AuthUseCase Login is succeed.",
+				Data:    patchedSession,
+			}
+			return err
+		}
+
+		newSession := &entity.Session{
+			Id:                    null.NewString(uuid.NewString(), true),
+			UserId:                foundUser.Data.Id,
+			AccessToken:           accessToken,
+			RefreshToken:          refreshToken,
+			AccessTokenExpiredAt:  accessTokenExpiredAt,
+			RefreshTokenExpiredAt: refreshTokenExpiredAt,
+			CreatedAt:             currentTime,
+			UpdatedAt:             currentTime,
+			DeletedAt:             null.NewTime(time.Time{}, false),
+		}
+
+		createdSession, err := authUseCase.AuthRepository.CreateSession(begin, newSession)
 		if err != nil {
 			return err
 		}
 
 		err = begin.Commit()
-		result = &model_response.Response[*entity.Auth]{
+		result = &response.Response[*entity.Session]{
 			Code:    http.StatusCreated,
-			Message: "UserUseCase Register is succeed.",
-			Data:    createdUser,
+			Message: "AuthUseCase Login is succeed.",
+			Data:    createdSession,
 		}
 		return err
 	})
 
 	if beginErr != nil {
-		result = &model_response.Response[*entity.Auth]{
+		result = &response.Response[*entity.Session]{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUseCase Register  is failed, " + beginErr.Error(),
+			Message: "AuthUseCase Login  is failed, " + beginErr.Error(),
 			Data:    nil,
 		}
 	}
 
 	return result
 }
+func (authUseCase *AuthUseCase) FindOneByEmail(email string) (result *model_response.Response[*entity.User]) {
+	address := fmt.Sprintf("http://%s:%s", authUseCase.Env.App.Host, authUseCase.Env.App.UserPort)
+	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", email)
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 
-func (userUseCase *AuthUseCase) DeleteUser(id string) (result *model_response.Response[*entity.Auth]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-		if err != nil {
-			return err
+	if newRequestErr != nil {
+		err = nil
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: "OrderUseCase failed, UpdateBalance user is failed," + newRequestErr.Error(),
+			Data:    nil,
 		}
+		return result, err
+	}
 
-		deletedUser, deletedUserErr := userUseCase.AuthRepository.DeleteUser(begin, id)
-		if deletedUserErr != nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Auth]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase DeleteUser is failed, " + deletedUserErr.Error(),
-				Data:    nil,
-			}
-			return err
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase failed, GetUser by email user is failed," + doErr.Error(),
+			Data:    nil,
 		}
-		if deletedUser == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Auth]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase DeleteUser is failed, auth is not deleted by id, " + id,
-				Data:    nil,
-			}
-			return err
-		}
-
-		err = begin.Commit()
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusOK,
-			Message: "UserUserCase DeleteUser is succeed.",
-			Data:    deletedUser,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Auth]{
-			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase DeleteUser is failed, " + beginErr.Error(),
+		return result
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase fail, GetUser by email user is failed," + decodeErr.Error(),
 			Data:    nil,
 		}
 	}
-
-	return result
+	return bodyResponseUser
 }
-
-func (userUseCase *AuthUseCase) FetchUser() (result *model_response.Response[[]*entity.Auth], err error) {
-	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
-		result = &model_response.Response[[]*entity.Auth]{
-			Code:    http.StatusNotFound,
-			Message: errorMessage,
-			Data:    nil,
-		}
-		err = nil
-		return result, err
-	}
-
-	fetchUser, fetchUserErr := userUseCase.AuthRepository.FetchUser(transaction)
-	if fetchUserErr != nil {
-		errorMessage := fmt.Sprintf("UserUseCase fetchUser is failed, GetUser failed : %s", fetchUserErr)
-		result = &model_response.Response[[]*entity.Auth]{
-			Code:    http.StatusNotFound,
-			Message: errorMessage,
-			Data:    nil,
-		}
-		err = nil
-		return result, err
-	}
-
-	if fetchUser.Data == nil {
-		result = &model_response.Response[[]*entity.Auth]{
-			Code:    http.StatusNotFound,
-			Message: "Auth UseCase FetchUser is failed, data Auth is empty ",
-			Data:    nil,
-		}
-		err = nil
-		return result, err
-	}
-
-	result = &model_response.Response[[]*entity.Auth]{
-		Code:    http.StatusOK,
-		Message: "Auth UseCase FetchUser is succeed.",
-		Data:    fetchUser.Data,
-	}
-	err = nil
-	return result, err
+func (authUseCase *AuthUseCase) FindOneByUserId(id string) (result *entity.Session, err error) {
+	return
+}
+func (authUseCase *AuthUseCase) PatchOneById(id string, toPatchSession *entity.Session) (result *entity.Session, err error) {
+	return
 }

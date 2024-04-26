@@ -8,9 +8,7 @@ import (
 )
 
 type DatabaseConfig struct {
-	UserDB    *PostgresDatabase
-	ProductDB *PostgresDatabase
-	OrderDB   *PostgresDatabase
+	AuthDB *PostgresDatabase
 }
 
 type PostgresDatabase struct {
@@ -19,29 +17,29 @@ type PostgresDatabase struct {
 
 func NewUserDBConfig(envConfig *EnvConfig) *DatabaseConfig {
 	databaseConfig := &DatabaseConfig{
-		UserDB: NewUserDB(envConfig),
+		AuthDB: NewAuthDB(envConfig),
 	}
 	return databaseConfig
 }
 
-func NewUserDB(envConfig *EnvConfig) *PostgresDatabase {
+func NewAuthDB(envConfig *EnvConfig) *PostgresDatabase {
 	var url string
-	if envConfig.UserDB.Password == "" {
+	if envConfig.AuthDB.Password == "" {
 		url = fmt.Sprintf(
 			"postgresql://%s@%s:%s/%s",
-			envConfig.UserDB.Auth,
-			envConfig.UserDB.Host,
-			envConfig.UserDB.Port,
-			envConfig.UserDB.Database,
+			envConfig.AuthDB.Auth,
+			envConfig.AuthDB.Host,
+			envConfig.AuthDB.Port,
+			envConfig.AuthDB.Database,
 		)
 	} else {
 		url = fmt.Sprintf(
 			"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
-			envConfig.UserDB.Auth,
-			envConfig.UserDB.Password,
-			envConfig.UserDB.Host,
-			envConfig.UserDB.Port,
-			envConfig.UserDB.Database,
+			envConfig.AuthDB.Auth,
+			envConfig.AuthDB.Password,
+			envConfig.AuthDB.Host,
+			envConfig.AuthDB.Port,
+			envConfig.AuthDB.Database,
 		)
 	}
 

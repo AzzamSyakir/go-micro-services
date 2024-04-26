@@ -128,6 +128,33 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 	return result, err
 }
 
+func (userRepository *UserRepository) GetOneByEmail(begin *sql.Tx, email string) (result *entity.User, err error) {
+	var rows *sql.Rows
+	var queryErr error
+	rows, queryErr = begin.Query(
+		`SELECT id, name, email, password, balance, created_at, updated_at, deleted_at FROM "users" WHERE email=$1 LIMIT 1;`,
+		email,
+	)
+
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return result, err
+	}
+	defer rows.Close()
+
+	foundUsers := DeserializeUserRows(rows)
+	if len(foundUsers) == 0 {
+		result = nil
+		err = nil
+		return result, err
+	}
+
+	result = foundUsers[0]
+	err = nil
+	return result, err
+}
+
 func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *entity.User) (result *entity.User, err error) {
 	rows, queryErr := begin.Query(
 		`UPDATE "users" SET id=$1, name=$2, email=$3, password=$4, balance=$5, created_at=$6, updated_at=$7, deleted_at=$8 WHERE id = $9 ;`,

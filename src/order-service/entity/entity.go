@@ -38,10 +38,10 @@ type Product struct {
 	DeletedAt  null.Time   `json:"deleted_at"`
 }
 type User struct {
-	Id        null.String `json:"id" bson:"id"`
-	Name      null.String `json:"name" bson:"name"`
-	Balance   null.Int    `json:"balance" bson:"balance"`
-	CreatedAt null.Time   `json:"created_at" bson:"created_at"`
-	UpdatedAt null.Time   `json:"updated_at" bson:"updated_at"`
-	DeletedAt null.Time   `json:"deleted_at" bson:"deleted_at"`
+	Id        null.String `json:"id" :"id"`
+	Name      null.String `json:"name" :"name"`
+	Balance   null.Int    `json:"balance" :"balance"`
+	CreatedAt null.Time   `json:"created_at" :"created_at"`
+	UpdatedAt null.Time   `json:"updated_at" :"updated_at"`
+	DeletedAt null.Time   `json:"deleted_at" :"deleted_at"`
 }
