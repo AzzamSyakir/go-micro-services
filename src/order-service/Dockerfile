@@ -23,4 +23,4 @@ RUN go mod download
 
 # run the Go app.
 WORKDIR $WORKDIR
-CMD ["make","start-order"]
+CMD ["air", "-c", "order.air.toml"]
