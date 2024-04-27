@@ -1,22 +1,60 @@
 package use_case
 
 import (
+	"encoding/json"
+	"fmt"
+	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	model_response "go-micro-services/src/auth-service/model/response"
+	"net/http"
 )
 
 type ExposeUseCase struct {
+	Env *config.EnvConfig
 }
 
-func NewExposeUseCase() *ExposeUseCase {
-	userUseCase := &ExposeUseCase{}
+func NewExposeUseCase(envConfig *config.EnvConfig) *ExposeUseCase {
+	userUseCase := &ExposeUseCase{
+		Env: envConfig,
+	}
 	return userUseCase
 }
 
 // users
 func (exposeUseCase *ExposeUseCase) FetchUsers() (result *model_response.Response[[]*entity.User]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.UserPort)
+	url := fmt.Sprintf("%s/%s/", address, "users")
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[[]*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[[]*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseProduct := &model_response.Response[[]*entity.User]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	if decodeErr != nil {
+		result = &model_response.Response[[]*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.User]) {
 	return
