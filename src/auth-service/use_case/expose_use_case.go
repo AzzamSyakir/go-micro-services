@@ -1,6 +1,7 @@
 package use_case
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"go-micro-services/src/auth-service/config"
@@ -24,7 +25,7 @@ func NewExposeUseCase(envConfig *config.EnvConfig) *ExposeUseCase {
 // users
 func (exposeUseCase *ExposeUseCase) FetchUsers() (result *model_response.Response[[]*entity.User]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/", address, "users")
+	url := fmt.Sprintf("%s/%s", address, "users")
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 
 	if newRequestErr != nil {
@@ -45,8 +46,8 @@ func (exposeUseCase *ExposeUseCase) FetchUsers() (result *model_response.Respons
 		}
 		return result
 	}
-	bodyResponseProduct := &model_response.Response[[]*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	bodyResponseUser := &model_response.Response[[]*entity.User]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
 	if decodeErr != nil {
 		result = &model_response.Response[[]*entity.User]{
 			Code:    http.StatusBadRequest,
@@ -54,10 +55,45 @@ func (exposeUseCase *ExposeUseCase) FetchUsers() (result *model_response.Respons
 			Data:    nil,
 		}
 	}
-	return bodyResponseProduct
+	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.User]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.UserPort)
+	url := fmt.Sprintf("%s/%s", address, "users")
+	jsonPayload, err := json.Marshal(request)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User]) {
 	return
