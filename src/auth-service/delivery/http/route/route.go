@@ -13,19 +13,18 @@ type RootRoute struct {
 
 func NewRootRoute(
 	router *mux.Router,
-	AuthRoute *AuthRoute,
+	authRoute *AuthRoute,
 
 ) *RootRoute {
 	rootRoute := &RootRoute{
 		Router:    router,
-		AuthRoute: AuthRoute,
+		AuthRoute: authRoute,
 	}
 	return rootRoute
 }
 
 func (rootRoute *RootRoute) Register() {
 	rootRoute.AuthRoute.Register()
-	rootRoute..Register()
 }
 
 type AuthRoute struct {
