@@ -36,22 +36,37 @@ func NewWebContainer() *WebContainer {
 	repositoryContainer := NewRepositoryContainer(authRepository)
 
 	authUseCase := use_case.NewAuthUseCase(authDBConfig, authRepository, envConfig)
+	exposeUseCase := use_case.NewExposeUseCase(envConfig)
 
-	useCaseContainer := NewUseCaseContainer(authUseCase)
+	useCaseContainer := NewUseCaseContainer(authUseCase, exposeUseCase)
 
-	AuthController := httpdelivery.NewAuthController(authUseCase)
+	authController := httpdelivery.NewAuthController(authUseCase)
+	exposeController := httpdelivery.NewExposeController(exposeUseCase)
 
-	controllerContainer := NewControllerContainer(AuthController)
+	controllerContainer := NewControllerContainer(authController, exposeController)
 
 	router := mux.NewRouter()
-	AuthRoute := route.NewAuthRoute(router, AuthController)
+	authRoute := route.NewAuthRoute(router, authController)
+	// expose route
+	userRoute := route.NewUserRoute(router, exposeController)
+	productRoute := route.NewProductRoute(router, exposeController)
+	categoryRoute := route.NewCategoryRoute(router, exposeController)
+	orderRoute := route.NewOrderRoute(router, exposeController)
 
 	rootRoute := route.NewRootRoute(
 		router,
-		AuthRoute,
+		authRoute,
+	)
+	exposeRoute := route.NewExposeRoute(
+		router,
+		userRoute,
+		productRoute,
+		categoryRoute,
+		orderRoute,
 	)
 
 	rootRoute.Register()
+	exposeRoute.Register()
 
 	webContainer := &WebContainer{
 		Env:          envConfig,

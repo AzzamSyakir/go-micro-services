@@ -31,9 +31,6 @@ func (orderController *OrderController) Orders(writer http.ResponseWriter, reade
 		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
 		return
 	}
-	if request == nil {
-		http.Error(writer, "Invalid request body", http.StatusBadRequest)
-	}
 	result := orderController.OrderUseCase.Order(userId, request)
 	response.NewResponse(writer, result)
 }

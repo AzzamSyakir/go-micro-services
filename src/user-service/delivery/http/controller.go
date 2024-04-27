@@ -24,25 +24,19 @@ func (userController *UserController) GetOneById(writer http.ResponseWriter, rea
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
-	foundUser, foundUserErr := userController.UserUseCase.GetOneById(id)
-	if foundUserErr == nil {
-		response.NewResponse(writer, foundUser)
-	}
+	foundUser := userController.UserUseCase.GetOneById(id)
+	response.NewResponse(writer, foundUser)
 }
 func (userController *UserController) GetOneByEmail(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	email := vars["email"]
 
-	foundUser, foundUserErr := userController.UserUseCase.GetOneByEmail(email)
-	if foundUserErr == nil {
-		response.NewResponse(writer, foundUser)
-	}
+	foundUser := userController.UserUseCase.GetOneByEmail(email)
+	response.NewResponse(writer, foundUser)
 }
 func (userController *UserController) FetchUser(writer http.ResponseWriter, reader *http.Request) {
-	fetchUser, fetchUserErr := userController.UserUseCase.FetchUser()
-	if fetchUserErr == nil {
-		response.NewResponse(writer, fetchUser)
-	}
+	fetchUser := userController.UserUseCase.FetchUser()
+	response.NewResponse(writer, fetchUser)
 }
 
 func (userController *UserController) UpdateBalance(writer http.ResponseWriter, reader *http.Request) {

@@ -72,7 +72,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.Ca
 	return result
 }
 
-func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_response.Response[*entity.Category], err error) {
+func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_response.Response[*entity.Category]) {
 	transaction, transactionErr := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -81,8 +81,8 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 	categoryFound, categoryFoundErr := categoryUseCase.CategoryRepository.GetOneById(transaction, id)
 	if categoryFoundErr != nil {
@@ -92,8 +92,8 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 	errorMessage := fmt.Sprintf("categoryUseCase GetOneById is failed, category is not found by id %s", id)
 	if categoryFound == nil {
@@ -102,8 +102,8 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 
 	result = &model_response.Response[*entity.Category]{
@@ -111,8 +111,8 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 		Message: "CategoryUseCase GetOneById is succeed.",
 		Data:    categoryFound,
 	}
-	err = nil
-	return result, err
+
+	return result
 }
 
 func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
@@ -165,7 +165,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model
 	return result
 }
 
-func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response.Response[[]*entity.Category], err error) {
+func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response.Response[[]*entity.Category]) {
 	transaction, transactionErr := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -174,8 +174,8 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 
 	listCategories, listCategoriesErr := categoryUseCase.CategoryRepository.ListCategories(transaction)
@@ -186,8 +186,8 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 
 	if listCategories.Data == nil {
@@ -196,8 +196,8 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 			Message: "category UseCase ListCategories is failed, data category is empty ",
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 
 	result = &model_response.Response[[]*entity.Category]{
@@ -205,8 +205,8 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 		Message: "category UseCase Listcategories is succeed.",
 		Data:    listCategories.Data,
 	}
-	err = nil
-	return result, err
+
+	return result
 }
 
 func (categoryUseCase *CategoryUseCase) DeleteCategory(id string) (result *model_response.Response[*entity.Category]) {
