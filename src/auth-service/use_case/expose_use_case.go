@@ -206,10 +206,74 @@ func (exposeUseCase *ExposeUseCase) UpdateUser(id string, request *model_request
 	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) DetailUser(id string) (result *model_response.Response[*entity.User]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.UserPort)
+	url := fmt.Sprintf("%s/%s/%s", address, "users", id)
+
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.UserPort)
+	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "email", email)
+
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseUser
 }
 
 // product
