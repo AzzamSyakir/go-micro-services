@@ -32,7 +32,7 @@ func NewUserUseCase(
 	return userUseCase
 }
 
-func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Response[*entity.User], err error) {
+func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Response[*entity.User]) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -41,8 +41,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 	GetOneById, GetOneByIdErr := userUseCase.UserRepository.GetOneById(transaction, id)
 	if GetOneByIdErr != nil {
@@ -52,8 +51,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 	if GetOneById == nil {
 		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, User is not found by id %s", id)
@@ -62,8 +60,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 
 	result = &model_response.Response[*entity.User]{
@@ -71,11 +68,10 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 		Message: "User UseCase FindOneById is succeed.",
 		Data:    GetOneById,
 	}
-	err = nil
-	return result, err
+	return result
 }
 
-func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User], err error) {
+func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User]) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -84,8 +80,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 	GetOneByEmail, GetOneByEmailErr := userUseCase.UserRepository.GetOneByEmail(transaction, email)
 	if GetOneByEmailErr != nil {
@@ -95,8 +90,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 	if GetOneByEmail == nil {
 		errorMessage := fmt.Sprintf("User UseCase FindOneByemail is failed, User is not found by email %s", email)
@@ -105,8 +99,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 
 	result = &model_response.Response[*entity.User]{
@@ -114,8 +107,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 		Message: "User UseCase FindOneById is succeed.",
 		Data:    GetOneByEmail,
 	}
-	err = nil
-	return result, err
+	return result
 }
 
 func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
@@ -340,7 +332,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 	return result
 }
 
-func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*entity.User], err error) {
+func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*entity.User]) {
 	transaction, transactionErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -349,8 +341,7 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 
 	fetchUser, fetchUserErr := userUseCase.UserRepository.FetchUser(transaction)
@@ -361,8 +352,6 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
 	}
 
 	if fetchUser.Data == nil {
@@ -371,8 +360,7 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 			Message: "User UseCase FetchUser is failed, data User is empty ",
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 
 	result = &model_response.Response[[]*entity.User]{
@@ -380,6 +368,5 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 		Message: "User UseCase FetchUser is succeed.",
 		Data:    fetchUser.Data,
 	}
-	err = nil
-	return result, err
+	return result
 }
