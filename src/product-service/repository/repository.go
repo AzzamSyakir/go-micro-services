@@ -107,11 +107,11 @@ func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id strin
 	return result, err
 }
 
-func (productRepository *ProductRepository) ListProduct(begin *sql.Tx) (result *model_response.Response[[]*entity.Product], err error) {
+func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result *model_response.Response[[]*entity.Product], err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, sku, stock, price, category_id created_at, updated_at, deleted_at FROM "products" `,
+		`SELECT id, name, sku, stock, price, category_id, created_at, updated_at, deleted_at FROM "products" `,
 	)
 
 	if queryErr != nil {

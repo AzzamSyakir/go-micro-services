@@ -23,7 +23,7 @@ func NewExposeUseCase(envConfig *config.EnvConfig) *ExposeUseCase {
 }
 
 // users
-func (exposeUseCase *ExposeUseCase) FetchUsers() (result *model_response.Response[[]*entity.User]) {
+func (exposeUseCase *ExposeUseCase) ListUsers() (result *model_response.Response[[]*entity.User]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.UserPort)
 	url := fmt.Sprintf("%s/%s", address, "users")
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
@@ -279,22 +279,221 @@ func (exposeUseCase *ExposeUseCase) GetOneByEmail(email string) (result *model_r
 // product
 
 func (exposeUseCase *ExposeUseCase) ListProducts() (result *model_response.Response[[]*entity.Product]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s", address, "products")
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[[]*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[[]*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseProduct := &model_response.Response[[]*entity.Product]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	if decodeErr != nil {
+		result = &model_response.Response[[]*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) CreateProduct(request *model_request.CreateProduct) (result *model_response.Response[*entity.Product]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s", address, "products")
+	jsonPayload, err := json.Marshal(request)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_response.Response[*entity.Product]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s/%s", address, "products", id)
+	newRequest, newRequestErr := http.NewRequest("DELETE", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) UpdateStock(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s/%s/%s", address, "products", "update-stock", id)
+	jsonPayload, err := json.Marshal(request)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s/%s", address, "products", id)
+	jsonPayload, err := json.Marshal(request)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) DetailProduct(id string) (result *model_response.Response[*entity.Product]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s/%s", address, "products", id)
+
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseProduct
 }
 
 // category

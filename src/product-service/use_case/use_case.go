@@ -256,7 +256,7 @@ func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Resp
 		return result
 	}
 
-	fetchproduct, fetchproductErr := productUseCase.ProductRepository.ListProduct(transaction)
+	fetchproduct, fetchproductErr := productUseCase.ProductRepository.ListProducts(transaction)
 	if fetchproductErr != nil {
 		errorMessage := fmt.Sprintf("productUseCase fetchproduct is failed, Getproduct failed : %s", fetchproductErr)
 		result = &model_response.Response[[]*entity.Product]{
