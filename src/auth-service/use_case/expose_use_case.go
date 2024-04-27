@@ -681,5 +681,40 @@ func (exposeUseCase *ExposeUseCase) DetailCategory(id string) (result *model_res
 // order
 
 func (exposeUseCase *ExposeUseCase) Orders(userId string, request *model_request.OrderRequest) (result *model_response.Response[*model_response.OrderResponse]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.UserPort)
+	url := fmt.Sprintf("%s/%s", address, "users")
+	jsonPayload, err := json.Marshal(request)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseOrder := &model_response.Response[*model_response.OrderResponse]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseOrder)
+	if decodeErr != nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseOrder
 }
