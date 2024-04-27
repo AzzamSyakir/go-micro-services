@@ -499,19 +499,183 @@ func (exposeUseCase *ExposeUseCase) DetailProduct(id string) (result *model_resp
 // category
 
 func (exposeUseCase *ExposeUseCase) ListCategories() (result *model_response.Response[[]*entity.Category]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s", address, "categories")
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[[]*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[[]*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	Category := &model_response.Response[[]*entity.Category]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(Category)
+	if decodeErr != nil {
+		result = &model_response.Response[[]*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return Category
 }
 func (exposeUseCase *ExposeUseCase) CreateCategory(request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s", address, "categories")
+	jsonPayload, err := json.Marshal(request)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseCategory := &model_response.Response[*entity.Category]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseCategory)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseCategory
 }
 func (exposeUseCase *ExposeUseCase) DeleteCategory(id string) (result *model_response.Response[*entity.Category]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s/%s", address, "categories", id)
+	newRequest, newRequestErr := http.NewRequest("DELETE", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseCategory := &model_response.Response[*entity.Category]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseCategory)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseCategory
 }
 func (exposeUseCase *ExposeUseCase) UpdateCategory(id string, request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s/%s", address, "categories", id)
+	jsonPayload, err := json.Marshal(request)
+	if err != nil {
+		panic(err)
+	}
+	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseCategory := &model_response.Response[*entity.Category]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseCategory)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseCategory
 }
 func (exposeUseCase *ExposeUseCase) DetailCategory(id string) (result *model_response.Response[*entity.Category]) {
-	return
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.Host, exposeUseCase.Env.App.ProductPort)
+	url := fmt.Sprintf("%s/%s/%s", address, "categories", id)
+
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	bodyResponseCategory := &model_response.Response[*entity.Category]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseCategory)
+	if decodeErr != nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return bodyResponseCategory
 }
 
 // order
