@@ -101,7 +101,7 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, updated_at, deleted_at FROM "categories" `,
+		`SELECT id, name, created_at, updated_at, deleted_at FROM "categories" `,
 	)
 
 	if queryErr != nil {
@@ -138,7 +138,7 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 
 func (CategoryRepository *CategoryRepository) DeleteOneById(begin *sql.Tx, id string) (result *entity.Category, err error) {
 	rows, queryErr := begin.Query(
-		`DELETE FROM "Category" WHERE id=$1 RETURNING id, name, created_at, updated_at, deleted_at`,
+		`DELETE FROM "categories" WHERE id=$1 RETURNING id, name, created_at, updated_at, deleted_at`,
 		id,
 	)
 	if queryErr != nil {

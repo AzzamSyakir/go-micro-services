@@ -24,7 +24,7 @@ func NewExposeController(exposeUseCase *use_case.ExposeUseCase) *ExposeControlle
 // users
 
 func (exposeController *ExposeController) FetchUser(writer http.ResponseWriter, reader *http.Request) {
-	fetchUser := exposeController.ExposeUseCase.FetchUsers()
+	fetchUser := exposeController.ExposeUseCase.ListUsers()
 	response.NewResponse(writer, fetchUser)
 }
 func (exposeController *ExposeController) CreateUser(writer http.ResponseWriter, reader *http.Request) {
@@ -102,8 +102,7 @@ func (exposeController *ExposeController) CreateProduct(writer http.ResponseWrit
 
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
-		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
-		return
+		http.Error(writer, decodeErr.Error(), 404)
 	}
 
 	result := exposeController.ExposeUseCase.CreateProduct(request)
