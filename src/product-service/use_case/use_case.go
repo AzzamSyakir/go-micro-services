@@ -33,7 +33,7 @@ func NewProductUseCase(
 	}
 	return productUseCase
 }
-func (productUseCase *ProductUseCase) Createproduct(request *model_request.CreateProduct) (result *model_response.Response[*entity.Product]) {
+func (productUseCase *ProductUseCase) CreateProduct(request *model_request.CreateProduct) (result *model_response.Response[*entity.Product]) {
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 		if err != nil {
@@ -91,7 +91,7 @@ func (productUseCase *ProductUseCase) Createproduct(request *model_request.Creat
 	return result
 }
 
-func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_response.Response[*entity.Product], err error) {
+func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_response.Response[*entity.Product]) {
 	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -100,8 +100,8 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_respo
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 	productFound, productFoundErr := productUseCase.ProductRepository.GetOneById(transaction, id)
 	if productFoundErr != nil {
@@ -111,8 +111,8 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_respo
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 	errorMessage := fmt.Sprintf("productUseCase FindOneById is failed, product is not found by id %s", id)
 	if productFound == nil {
@@ -121,8 +121,8 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_respo
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 
 	result = &model_response.Response[*entity.Product]{
@@ -130,8 +130,8 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_respo
 		Message: "product-service UseCase FindOneById is succeed.",
 		Data:    productFound,
 	}
-	err = nil
-	return result, err
+
+	return result
 }
 
 func (productUseCase *ProductUseCase) UpdateStock(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
@@ -243,7 +243,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(id string, request *model_re
 	return result
 }
 
-func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Response[[]*entity.Product], err error) {
+func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Response[[]*entity.Product]) {
 	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if transactionErr != nil {
 		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
@@ -252,8 +252,8 @@ func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Resp
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+
+		return result
 	}
 
 	fetchproduct, fetchproductErr := productUseCase.ProductRepository.ListProduct(transaction)
@@ -264,8 +264,7 @@ func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Resp
 			Message: errorMessage,
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 
 	if fetchproduct.Data == nil {
@@ -274,8 +273,7 @@ func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Resp
 			Message: "product UseCase ListProduct is failed, data product is empty ",
 			Data:    nil,
 		}
-		err = nil
-		return result, err
+		return result
 	}
 
 	result = &model_response.Response[[]*entity.Product]{
@@ -283,8 +281,7 @@ func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Resp
 		Message: "product UseCase ListProduct is succeed.",
 		Data:    fetchproduct.Data,
 	}
-	err = nil
-	return result, err
+	return result
 }
 
 func (productUseCase *ProductUseCase) DeleteProduct(id string) (result *model_response.Response[*entity.Product]) {

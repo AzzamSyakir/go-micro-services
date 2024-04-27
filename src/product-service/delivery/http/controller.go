@@ -23,10 +23,8 @@ func NewProductController(productUseCase *use_case.ProductUseCase) *ProductContr
 func (ProductController *ProductController) GetProduct(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
-	foundProduct, foundProductErr := ProductController.ProductUseCase.GetOneById(id)
-	if foundProductErr == nil {
-		response.NewResponse(writer, foundProduct)
-	}
+	foundProduct := ProductController.ProductUseCase.GetOneById(id)
+	response.NewResponse(writer, foundProduct)
 }
 
 func (ProductController *ProductController) UpdateStock(writer http.ResponseWriter, reader *http.Request) {
@@ -66,16 +64,14 @@ func (productController *ProductController) CreateProduct(writer http.ResponseWr
 		return
 	}
 
-	result := productController.ProductUseCase.Createproduct(request)
+	result := productController.ProductUseCase.CreateProduct(request)
 
 	response.NewResponse(writer, result)
 }
 
 func (productController *ProductController) ListProduct(writer http.ResponseWriter, reader *http.Request) {
-	product, productErr := productController.ProductUseCase.ListProduct()
-	if productErr == nil {
-		response.NewResponse(writer, product)
-	}
+	product := productController.ProductUseCase.ListProduct()
+	response.NewResponse(writer, product)
 }
 
 func (productController *ProductController) DeleteProduct(writer http.ResponseWriter, reader *http.Request) {
