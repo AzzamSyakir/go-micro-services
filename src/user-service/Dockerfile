@@ -4,13 +4,14 @@ FROM golang:1.22-alpine
 #install dependencies
 RUN apk update
 RUN apk add --no-cache git build-base
+RUN go install github.com/cosmtrek/air@latest
+
 
 #setup workdir
 RUN mkdir -p /app
 ENV WORKDIR /app
 WORKDIR $WORKDIR
 
-RUN go install github.com/cosmtrek/air@latest
 
 # copy source from host to docker container
 COPY ./src/user-service/ ./src/user-service/
