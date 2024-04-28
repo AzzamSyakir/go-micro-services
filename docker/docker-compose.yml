@@ -64,6 +64,8 @@ services:
       - ${POSTGRES_AUTH_PORT}:${POSTGRES_AUTH_PORT}
     volumes:
       - ../db/postgres/auth_db/migration:/docker-entrypoint-initdb.d
+       - ../db/postgres/auth_db/data:/var/lib/postgresql/data
+
 
 
   user-db:
@@ -82,6 +84,8 @@ services:
       - ${POSTGRES_USER_PORT}:${POSTGRES_USER_PORT}
     volumes:
       - ../db/postgres/user_db/migration:/docker-entrypoint-initdb.d
+      - ../db/postgres/user_db/data:/var/lib/postgresql/data
+
 
   product-db:
     image: postgres:latest
@@ -99,6 +103,8 @@ services:
       - ${POSTGRES_PRODUCT_PORT}:${POSTGRES_PRODUCT_PORT}
     volumes:
       - ../db/postgres/product_db/migration:/docker-entrypoint-initdb.d
+      - ../db/postgres/product_db/data:/var/lib/postgresql/data
+
 
   order-db:
     image: postgres:latest
@@ -116,3 +122,5 @@ services:
       - ${POSTGRES_ORDER_PORT}:${POSTGRES_ORDER_PORT}
     volumes:
       - ../db/postgres/order_db/migration:/docker-entrypoint-initdb.d
+      - ../db/postgres/order_db/data:/var/lib/postgresql/data
+
