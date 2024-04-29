@@ -1,4 +1,20 @@
 services:
+  # auth-services:
+  #   container_name: auth-services
+  #   build:
+  #     context: ../
+  #     dockerfile: ./src/auth-service/Dockerfile
+  #   environment:
+  #     POSTGRES_HOST: auth-db
+  #   expose:
+  #     - 8080
+  #   ports:
+  #    - ${AUTH_SERVICES_PORT}:${AUTH_SERVICES_PORT}
+  #   depends_on:
+  #     - auth-db
+  #   volumes:
+  #     - ../src/auth-service/:/app/src/auth-service/
+
   user-services:
     container_name: user-services
     build:
@@ -38,12 +54,16 @@ services:
       dockerfile: ./src/order-service/Dockerfile
     environment:
       POSTGRES_HOST: order-db
+      USER_HOST: user-services
+      PRODUCT_HOST: product-services
     expose:
       - 8080
     ports:
      - ${ORDER_SERVICES_PORT}:${ORDER_SERVICES_PORT}
     depends_on:
       - order-db
+      - user-services
+      - product-services
     volumes:
       - ../src/order-service/:/app/src/order-service/
 
