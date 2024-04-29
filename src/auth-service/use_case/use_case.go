@@ -45,12 +45,20 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		}
 
 		foundUser := authUseCase.FindUserByEmail(request.Email.String)
-
+		if foundUser.Data == nil {
+			err = begin.Rollback()
+			result = &model_response.Response[*entity.Session]{
+				Code:    http.StatusBadRequest,
+				Message: "AuthUseCase Login fail, GetUser failed, " + foundUser.Message,
+				Data:    nil,
+			}
+			return err
+		}
 		if foundUser.Errors == true {
 			err = begin.Rollback()
 			result = &model_response.Response[*entity.Session]{
 				Code:    http.StatusNotFound,
-				Message: foundUser.Message,
+				Message: "AuthUseCase Login fail, GetUser failed, " + foundUser.Message,
 				Data:    nil,
 			}
 			return err
