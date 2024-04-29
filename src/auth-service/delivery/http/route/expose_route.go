@@ -2,6 +2,7 @@ package route
 
 import (
 	"go-micro-services/src/auth-service/delivery/http"
+	"go-micro-services/src/auth-service/delivery/http/middleware"
 
 	"github.com/gorilla/mux"
 )
@@ -40,6 +41,7 @@ func (exposeRoute *ExposeRoute) Register() {
 }
 
 type CategoryRoute struct {
+	Middleware          *middleware.AuthMiddleware
 	CategoryRouteRouter *mux.Router
 	CategoryController  *http.ExposeController
 }
@@ -63,6 +65,7 @@ func (CategoryRoute *CategoryRoute) Register() {
 // order route
 
 type OrderRoute struct {
+	Middleware      *middleware.AuthMiddleware
 	Router          *mux.Router
 	OrderController *http.ExposeController
 }
@@ -81,6 +84,7 @@ func (productRoute *OrderRoute) Register() {
 // product route
 
 type ProductRoute struct {
+	Middleware        *middleware.AuthMiddleware
 	Router            *mux.Router
 	ProductController *http.ExposeController
 }
@@ -105,6 +109,7 @@ func (productRoute *ProductRoute) Register() {
 // user route
 
 type UserRoute struct {
+	Middleware     *middleware.AuthMiddleware
 	Router         *mux.Router
 	UserController *http.ExposeController
 }

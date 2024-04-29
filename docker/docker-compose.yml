@@ -64,7 +64,7 @@ services:
       - ${POSTGRES_AUTH_PORT}:${POSTGRES_AUTH_PORT}
     volumes:
       - ../db/postgres/auth_db/migration:/docker-entrypoint-initdb.d
-       - ../db/postgres/auth_db/data:/var/lib/postgresql/data
+      - ../db/postgres/auth_db/data:/var/lib/postgresql/data
 
 
 
