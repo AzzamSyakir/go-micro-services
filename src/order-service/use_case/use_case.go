@@ -40,9 +40,9 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 		if err != nil {
+			fmt.Println("tes")
 			return err
 		}
-
 		//   Products
 		var totalOrderPrice int
 		for i, products := range request.Products {
@@ -143,11 +143,36 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 		}
 	}
 	return result
-
 }
+func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, orderId string, totalOrderPrice int) (result *model_response.Response[*model_response.OrderResponse]) {
+	for _, orderProduct := range request.Products {
+		productId := orderProduct.ProductId.String
+		orderProductsData := &entity.OrderProducts{
+			Id:         null.NewString(uuid.New().String(), true),
+			OrderId:    null.NewString(orderId, true),
+			ProductId:  null.NewString(productId, true),
+			TotalPrice: null.NewInt(int64(totalOrderPrice), true),
+			Qty:        null.NewInt(orderProduct.Qty.Int64, true),
+			CreatedAt:  null.NewTime(time.Now(), true),
+			UpdatedAt:  null.NewTime(time.Now(), true),
+		}
+		_, orderProductsErr := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
+		if orderProductsErr != nil {
+			result = &model_response.Response[*model_response.OrderResponse]{
+				Code:    http.StatusBadRequest,
+				Message: "orderUseCase fail, order is failed, " + orderProductsErr.Error(),
+				Data:    nil,
+			}
+		}
+	}
+	result = nil
+	return result
+}
+
 func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.UserPort)
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.UserHost, orderUseCase.Env.App.UserPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "users", userId)
+	fmt.Println("url GetUser", url)
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 	if newRequestErr != nil {
 		result = &model_response.Response[*entity.User]{
@@ -180,7 +205,7 @@ func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response
 }
 
 func (orderUseCase OrderUseCase) UpdateBalance(userId string, balance int64) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.UserPort)
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.UserHost, orderUseCase.Env.App.UserPort)
 	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "update-balance", userId)
 	payload := map[string]string{"balance": strconv.FormatInt(balance, 10)}
 	jsonPayload, err := json.Marshal(payload)
@@ -220,7 +245,7 @@ func (orderUseCase OrderUseCase) UpdateBalance(userId string, balance int64) (re
 }
 
 func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.ProductPort)
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.ProductHost, orderUseCase.Env.App.ProductPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
 	newRequest, newRequestErr := http.NewRequest(http.MethodGet, url, nil)
 	if newRequestErr != nil {
@@ -252,33 +277,8 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 	return bodyResponseProduct
 }
 
-func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, orderId string, totalOrderPrice int) (result *model_response.Response[*model_response.OrderResponse]) {
-	for _, orderProduct := range request.Products {
-		productId := orderProduct.ProductId.String
-		orderProductsData := &entity.OrderProducts{
-			Id:         null.NewString(uuid.New().String(), true),
-			OrderId:    null.NewString(orderId, true),
-			ProductId:  null.NewString(productId, true),
-			TotalPrice: null.NewInt(int64(totalOrderPrice), true),
-			Qty:        null.NewInt(orderProduct.Qty.Int64, true),
-			CreatedAt:  null.NewTime(time.Now(), true),
-			UpdatedAt:  null.NewTime(time.Now(), true),
-		}
-		_, orderProductsErr := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
-		if orderProductsErr != nil {
-			result = &model_response.Response[*model_response.OrderResponse]{
-				Code:    http.StatusBadRequest,
-				Message: "orderUseCase fail, order is failed, " + orderProductsErr.Error(),
-				Data:    nil,
-			}
-		}
-	}
-	result = nil
-	return result
-}
-
 func (orderUseCase OrderUseCase) UpdateStock(productId string, stock int64) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.Host, orderUseCase.Env.App.ProductPort)
+	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.ProductHost, orderUseCase.Env.App.ProductPort)
 	url := fmt.Sprintf("%s/%s/%s/%s", address, "products", "update-stock", productId)
 	payload := map[string]string{"stock": strconv.FormatInt(stock, 10)}
 	jsonPayload, err := json.Marshal(payload)
@@ -316,5 +316,4 @@ func (orderUseCase OrderUseCase) UpdateStock(productId string, stock int64) (res
 	}
 	result = nil
 	return result
-
 }

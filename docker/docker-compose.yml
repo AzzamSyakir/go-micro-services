@@ -1,4 +1,23 @@
 services:
+  auth-services:
+    container_name: auth-services
+    build:
+      context: ../
+      dockerfile: ./src/auth-service/Dockerfile
+    environment:
+      POSTGRES_HOST: auth-db
+      USER_HOST: user-services
+      PRODUCT_HOST: product-services
+      ORDER_HOST: order-services
+    expose:
+      - 8080
+    ports:
+     - ${AUTH_SERVICES_PORT}:${AUTH_SERVICES_PORT}
+    depends_on:
+      - auth-db
+    volumes:
+      - ../src/auth-service/:/app/src/auth-service/
+
   user-services:
     container_name: user-services
     build:
@@ -15,7 +34,6 @@ services:
     volumes:
       - ../src/user-service/:/app/src/user-service/
 
-      
   product-services:
     container_name: product-services
     build:
@@ -39,6 +57,8 @@ services:
       dockerfile: ./src/order-service/Dockerfile
     environment:
       POSTGRES_HOST: order-db
+      USER_HOST: user-services
+      PRODUCT_HOST: product-services
     expose:
       - 8080
     ports:
@@ -65,7 +85,6 @@ services:
     volumes:
       - ../db/postgres/auth_db/migration:/docker-entrypoint-initdb.d
 
-
   user-db:
     image: postgres:latest
     container_name: user-db
@@ -82,6 +101,7 @@ services:
       - ${POSTGRES_USER_PORT}:${POSTGRES_USER_PORT}
     volumes:
       - ../db/postgres/user_db/migration:/docker-entrypoint-initdb.d
+
 
   product-db:
     image: postgres:latest
@@ -100,6 +120,7 @@ services:
     volumes:
       - ../db/postgres/product_db/migration:/docker-entrypoint-initdb.d
 
+
   order-db:
     image: postgres:latest
     container_name: order-db
@@ -116,3 +137,4 @@ services:
       - ${POSTGRES_ORDER_PORT}:${POSTGRES_ORDER_PORT}
     volumes:
       - ../db/postgres/order_db/migration:/docker-entrypoint-initdb.d
+

@@ -2,6 +2,7 @@ package route
 
 import (
 	"go-micro-services/src/auth-service/delivery/http"
+	"go-micro-services/src/auth-service/delivery/http/middleware"
 
 	"github.com/gorilla/mux"
 )
@@ -40,14 +41,16 @@ func (exposeRoute *ExposeRoute) Register() {
 }
 
 type CategoryRoute struct {
+	Middleware          *middleware.AuthMiddleware
 	CategoryRouteRouter *mux.Router
 	CategoryController  *http.ExposeController
 }
 
-func NewCategoryRoute(router *mux.Router, CategoryController *http.ExposeController) *CategoryRoute {
+func NewCategoryRoute(router *mux.Router, CategoryController *http.ExposeController, middleware *middleware.AuthMiddleware) *CategoryRoute {
 	CategoryRoute := &CategoryRoute{
 		CategoryRouteRouter: router.PathPrefix("/categories").Subrouter(),
 		CategoryController:  CategoryController,
+		Middleware:          middleware,
 	}
 	return CategoryRoute
 }
@@ -63,14 +66,16 @@ func (CategoryRoute *CategoryRoute) Register() {
 // order route
 
 type OrderRoute struct {
+	Middleware      *middleware.AuthMiddleware
 	Router          *mux.Router
 	OrderController *http.ExposeController
 }
 
-func NewOrderRoute(router *mux.Router, orderController *http.ExposeController) *OrderRoute {
+func NewOrderRoute(router *mux.Router, orderController *http.ExposeController, middleware *middleware.AuthMiddleware) *OrderRoute {
 	orderRoute := &OrderRoute{
 		Router:          router.PathPrefix("/orders").Subrouter(),
 		OrderController: orderController,
+		Middleware:      middleware,
 	}
 	return orderRoute
 }
@@ -81,14 +86,16 @@ func (productRoute *OrderRoute) Register() {
 // product route
 
 type ProductRoute struct {
+	Middleware        *middleware.AuthMiddleware
 	Router            *mux.Router
 	ProductController *http.ExposeController
 }
 
-func NewProductRoute(router *mux.Router, productController *http.ExposeController) *ProductRoute {
+func NewProductRoute(router *mux.Router, productController *http.ExposeController, middleware *middleware.AuthMiddleware) *ProductRoute {
 	productRoute := &ProductRoute{
 		Router:            router.PathPrefix("/products").Subrouter(),
 		ProductController: productController,
+		Middleware:        middleware,
 	}
 	return productRoute
 }
@@ -105,20 +112,22 @@ func (productRoute *ProductRoute) Register() {
 // user route
 
 type UserRoute struct {
+	Middleware     *middleware.AuthMiddleware
 	Router         *mux.Router
 	UserController *http.ExposeController
 }
 
-func NewUserRoute(router *mux.Router, userController *http.ExposeController) *UserRoute {
+func NewUserRoute(router *mux.Router, userController *http.ExposeController, middleware *middleware.AuthMiddleware) *UserRoute {
 	userRoute := &UserRoute{
 		Router:         router.PathPrefix("/users").Subrouter(),
 		UserController: userController,
+		Middleware:     middleware,
 	}
 	return userRoute
 }
 
 func (userRoute *UserRoute) Register() {
-	userRoute.Router.HandleFunc("", userRoute.UserController.CreateUser).Methods("POST")
+	userRoute.Router.Use(userRoute.Middleware.Middleware)
 	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.DetailUser).Methods("GET")
 	userRoute.Router.HandleFunc("/email/{email}", userRoute.UserController.GetUserByEmail).Methods("GET")
 	userRoute.Router.HandleFunc("", userRoute.UserController.FetchUser).Methods("GET")

@@ -27,9 +27,9 @@ func (exposeController *ExposeController) FetchUser(writer http.ResponseWriter, 
 	fetchUser := exposeController.ExposeUseCase.ListUsers()
 	response.NewResponse(writer, fetchUser)
 }
-func (exposeController *ExposeController) CreateUser(writer http.ResponseWriter, reader *http.Request) {
+func (exposeController *ExposeController) Register(writer http.ResponseWriter, reader *http.Request) {
 
-	request := &model_request.CreateUser{}
+	request := &model_request.Register{}
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
 		http.Error(writer, decodeErr.Error(), 404)

@@ -6,6 +6,9 @@ import (
 
 type AppEnv struct {
 	Host        string
+	UserHost    string
+	ProductHost string
+	OrderHost   string
 	AuthPort    string
 	OrderPort   string
 	UserPort    string
@@ -29,6 +32,9 @@ func NewEnvConfig() *EnvConfig {
 	envConfig := &EnvConfig{
 		App: &AppEnv{
 			Host:        os.Getenv("GATEWAY_APP_HOST"),
+			UserHost:    os.Getenv("USER_HOST"),
+			ProductHost: os.Getenv("PRODUCT_HOST"),
+			OrderHost:   os.Getenv("ORDER_HOST"),
 			AuthPort:    os.Getenv("AUTH_SERVICES_PORT"),
 			OrderPort:   os.Getenv("ORDER_SERVICES_PORT"),
 			UserPort:    os.Getenv("USER_SERVICES_PORT"),

@@ -35,14 +35,13 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-
+			return
 		}
 	}(rows)
 
 	ordersResponse := &model_response.OrderResponse{
 		Id:          orders.Id,
 		UserId:      orders.UserId,
-		Name:        orders.Name,
 		TotalPrice:  orders.TotalPrice,
 		TotalPaid:   orders.TotalPaid,
 		TotalReturn: orders.TotalReturn,
@@ -78,7 +77,7 @@ func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProduc
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-
+			return
 		}
 	}(rows)
 
