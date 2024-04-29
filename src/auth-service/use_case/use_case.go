@@ -234,7 +234,7 @@ func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *
 }
 
 func (authUseCase *AuthUseCase) FindUserByEmail(email string) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", authUseCase.Env.App.Host, authUseCase.Env.App.UserPort)
+	address := fmt.Sprintf("http://%s:%s", authUseCase.Env.App.UserHost, authUseCase.Env.App.UserPort)
 	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "email", email)
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 	if newRequestErr != nil {
