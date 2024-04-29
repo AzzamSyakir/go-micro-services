@@ -40,8 +40,10 @@ func NewAuthRoute(router *mux.Router, AuthController *http.AuthController) *Auth
 	return AuthRoute
 }
 
-func (AuthRoute *AuthRoute) Register() {
-	AuthRoute.Router.HandleFunc("/login", AuthRoute.AuthController.Login).Methods("POST")
-	AuthRoute.Router.HandleFunc("/access-token", AuthRoute.AuthController.Login).Methods("POST")
-	AuthRoute.Router.HandleFunc("/logout", AuthRoute.AuthController.Login).Methods("POST")
+func (authRoute *AuthRoute) Register() {
+	authRoute.Router.HandleFunc("/register", authRoute.AuthController.Register).Methods("POST")
+
+	authRoute.Router.HandleFunc("/login", authRoute.AuthController.Login).Methods("POST")
+	authRoute.Router.HandleFunc("/access-token", authRoute.AuthController.Login).Methods("POST")
+	authRoute.Router.HandleFunc("/logout", authRoute.AuthController.Login).Methods("POST")
 }

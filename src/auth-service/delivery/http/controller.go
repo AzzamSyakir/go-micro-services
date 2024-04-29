@@ -11,14 +11,28 @@ import (
 )
 
 type AuthController struct {
-	AuthUseCase *use_case.AuthUseCase
+	AuthUseCase   *use_case.AuthUseCase
+	ExposeUseCase *use_case.ExposeUseCase
 }
 
-func NewAuthController(authUseCase *use_case.AuthUseCase) *AuthController {
+func NewAuthController(authUseCase *use_case.AuthUseCase, exposeUseCase *use_case.ExposeUseCase) *AuthController {
 	authController := &AuthController{
-		AuthUseCase: authUseCase,
+		AuthUseCase:   authUseCase,
+		ExposeUseCase: exposeUseCase,
 	}
 	return authController
+}
+func (authController *AuthController) Register(writer http.ResponseWriter, reader *http.Request) {
+
+	request := &model_request.Register{}
+	decodeErr := json.NewDecoder(reader.Body).Decode(request)
+	if decodeErr != nil {
+		http.Error(writer, decodeErr.Error(), 404)
+	}
+
+	result := authController.ExposeUseCase.CreateUser(request)
+
+	response.NewResponse(writer, result)
 }
 func (authController *AuthController) Login(writer http.ResponseWriter, reader *http.Request) {
 	request := &model_request.LoginRequest{}

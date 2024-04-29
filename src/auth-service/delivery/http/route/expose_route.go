@@ -46,10 +46,11 @@ type CategoryRoute struct {
 	CategoryController  *http.ExposeController
 }
 
-func NewCategoryRoute(router *mux.Router, CategoryController *http.ExposeController) *CategoryRoute {
+func NewCategoryRoute(router *mux.Router, CategoryController *http.ExposeController, middleware *middleware.AuthMiddleware) *CategoryRoute {
 	CategoryRoute := &CategoryRoute{
 		CategoryRouteRouter: router.PathPrefix("/categories").Subrouter(),
 		CategoryController:  CategoryController,
+		Middleware:          middleware,
 	}
 	return CategoryRoute
 }
@@ -70,10 +71,11 @@ type OrderRoute struct {
 	OrderController *http.ExposeController
 }
 
-func NewOrderRoute(router *mux.Router, orderController *http.ExposeController) *OrderRoute {
+func NewOrderRoute(router *mux.Router, orderController *http.ExposeController, middleware *middleware.AuthMiddleware) *OrderRoute {
 	orderRoute := &OrderRoute{
 		Router:          router.PathPrefix("/orders").Subrouter(),
 		OrderController: orderController,
+		Middleware:      middleware,
 	}
 	return orderRoute
 }
@@ -89,10 +91,11 @@ type ProductRoute struct {
 	ProductController *http.ExposeController
 }
 
-func NewProductRoute(router *mux.Router, productController *http.ExposeController) *ProductRoute {
+func NewProductRoute(router *mux.Router, productController *http.ExposeController, middleware *middleware.AuthMiddleware) *ProductRoute {
 	productRoute := &ProductRoute{
 		Router:            router.PathPrefix("/products").Subrouter(),
 		ProductController: productController,
+		Middleware:        middleware,
 	}
 	return productRoute
 }
@@ -114,16 +117,17 @@ type UserRoute struct {
 	UserController *http.ExposeController
 }
 
-func NewUserRoute(router *mux.Router, userController *http.ExposeController) *UserRoute {
+func NewUserRoute(router *mux.Router, userController *http.ExposeController, middleware *middleware.AuthMiddleware) *UserRoute {
 	userRoute := &UserRoute{
 		Router:         router.PathPrefix("/users").Subrouter(),
 		UserController: userController,
+		Middleware:     middleware,
 	}
 	return userRoute
 }
 
 func (userRoute *UserRoute) Register() {
-	userRoute.Router.HandleFunc("", userRoute.UserController.CreateUser).Methods("POST")
+	userRoute.Router.Use(userRoute.Middleware.Middleware)
 	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.DetailUser).Methods("GET")
 	userRoute.Router.HandleFunc("/email/{email}", userRoute.UserController.GetUserByEmail).Methods("GET")
 	userRoute.Router.HandleFunc("", userRoute.UserController.FetchUser).Methods("GET")

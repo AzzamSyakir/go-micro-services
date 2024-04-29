@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-micro-services/src/auth-service/config"
 	httpdelivery "go-micro-services/src/auth-service/delivery/http"
+	"go-micro-services/src/auth-service/delivery/http/middleware"
 	"go-micro-services/src/auth-service/delivery/http/route"
 	"go-micro-services/src/auth-service/repository"
 	"go-micro-services/src/auth-service/use_case"
@@ -40,18 +41,19 @@ func NewWebContainer() *WebContainer {
 
 	useCaseContainer := NewUseCaseContainer(authUseCase, exposeUseCase)
 
-	authController := httpdelivery.NewAuthController(authUseCase)
+	authController := httpdelivery.NewAuthController(authUseCase, exposeUseCase)
 	exposeController := httpdelivery.NewExposeController(exposeUseCase)
 
 	controllerContainer := NewControllerContainer(authController, exposeController)
 
 	router := mux.NewRouter()
+	authMiddleware := middleware.NewAuthMiddleware(*authRepository, authDBConfig)
 	authRoute := route.NewAuthRoute(router, authController)
 	// expose route
-	userRoute := route.NewUserRoute(router, exposeController)
-	productRoute := route.NewProductRoute(router, exposeController)
-	categoryRoute := route.NewCategoryRoute(router, exposeController)
-	orderRoute := route.NewOrderRoute(router, exposeController)
+	userRoute := route.NewUserRoute(router, exposeController, authMiddleware)
+	productRoute := route.NewProductRoute(router, exposeController, authMiddleware)
+	categoryRoute := route.NewCategoryRoute(router, exposeController, authMiddleware)
+	orderRoute := route.NewOrderRoute(router, exposeController, authMiddleware)
 
 	rootRoute := route.NewRootRoute(
 		router,
