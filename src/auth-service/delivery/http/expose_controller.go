@@ -6,6 +6,7 @@ import (
 	"go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/use_case"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -201,15 +202,15 @@ func (exposeController *ExposeController) DetailCategory(writer http.ResponseWri
 // order
 
 func (exposeController *ExposeController) Orders(writer http.ResponseWriter, reader *http.Request) {
-	vars := mux.Vars(reader)
-	userId := vars["id"]
-	request := &model_request.OrderRequest{}
 
+	request := &model_request.OrderRequest{}
+	token := reader.Header.Get("Authorization")
+	tokenString := strings.Replace(token, "Bearer ", "", 1)
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
 		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
 		return
 	}
-	result := exposeController.ExposeUseCase.Orders(userId, request)
+	result := exposeController.ExposeUseCase.Orders(tokenString, request)
 	response.NewResponse(writer, result)
 }

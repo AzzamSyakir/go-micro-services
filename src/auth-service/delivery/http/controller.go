@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	"go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/use_case"
@@ -46,7 +45,6 @@ func (authController *AuthController) Login(writer http.ResponseWriter, reader *
 func (authController *AuthController) Logout(writer http.ResponseWriter, reader *http.Request) {
 	token := reader.Header.Get("Authorization")
 	tokenString := strings.Replace(token, "Bearer ", "", 1)
-	fmt.Println(tokenString)
 
 	result := authController.AuthUseCase.Logout(tokenString)
 	response.NewResponse(writer, result)

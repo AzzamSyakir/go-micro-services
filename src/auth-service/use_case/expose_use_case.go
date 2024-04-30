@@ -8,16 +8,25 @@ import (
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	model_response "go-micro-services/src/auth-service/model/response"
+	"go-micro-services/src/auth-service/repository"
 	"net/http"
 )
 
 type ExposeUseCase struct {
-	Env *config.EnvConfig
+	DatabaseConfig *config.DatabaseConfig
+	AuthRepository *repository.AuthRepository
+	Env            *config.EnvConfig
 }
 
-func NewExposeUseCase(envConfig *config.EnvConfig) *ExposeUseCase {
+func NewExposeUseCase(
+	databaseConfig *config.DatabaseConfig,
+	authRepository *repository.AuthRepository,
+	env *config.EnvConfig,
+) *ExposeUseCase {
 	userUseCase := &ExposeUseCase{
-		Env: envConfig,
+		DatabaseConfig: databaseConfig,
+		AuthRepository: authRepository,
+		Env:            env,
 	}
 	return userUseCase
 }
@@ -681,9 +690,25 @@ func (exposeUseCase *ExposeUseCase) DetailCategory(id string) (result *model_res
 
 // order
 
-func (exposeUseCase *ExposeUseCase) Orders(userId string, request *model_request.OrderRequest) (result *model_response.Response[*model_response.OrderResponse]) {
+func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_request.OrderRequest) (result *model_response.Response[*model_response.OrderResponse]) {
+	begin, err := exposeUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+	if err != nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Data:    nil,
+			Message: "AuthUseCase error, order is failed" + err.Error(),
+		}
+	}
+	session, err := exposeUseCase.AuthRepository.FindOneByAccToken(begin, tokenString)
+	if err != nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Data:    nil,
+			Message: "AuthUseCase error, order is failed" + err.Error(),
+		}
+	}
+	fmt.Println("UserId from token", session.UserId)
+	userId := session.UserId
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.OrderHost, exposeUseCase.Env.App.OrderPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "orders", userId)
+	url := fmt.Sprintf("%s/%s/%s", address, "orders", userId.String)
 	jsonPayload, err := json.Marshal(request)
 	if err != nil {
 		panic(err)
