@@ -31,22 +31,19 @@ func (userSeeder *UserSeeder) Up() {
 			panic(hashedPasswordErr)
 		}
 		password := null.NewString(string(hashedPassword), true)
-		begin, beginErr := userSeeder.DatabaseConfig.CockroachdbDatabase.Connection.Begin()
+		begin, beginErr := userSeeder.DatabaseConfig.UserDB.Connection.Begin()
 		if beginErr != nil {
 			panic(beginErr)
 		}
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO \"user\" (id, name, username, email, password, avatar_url, bio, is_verified, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
+				"INSERT INTO \"users\" (id, name, password, email, balance,  created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 				user.Id,
 				user.Name,
-				user.Username,
-				user.Email,
 				password,
-				user.AvatarUrl,
-				user.Bio,
-				user.IsVerified,
+				user.Email,
+				user.Balance,
 				user.CreatedAt,
 				user.UpdatedAt,
 				user.DeletedAt,
@@ -68,14 +65,14 @@ func (userSeeder *UserSeeder) Up() {
 
 func (userSeeder *UserSeeder) Down() {
 	for _, user := range userSeeder.UserMock.Data {
-		begin, beginErr := userSeeder.DatabaseConfig.CockroachdbDatabase.Connection.Begin()
+		begin, beginErr := userSeeder.DatabaseConfig.UserDB.Connection.Begin()
 		if beginErr != nil {
 			panic(beginErr)
 		}
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM \"user\" WHERE id = $1 LIMIT 1;",
+				"DELETE FROM \"users\" WHERE id = $1 LIMIT 1;",
 				user.Id,
 			)
 			return err
