@@ -123,7 +123,15 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			return err
 		}
 		//    orderProducts
-		_ = orderUseCase.OrderProducts(begin, request, order.Data.Id.String, totalOrderPrice)
+		var productsInfo []*entity.OrderProducts
+		for _, orderProducts := range request.Products {
+			productId := orderProducts.ProductId.String
+			Qty := orderProducts.Qty.Int64
+
+			orderProduct := orderUseCase.OrderProducts(begin, request, productId, Qty, order.Data.Id.String, totalOrderPrice)
+			productsInfoLoop := orderProduct.Data
+			productsInfo = append(productsInfo, productsInfoLoop...)
+		}
 
 		err = begin.Commit()
 
@@ -132,6 +140,8 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			Message: "orderUseCase success, order is success",
 			Data:    order.Data,
 		}
+		result.Data.Products = productsInfo
+
 		return err
 	})
 
@@ -144,35 +154,35 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	}
 	return result
 }
-func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, orderId string, totalOrderPrice int) (result *model_response.Response[*model_response.OrderResponse]) {
-	for _, orderProduct := range request.Products {
-		productId := orderProduct.ProductId.String
-		orderProductsData := &entity.OrderProducts{
-			Id:         null.NewString(uuid.New().String(), true),
-			OrderId:    null.NewString(orderId, true),
-			ProductId:  null.NewString(productId, true),
-			TotalPrice: null.NewInt(int64(totalOrderPrice), true),
-			Qty:        null.NewInt(orderProduct.Qty.Int64, true),
-			CreatedAt:  null.NewTime(time.Now(), true),
-			UpdatedAt:  null.NewTime(time.Now(), true),
-		}
-		_, orderProductsErr := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
-		if orderProductsErr != nil {
-			result = &model_response.Response[*model_response.OrderResponse]{
-				Code:    http.StatusBadRequest,
-				Message: "orderUseCase fail, order is failed, " + orderProductsErr.Error(),
-				Data:    nil,
-			}
+func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, productId string, Qty int64, orderId string, totalOrderPrice int) (result *model_response.Response[[]*entity.OrderProducts]) {
+	orderProductsData := &entity.OrderProducts{
+		Id:         null.NewString(uuid.New().String(), true),
+		OrderId:    null.NewString(orderId, true),
+		ProductId:  null.NewString(productId, true),
+		TotalPrice: null.NewInt(int64(totalOrderPrice), true),
+		Qty:        null.NewInt(Qty, true),
+		CreatedAt:  null.NewTime(time.Now(), true),
+		UpdatedAt:  null.NewTime(time.Now(), true),
+	}
+	var productsInfo []*entity.OrderProducts
+	orderProduct, orderProductsErr := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
+	if orderProductsErr != nil {
+		result = &model_response.Response[[]*entity.OrderProducts]{
+			Code:    http.StatusBadRequest,
+			Message: "orderUseCase fail, order is failed, " + orderProductsErr.Error(),
+			Data:    nil,
 		}
 	}
-	result = nil
+	productsInfo = append(productsInfo, orderProduct)
+	result = &model_response.Response[[]*entity.OrderProducts]{
+		Data: productsInfo,
+	}
 	return result
 }
 
 func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response.Response[*entity.User]) {
 	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.UserHost, orderUseCase.Env.App.UserPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "users", userId)
-	fmt.Println("url GetUser", url)
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 	if newRequestErr != nil {
 		result = &model_response.Response[*entity.User]{

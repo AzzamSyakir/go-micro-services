@@ -37,7 +37,7 @@ func NewWebContainer() *WebContainer {
 	repositoryContainer := NewRepositoryContainer(authRepository)
 
 	authUseCase := use_case.NewAuthUseCase(authDBConfig, authRepository, envConfig)
-	exposeUseCase := use_case.NewExposeUseCase(envConfig)
+	exposeUseCase := use_case.NewExposeUseCase(authDBConfig, authRepository, envConfig)
 
 	useCaseContainer := NewUseCaseContainer(authUseCase, exposeUseCase)
 
