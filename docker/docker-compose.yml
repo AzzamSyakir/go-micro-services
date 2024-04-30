@@ -28,7 +28,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${USER_SERVICES_PORT}:${USER_SERVICES_PORT}
+     - ${USER_SERVICES_PORT}
     depends_on:
       - user-db
     volumes:
@@ -44,7 +44,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${PRODUCT_SERVICES_PORT}:${PRODUCT_SERVICES_PORT}
+     - ${PRODUCT_SERVICES_PORT}
     depends_on:
       - product-db
     volumes:
@@ -62,7 +62,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${ORDER_SERVICES_PORT}:${ORDER_SERVICES_PORT}
+     - ${ORDER_SERVICES_PORT}
     depends_on:
       - order-db
     volumes:
