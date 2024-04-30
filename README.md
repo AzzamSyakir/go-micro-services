@@ -32,13 +32,11 @@ This project uses the ``micro-services`` architecture as explained above, this `
 ```bash
 git clone "github repo links"
 ```
-### build and run docker projects 
-```bash
-docker compose -f ./docker/docker-compose.yml build --no-cache
-```
+### build and run  projects 
 ```bash
 go mod tidy
 ```
+
 ```bash
-docker compose -f ./docker/docker-compose.yml up -d
+make start-docker
 ```
