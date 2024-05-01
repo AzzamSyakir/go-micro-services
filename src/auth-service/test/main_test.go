@@ -8,7 +8,7 @@ import (
 )
 
 func Test(t *testing.T) {
-	chdirErr := os.Chdir("../.")
+	chdirErr := os.Chdir("../../../.")
 	if chdirErr != nil {
 		t.Fatal(chdirErr)
 	}
