@@ -14,7 +14,7 @@ import (
 
 type WebContainer struct {
 	Env                *config.EnvConfig
-	ProductDatabase    *config.DatabaseConfig
+	ProductDB          *config.DatabaseConfig
 	ProductRepository  *RepositoryContainer
 	CategoryRepository *RepositoryContainer
 	UseCase            *UseCaseContainer
@@ -59,7 +59,7 @@ func NewWebContainer() *WebContainer {
 
 	webContainer := &WebContainer{
 		Env:               envConfig,
-		ProductDatabase:   productDBConfig,
+		ProductDB:         productDBConfig,
 		ProductRepository: repositoryContainer,
 		UseCase:           useCaseContainer,
 		Controller:        controllerContainer,

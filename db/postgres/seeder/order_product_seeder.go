@@ -12,7 +12,7 @@ type OrderProductSeeder struct {
 	OrderProductMock *mock.OrderProductsMock
 }
 
-func NewOrderProductMock(
+func NewOrderProductSeeder(
 	databaseConfig *config.DatabaseConfig,
 	orderSeeder *OrderSeeder,
 	productSeeder *ProductSeeder,
@@ -33,7 +33,7 @@ func (OrderProductSeeder *OrderProductSeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO \"order_products\" (id, order_id, product_id, total_price, qty ,created_at, updated_at deleted_at) VALUES ($1, $2, $3, $4, $5,);",
+				"INSERT INTO order_products (id, order_id, product_id, total_price, qty ,created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 				OrderProduct.Id,
 				OrderProduct.OrderId,
 				OrderProduct.ProductId,
@@ -67,7 +67,7 @@ func (orderProductSeeder *OrderProductSeeder) Down() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM \"categories\" WHERE id = $1 LIMIT 1;",
+				"DELETE FROM \"order_products\" WHERE id = $1;",
 				category.Id,
 			)
 			return err

@@ -38,7 +38,7 @@ func (userSeeder *UserSeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO \"users\" (id, name, password, email, balance,  created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
+				"INSERT INTO users (id, name, password, email, balance,  created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 				user.Id,
 				user.Name,
 				password,
@@ -69,10 +69,9 @@ func (userSeeder *UserSeeder) Down() {
 		if beginErr != nil {
 			panic(beginErr)
 		}
-
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM \"users\" WHERE id = $1 LIMIT 1;",
+				"DELETE FROM users WHERE id = $1;",
 				user.Id,
 			)
 			return err

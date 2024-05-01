@@ -12,7 +12,7 @@ type OrderSeeder struct {
 	OrderMock      *mock.OrderMock
 }
 
-func NewOrderMock(
+func NewOrderSeeder(
 	databaseConfig *config.DatabaseConfig,
 	userSeeder *UserSeeder,
 ) *OrderSeeder {
@@ -32,7 +32,7 @@ func (OrderSeeder *OrderSeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO \"orders\" (id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at deleted_at) VALUES ($1, $2, $3, $4, $5,);",
+				"INSERT INTO orders (id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
 				Order.Id,
 				Order.UserId,
 				Order.TotalPrice,
@@ -67,7 +67,7 @@ func (orderSeeder *OrderSeeder) Down() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM \"orders\" WHERE id = $1 LIMIT 1;",
+				"DELETE FROM \"orders\" WHERE id = $1;",
 				category.Id,
 			)
 			return err

@@ -25,10 +25,10 @@ func NewUserMock() *UserMock {
 				Id:        null.NewString(uuid.NewString(), true),
 				Name:      null.NewString("name0", true),
 				Email:     null.NewString("email"+uuid.NewString()+"@mail.com", true),
-				Password:  null.NewString("password0", true),
+				Password:  null.NewString("password1", true),
 				Balance:   null.NewInt(100000, true),
-				CreatedAt: null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
-				UpdatedAt: null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
+				CreatedAt: null.NewTime(currentTimeFromRfc3339.Add(1*time.Second), true),
+				UpdatedAt: null.NewTime(currentTimeFromRfc3339.Add(1*time.Second), true),
 				DeletedAt: null.NewTime(time.Time{}, false),
 			},
 			{
@@ -43,5 +43,6 @@ func NewUserMock() *UserMock {
 			},
 		},
 	}
+
 	return userMock
 }

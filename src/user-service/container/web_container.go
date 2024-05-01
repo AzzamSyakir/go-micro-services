@@ -2,24 +2,23 @@ package container
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"go-micro-services/src/user-service/config"
 	httpdelivery "go-micro-services/src/user-service/delivery/http"
 	"go-micro-services/src/user-service/delivery/http/route"
 	"go-micro-services/src/user-service/repository"
 	"go-micro-services/src/user-service/use_case"
+
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 type WebContainer struct {
-	Env             *config.EnvConfig
-	UserDatabase    *config.DatabaseConfig
-	ProductDatabase *config.DatabaseConfig
-	OrderDatabase   *config.DatabaseConfig
-	Repository      *RepositoryContainer
-	UseCase         *UseCaseContainer
-	Controller      *ControllerContainer
-	Route           *route.RootRoute
+	Env        *config.EnvConfig
+	UserDB     *config.DatabaseConfig
+	Repository *RepositoryContainer
+	UseCase    *UseCaseContainer
+	Controller *ControllerContainer
+	Route      *route.RootRoute
 }
 
 func NewWebContainer() *WebContainer {
@@ -53,12 +52,12 @@ func NewWebContainer() *WebContainer {
 	rootRoute.Register()
 
 	webContainer := &WebContainer{
-		Env:          envConfig,
-		UserDatabase: userDBConfig,
-		Repository:   repositoryContainer,
-		UseCase:      useCaseContainer,
-		Controller:   controllerContainer,
-		Route:        rootRoute,
+		Env:        envConfig,
+		UserDB:     userDBConfig,
+		Repository: repositoryContainer,
+		UseCase:    useCaseContainer,
+		Controller: controllerContainer,
+		Route:      rootRoute,
 	}
 
 	return webContainer

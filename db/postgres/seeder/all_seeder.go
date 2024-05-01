@@ -36,10 +36,10 @@ func (allSeeder *AllSeeder) Up() {
 	fmt.Println("Seeder up started.")
 	allSeeder.User.Up()
 	allSeeder.Session.Up()
+	allSeeder.Category.Up()
 	allSeeder.Product.Up()
 	allSeeder.Order.Up()
 	allSeeder.OrderProduct.Up()
-	allSeeder.Category.Up()
 	fmt.Println("Seeder up finished.")
 }
 
@@ -48,8 +48,8 @@ func (allSeeder *AllSeeder) Down() {
 	allSeeder.User.Down()
 	allSeeder.Session.Down()
 	allSeeder.Product.Down()
-	allSeeder.Order.Down()
 	allSeeder.OrderProduct.Down()
+	allSeeder.Order.Down()
 	allSeeder.Category.Down()
 	fmt.Println("Seeder down finished.")
 }

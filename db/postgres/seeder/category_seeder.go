@@ -12,7 +12,7 @@ type CategorySeeder struct {
 	CategoryMock   *mock.CategoryMock
 }
 
-func NewCategoryMock(
+func NewCategorSeeder(
 	databaseConfig *config.DatabaseConfig,
 ) *CategorySeeder {
 	categorySeeder := &CategorySeeder{
@@ -31,7 +31,7 @@ func (categorySeeder *CategorySeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO \"categories\" (id, name, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5,);",
+				"INSERT INTO \"categories\" (id, name, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5);",
 				category.Id,
 				category.Name,
 				category.CreatedAt,
@@ -62,7 +62,7 @@ func (categorySeeder *CategorySeeder) Down() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM \"categories\" WHERE id = $1 LIMIT 1;",
+				"DELETE FROM \"categories\" WHERE id = $1;",
 				category.Id,
 			)
 			return err

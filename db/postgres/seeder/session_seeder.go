@@ -32,12 +32,12 @@ func (sessionSeeder *SessionSeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO \"sessions\" (id, user_id, access_token, refresh_token, acces_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
+				"INSERT INTO sessions (id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
 				session.Id,
 				session.UserId,
 				session.AccessToken,
 				session.RefreshToken,
-				session.RefreshTokenExpiredAt,
+				session.AccessTokenExpiredAt,
 				session.RefreshTokenExpiredAt,
 				session.CreatedAt,
 				session.UpdatedAt,
@@ -67,7 +67,7 @@ func (sessionSeeder *SessionSeeder) Down() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM \"sessions\" WHERE id = $1 LIMIT 1;",
+				"DELETE FROM \"sessions\" WHERE id = $1;",
 				session.Id,
 			)
 			return err
