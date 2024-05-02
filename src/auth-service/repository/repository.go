@@ -154,7 +154,7 @@ func (sessionRepository *AuthRepository) PatchOneById(begin *sql.Tx, id string, 
 }
 func (sessionRepository *AuthRepository) DeleteOneById(begin *sql.Tx, id string) (result *entity.Session, err error) {
 	rows, queryErr := begin.Query(
-		`DELETE FROM "session" WHERE id=$1 LIMIT 1 RETURNING id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at;`,
+		`DELETE FROM sessions WHERE id=$1  RETURNING id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at;`,
 		id,
 	)
 	if queryErr != nil {

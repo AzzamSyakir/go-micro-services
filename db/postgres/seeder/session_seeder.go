@@ -67,7 +67,7 @@ func (sessionSeeder *SessionSeeder) Down() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM \"sessions\" WHERE id = $1;",
+				"DELETE FROM sessions WHERE id = $1;",
 				session.Id,
 			)
 			return err
