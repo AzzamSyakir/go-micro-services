@@ -32,8 +32,8 @@ func NewAuthWeb(test *testing.T) *AuthWeb {
 func (authWeb *AuthWeb) Start() {
 	authWeb.Test.Run("AuthWeb_Register_Succeed", authWeb.Register)
 	authWeb.Test.Run("AuthWeb_Login_Succeed", authWeb.Login)
-	// authWeb.Test.Run("AuthWeb_Logout_Succeed", authWeb.Logout)
-	// authWeb.Test.Run("AuthWeb_GetNewAccessToken_Succeed", authWeb.GetNewAccessToken)
+	authWeb.Test.Run("AuthWeb_Logout_Succeed", authWeb.Logout)
+	authWeb.Test.Run("AuthWeb_GetNewAccessToken_Succeed", authWeb.GetNewAccessToken)
 }
 
 func (authWeb *AuthWeb) Register(t *testing.T) {
@@ -41,15 +41,14 @@ func (authWeb *AuthWeb) Register(t *testing.T) {
 
 	testWeb := GetTestWeb()
 	defer testWeb.AllSeeder.Down()
-	defer fmt.Println("tes selesai")
 
 	mockAuth := testWeb.AllSeeder.User.UserMock.Data[0]
 
 	bodyRequest := &model_request.RegisterRequest{}
 	bodyRequest.Name = null.NewString(mockAuth.Name.String, true)
 	bodyRequest.Email = null.NewString(mockAuth.Email.String, true)
-	bodyRequest.Balance = null.NewInt(mockAuth.Balance.Int64, true)
 	bodyRequest.Password = null.NewString(mockAuth.Password.String, true)
+	bodyRequest.Balance = null.NewInt(mockAuth.Balance.Int64, true)
 
 	bodyRequestJsonByte, marshalErr := json.Marshal(bodyRequest)
 	if marshalErr != nil {
@@ -73,7 +72,7 @@ func (authWeb *AuthWeb) Register(t *testing.T) {
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
-	fmt.Println("bodyResponse ", bodyResponse)
+
 	assert.Equal(t, http.StatusCreated, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	assert.Equal(t, mockAuth.Name.String, bodyResponse.Data.Name.String)

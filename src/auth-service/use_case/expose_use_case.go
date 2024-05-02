@@ -66,7 +66,7 @@ func (exposeUseCase *ExposeUseCase) ListUsers() (result *model_response.Response
 	}
 	return bodyResponseUser
 }
-func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.Register) (result *model_response.Response[*entity.User]) {
+func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRequest) (result *model_response.Response[*entity.User]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.UserHost, exposeUseCase.Env.App.UserPort)
 	url := fmt.Sprintf("%s/%s", address, "users")
 

@@ -13,7 +13,7 @@ type UserPatchOneByIdRequest struct {
 	Password null.String `json:"password"`
 	Balance  null.Int    `json:"balance"`
 }
-type Register struct {
+type RegisterRequest struct {
 	Name     null.String `json:"name"`
 	Balance  null.Int    `json:"balance"`
 	Email    null.String `json:"email"`

@@ -107,7 +107,7 @@ func (sessionRepository *AuthRepository) GetOneByUserId(begin *sql.Tx, userId st
 
 func (sessionRepository *AuthRepository) FindOneByRefToken(begin *sql.Tx, refreshToken string) (result *entity.Session, err error) {
 	rows, queryErr := begin.Query(
-		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at FROM "session" WHERE refresh_token=$1 LIMIT 1;`,
+		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at FROM sessions WHERE refresh_token=$1 LIMIT 1;`,
 		refreshToken,
 	)
 	if queryErr != nil {

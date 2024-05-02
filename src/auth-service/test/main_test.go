@@ -17,7 +17,5 @@ func Test(t *testing.T) {
 	authWeb.Start()
 	// userWeb := web.NewUserWeb(t)
 	// userWeb.Start()
-	// postWeb := web.NewPostWeb(t)
-	// postWeb.Start()
 	fmt.Println("TestWeb finished.")
 }

@@ -30,7 +30,7 @@ func (exposeController *ExposeController) FetchUser(writer http.ResponseWriter, 
 }
 func (exposeController *ExposeController) Register(writer http.ResponseWriter, reader *http.Request) {
 
-	request := &model_request.Register{}
+	request := &model_request.RegisterRequest{}
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
 		http.Error(writer, decodeErr.Error(), 404)
