@@ -48,6 +48,7 @@ func (sessionSeeder *SessionSeeder) Up() {
 		if queryErr != nil {
 			panic(queryErr)
 		}
+
 		commitErr := crdb.Execute(func() (err error) {
 			err = begin.Commit()
 			return err
@@ -67,7 +68,7 @@ func (sessionSeeder *SessionSeeder) Down() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM sessions WHERE id = $1;",
+				"DELETE FROM sessions WHERE id=$1;",
 				session.Id,
 			)
 			return err
@@ -75,6 +76,7 @@ func (sessionSeeder *SessionSeeder) Down() {
 		if queryErr != nil {
 			panic(queryErr)
 		}
+
 		commitErr := crdb.Execute(func() (err error) {
 			err = begin.Commit()
 			return err
