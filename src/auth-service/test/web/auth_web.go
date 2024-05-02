@@ -30,9 +30,9 @@ func NewAuthWeb(test *testing.T) *AuthWeb {
 	return authWeb
 }
 func (authWeb *AuthWeb) Start() {
-	// authWeb.Test.Run("AuthWeb_Register_Succeed", authWeb.Register)
-	// authWeb.Test.Run("AuthWeb_Login_Succeed", authWeb.Login)
-	authWeb.Test.Run("AuthWeb_Logout_Succeed", authWeb.Logout)
+	authWeb.Test.Run("AuthWeb_Register_Succeed", authWeb.Register)
+	authWeb.Test.Run("AuthWeb_Login_Succeed", authWeb.Login)
+	// authWeb.Test.Run("AuthWeb_Logout_Succeed", authWeb.Logout)
 	// authWeb.Test.Run("AuthWeb_GetNewAccessToken_Succeed", authWeb.GetNewAccessToken)
 }
 
@@ -41,14 +41,15 @@ func (authWeb *AuthWeb) Register(t *testing.T) {
 
 	testWeb := GetTestWeb()
 	defer testWeb.AllSeeder.Down()
+	defer fmt.Println("tes selesai")
 
-	mockAuth := testWeb.AllSeeder.User.UserMock.Data[1]
+	mockAuth := testWeb.AllSeeder.User.UserMock.Data[0]
 
-	bodyRequest := &model_request.Register{}
+	bodyRequest := &model_request.RegisterRequest{}
 	bodyRequest.Name = null.NewString(mockAuth.Name.String, true)
 	bodyRequest.Email = null.NewString(mockAuth.Email.String, true)
-	bodyRequest.Password = null.NewString(mockAuth.Password.String, true)
 	bodyRequest.Balance = null.NewInt(mockAuth.Balance.Int64, true)
+	bodyRequest.Password = null.NewString(mockAuth.Password.String, true)
 
 	bodyRequestJsonByte, marshalErr := json.Marshal(bodyRequest)
 	if marshalErr != nil {
@@ -56,7 +57,7 @@ func (authWeb *AuthWeb) Register(t *testing.T) {
 	}
 	bodyRequestBuffer := bytes.NewBuffer(bodyRequestJsonByte)
 
-	url := fmt.Sprintf("%s/%s/register", testWeb.AuthServer.URL, authWeb.Path)
+	url := fmt.Sprintf("%s/%s/register", testWeb.Server.URL, authWeb.Path)
 	request, newRequestErr := http.NewRequest(http.MethodPost, url, bodyRequestBuffer)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -72,12 +73,12 @@ func (authWeb *AuthWeb) Register(t *testing.T) {
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
-
+	fmt.Println("bodyResponse ", bodyResponse)
 	assert.Equal(t, http.StatusCreated, response.StatusCode)
-	fmt.Println("bodyResponse", bodyResponse)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	assert.Equal(t, mockAuth.Name.String, bodyResponse.Data.Name.String)
 	assert.Equal(t, mockAuth.Email.String, bodyResponse.Data.Email.String)
+	assert.Equal(t, mockAuth.Balance.Int64, bodyResponse.Data.Balance.Int64)
 	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(mockAuth.Password.String)))
 
 	newUserMock := bodyResponse.Data
@@ -88,7 +89,6 @@ func (authWeb *AuthWeb) Login(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
-	testWeb.AllSeeder.Down()
 	testWeb.AllSeeder.Up()
 	defer testWeb.AllSeeder.Down()
 
@@ -104,7 +104,7 @@ func (authWeb *AuthWeb) Login(t *testing.T) {
 	}
 	bodyRequestBuffer := bytes.NewBuffer(bodyRequestJsonByte)
 
-	url := fmt.Sprintf("%s/%s/login", testWeb.AuthServer.URL, authWeb.Path)
+	url := fmt.Sprintf("%s/%s/login", testWeb.Server.URL, authWeb.Path)
 	request, newRequestErr := http.NewRequest(http.MethodPost, url, bodyRequestBuffer)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -122,7 +122,6 @@ func (authWeb *AuthWeb) Login(t *testing.T) {
 	}
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
-	fmt.Println("bodyResponse", bodyResponse)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	assert.Equal(t, selectedUserMock.Id, bodyResponse.Data.UserId)
 }
@@ -134,22 +133,18 @@ func (authWeb *AuthWeb) Logout(t *testing.T) {
 	testWeb.AllSeeder.Up()
 	defer testWeb.AllSeeder.Down()
 
-	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[1]
-	url := fmt.Sprintf("%s/%s/logout", testWeb.AuthServer.URL, authWeb.Path)
+	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
+	url := fmt.Sprintf("%s/%s/logout", testWeb.Server.URL, authWeb.Path)
 	request, newRequestErr := http.NewRequest(http.MethodPost, url, nil)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
 	}
 
 	request.Header.Set("Authorization", "Bearer "+selectedSessionMock.AccessToken.String)
+
 	response, doErr := http.DefaultClient.Do(request)
 	if doErr != nil {
 		t.Fatal(doErr)
-	}
-	bodyResponse := &model_response.Response[*entity.Session]{}
-	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
-	if decodeErr != nil {
-		t.Fatal(decodeErr)
 	}
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
@@ -163,7 +158,7 @@ func (authWeb *AuthWeb) GetNewAccessToken(t *testing.T) {
 	defer testWeb.AllSeeder.Down()
 
 	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
-	url := fmt.Sprintf("%s/%s/access-token", testWeb.AuthServer.URL, authWeb.Path)
+	url := fmt.Sprintf("%s/%s/access-token", testWeb.Server.URL, authWeb.Path)
 	request, newRequest := http.NewRequest(http.MethodPost, url, nil)
 	if newRequest != nil {
 		t.Fatal(newRequest)
@@ -176,14 +171,13 @@ func (authWeb *AuthWeb) GetNewAccessToken(t *testing.T) {
 		t.Fatal(doErr)
 	}
 
-	bodyResponse := &model_response.Response[*entity.Session]{}
-	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
+	responseBody := &model_response.Response[*entity.Session]{}
+	decodeErr := json.NewDecoder(response.Body).Decode(responseBody)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
-	fmt.Println("bodyResponse", bodyResponse)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-	assert.True(t, selectedSessionMock.UpdatedAt.Time.Before(bodyResponse.Data.UpdatedAt.Time))
+	assert.True(t, selectedSessionMock.UpdatedAt.Time.Before(responseBody.Data.UpdatedAt.Time))
 }
