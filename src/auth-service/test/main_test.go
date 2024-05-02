@@ -15,7 +15,7 @@ func Test(t *testing.T) {
 	fmt.Println("TestWeb started.")
 	authWeb := web.NewAuthWeb(t)
 	authWeb.Start()
-	// userWeb := web.NewUserWeb(t)
-	// userWeb.Start()
+	userWeb := web.NewUserWeb(t)
+	userWeb.Start()
 	fmt.Println("TestWeb finished.")
 }
