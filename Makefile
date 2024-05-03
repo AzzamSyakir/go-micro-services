@@ -13,14 +13,11 @@ start-order:
 start-docker:
 	clear && docker compose -f ./docker/docker-compose.yml up -d 
 stop-docker:
-	clear && docker compose -f ./docker/docker-compose.yml stop
-remove-docker:
 	clear && docker compose -f ./docker/docker-compose.yml down --remove-orphans
 start-db:
 	clear && docker compose -f ./docker/docker-compose.yml up user-db product-db order-db auth-db -d
 
 clean-docker:
 	clear && docker system prune && docker volume prune && docker image prune -a -f && docker container prune && docker buildx prune
-
 start-test:
 	clear && go test -v -count=1 ./src/auth-service/test
