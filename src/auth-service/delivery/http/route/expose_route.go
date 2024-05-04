@@ -134,7 +134,6 @@ func (userRoute *UserRoute) Register() {
 	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.DetailUser).Methods("GET")
 	userRoute.Router.HandleFunc("/email/{email}", userRoute.UserController.GetUserByEmail).Methods("GET")
 	userRoute.Router.HandleFunc("", userRoute.UserController.FetchUser).Methods("GET")
-	userRoute.Router.HandleFunc("/update-balance/{id}", userRoute.UserController.UpdateBalance).Methods("PATCH")
 	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.UpdateUser).Methods("PATCH")
 	userRoute.Router.HandleFunc("/{id}", userRoute.UserController.DeleteUser).Methods("DELETE")
 }

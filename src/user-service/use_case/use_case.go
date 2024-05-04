@@ -195,13 +195,16 @@ func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.Use
 		if request.Email.Valid {
 			foundUser.Email = request.Email
 		}
+		if request.Balance.Valid {
+			foundUser.Balance = request.Balance
+		}
 		if request.Password.Valid {
 			hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
 			if hashedPasswordErr != nil {
 				err = transaction.Rollback()
 				result = &model_response.Response[*entity.User]{
 					Code:    http.StatusInternalServerError,
-					Message: "UserUseCase Register is failed, password hashing is failed.",
+					Message: "UserUseCase UpdateUser is failed, password hashing is failed.",
 					Data:    nil,
 				}
 				return err

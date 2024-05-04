@@ -48,20 +48,6 @@ func (exposeController *ExposeController) DeleteUser(writer http.ResponseWriter,
 
 	response.NewResponse(writer, result)
 }
-func (exposeController *ExposeController) UpdateBalance(writer http.ResponseWriter, reader *http.Request) {
-	vars := mux.Vars(reader)
-	id := vars["id"]
-
-	request := &model_request.UserPatchOneByIdRequest{}
-	decodeErr := json.NewDecoder(reader.Body).Decode(request)
-	if decodeErr != nil {
-		http.Error(writer, decodeErr.Error(), 404)
-	}
-
-	result := exposeController.ExposeUseCase.UpdateBalance(id, request)
-
-	response.NewResponse(writer, result)
-}
 func (exposeController *ExposeController) UpdateUser(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
