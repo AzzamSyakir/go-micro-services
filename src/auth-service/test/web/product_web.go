@@ -15,36 +15,36 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserWeb struct {
+type ProductWeb struct {
 	Test *testing.T
 	Path string
 }
 
-func NewUserWeb(test *testing.T) *UserWeb {
-	userWeb := &UserWeb{
+func NewProductWeb(test *testing.T) *ProductWeb {
+	ProductWeb := &ProductWeb{
 		Test: test,
-		Path: "users",
+		Path: "products",
 	}
-	return userWeb
+	return ProductWeb
 }
 
-func (userWeb *UserWeb) Start() {
-	userWeb.Test.Run("UserWeb_FindOneById_Succeed", userWeb.FindOneById)
-	userWeb.Test.Run("UserWeb_FindOneByEmail_Succeed", userWeb.FindOneByEmail)
-	userWeb.Test.Run("UserWeb_UserPatchOneByIdRequest_Succeed", userWeb.PatchOneById)
-	userWeb.Test.Run("UserWeb_DeleteOneById_Succeed", userWeb.DeleteOneById)
+func (ProductWeb *ProductWeb) Start() {
+	ProductWeb.Test.Run("ProductWeb_FindOneById_Succeed", ProductWeb.FindOneById)
+	ProductWeb.Test.Run("ProductWeb_FindOneByEmail_Succeed", ProductWeb.FindOneByEmail)
+	ProductWeb.Test.Run("ProductWeb_ProductPatchOneByIdRequest_Succeed", ProductWeb.PatchOneById)
+	ProductWeb.Test.Run("ProductWeb_DeleteOneById_Succeed", ProductWeb.DeleteOneById)
 }
 
-func (userWeb *UserWeb) FindOneById(t *testing.T) {
+func (ProductWeb *ProductWeb) FindOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
 	testWeb.AllSeeder.Up()
 	defer testWeb.AllSeeder.Down()
 
-	selectedUserMock := testWeb.AllSeeder.User.UserMock.Data[0]
+	selectedProductMock := testWeb.AllSeeder.Product.ProductMock.Data[0]
 
-	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, userWeb.Path, selectedUserMock.Id.String)
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, ProductWeb.Path, selectedProductMock.Id.String)
 	request, newRequestErr := http.NewRequest(http.MethodGet, url, http.NoBody)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -59,7 +59,7 @@ func (userWeb *UserWeb) FindOneById(t *testing.T) {
 		t.Fatal(doErr)
 	}
 
-	bodyResponse := &model_response.Response[*entity.User]{}
+	bodyResponse := &model_response.Response[*entity.Product]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
@@ -67,23 +67,23 @@ func (userWeb *UserWeb) FindOneById(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-	assert.Equal(t, selectedUserMock.Id, bodyResponse.Data.Id)
-	assert.Equal(t, selectedUserMock.Name, bodyResponse.Data.Name)
-	assert.Equal(t, selectedUserMock.Email, bodyResponse.Data.Email)
-	assert.Equal(t, selectedUserMock.Balance, bodyResponse.Data.Balance)
-	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(selectedUserMock.Password.String)))
+	assert.Equal(t, selectedProductMock.Id, bodyResponse.Data.Id)
+	assert.Equal(t, selectedProductMock.Name, bodyResponse.Data.Name)
+	assert.Equal(t, selectedProductMock.Email, bodyResponse.Data.Email)
+	assert.Equal(t, selectedProductMock.Balance, bodyResponse.Data.Balance)
+	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(selectedProductMock.Password.String)))
 }
 
-func (userWeb *UserWeb) FindOneByEmail(t *testing.T) {
+func (ProductWeb *ProductWeb) FindOneByEmail(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
 	testWeb.AllSeeder.Up()
 	defer testWeb.AllSeeder.Down()
 
-	selectedUserMock := testWeb.AllSeeder.User.UserMock.Data[0]
+	selectedProductMock := testWeb.AllSeeder.Product.ProductMock.Data[0]
 
-	url := fmt.Sprintf("%s/%s/email/%s", testWeb.Server.URL, userWeb.Path, selectedUserMock.Email.String)
+	url := fmt.Sprintf("%s/%s/email/%s", testWeb.Server.URL, ProductWeb.Path, selectedProductMock.Email.String)
 	request, newRequestErr := http.NewRequest(http.MethodGet, url, http.NoBody)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -95,7 +95,7 @@ func (userWeb *UserWeb) FindOneByEmail(t *testing.T) {
 		t.Fatal(doErr)
 	}
 
-	bodyResponse := &model_response.Response[*entity.User]{}
+	bodyResponse := &model_response.Response[*entity.Product]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
@@ -103,27 +103,27 @@ func (userWeb *UserWeb) FindOneByEmail(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-	assert.Equal(t, selectedUserMock.Id, bodyResponse.Data.Id)
-	assert.Equal(t, selectedUserMock.Name, bodyResponse.Data.Name)
-	assert.Equal(t, selectedUserMock.Email, bodyResponse.Data.Email)
-	assert.Equal(t, selectedUserMock.Balance, bodyResponse.Data.Balance)
-	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(selectedUserMock.Password.String)))
+	assert.Equal(t, selectedProductMock.Id, bodyResponse.Data.Id)
+	assert.Equal(t, selectedProductMock.Name, bodyResponse.Data.Name)
+	assert.Equal(t, selectedProductMock.Email, bodyResponse.Data.Email)
+	assert.Equal(t, selectedProductMock.Balance, bodyResponse.Data.Balance)
+	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(selectedProductMock.Password.String)))
 }
 
-func (userWeb *UserWeb) PatchOneById(t *testing.T) {
+func (ProductWeb *ProductWeb) PatchOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
 	testWeb.AllSeeder.Up()
 	defer testWeb.AllSeeder.Down()
 
-	selectedUserMock := testWeb.AllSeeder.User.UserMock.Data[0]
+	selectedProductMock := testWeb.AllSeeder.Product.ProductMock.Data[0]
 
-	bodyRequest := &model_request.UserPatchOneByIdRequest{}
-	bodyRequest.Name = null.NewString(selectedUserMock.Name.String+"patched", true)
-	bodyRequest.Email = null.NewString(selectedUserMock.Email.String+"patched", true)
-	bodyRequest.Balance = null.NewInt(selectedUserMock.Balance.Int64, true)
-	bodyRequest.Password = null.NewString(selectedUserMock.Password.String+"patched", true)
+	bodyRequest := &model_request.ProductPatchOneByIdRequest{}
+	bodyRequest.Name = null.NewString(selectedProductMock.Name.String+"patched", true)
+	bodyRequest.Email = null.NewString(selectedProductMock.Email.String+"patched", true)
+	bodyRequest.Balance = null.NewInt(selectedProductMock.Balance.Int64, true)
+	bodyRequest.Password = null.NewString(selectedProductMock.Password.String+"patched", true)
 
 	bodyRequestJsonByte, marshalErr := json.Marshal(bodyRequest)
 	if marshalErr != nil {
@@ -131,7 +131,7 @@ func (userWeb *UserWeb) PatchOneById(t *testing.T) {
 	}
 	bodyRequestBuffer := bytes.NewBuffer(bodyRequestJsonByte)
 
-	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, userWeb.Path, selectedUserMock.Id.String)
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, ProductWeb.Path, selectedProductMock.Id.String)
 	request, newRequestErr := http.NewRequest(http.MethodPatch, url, bodyRequestBuffer)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -143,7 +143,7 @@ func (userWeb *UserWeb) PatchOneById(t *testing.T) {
 		t.Fatal(doErr)
 	}
 
-	bodyResponse := &model_response.Response[*entity.User]{}
+	bodyResponse := &model_response.Response[*entity.Product]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
@@ -151,23 +151,23 @@ func (userWeb *UserWeb) PatchOneById(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-	assert.Equal(t, selectedUserMock.Id, bodyResponse.Data.Id)
+	assert.Equal(t, selectedProductMock.Id, bodyResponse.Data.Id)
 	assert.Equal(t, bodyRequest.Name, bodyResponse.Data.Name)
 	assert.Equal(t, bodyRequest.Email, bodyResponse.Data.Email)
 	assert.Equal(t, bodyRequest.Balance, bodyResponse.Data.Balance)
 	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(bodyRequest.Password.String)))
 }
 
-func (userWeb *UserWeb) DeleteOneById(t *testing.T) {
+func (ProductWeb *ProductWeb) DeleteOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
 	testWeb.AllSeeder.Up()
 	defer testWeb.AllSeeder.Down()
 
-	selectedUserMock := testWeb.AllSeeder.User.UserMock.Data[0]
+	selectedProductMock := testWeb.AllSeeder.Product.ProductMock.Data[0]
 
-	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, userWeb.Path, selectedUserMock.Id.String)
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, ProductWeb.Path, selectedProductMock.Id.String)
 	request, newRequestErr := http.NewRequest(http.MethodDelete, url, http.NoBody)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -179,7 +179,7 @@ func (userWeb *UserWeb) DeleteOneById(t *testing.T) {
 		t.Fatal(doErr)
 	}
 
-	bodyResponse := &model_response.Response[*entity.User]{}
+	bodyResponse := &model_response.Response[*entity.Product]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
@@ -187,9 +187,9 @@ func (userWeb *UserWeb) DeleteOneById(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-	assert.Equal(t, selectedUserMock.Id, bodyResponse.Data.Id)
-	assert.Equal(t, selectedUserMock.Name, bodyResponse.Data.Name)
-	assert.Equal(t, selectedUserMock.Email, bodyResponse.Data.Email)
-	assert.Equal(t, selectedUserMock.Balance, bodyResponse.Data.Balance)
-	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(selectedUserMock.Password.String)))
+	assert.Equal(t, selectedProductMock.Id, bodyResponse.Data.Id)
+	assert.Equal(t, selectedProductMock.Name, bodyResponse.Data.Name)
+	assert.Equal(t, selectedProductMock.Email, bodyResponse.Data.Email)
+	assert.Equal(t, selectedProductMock.Balance, bodyResponse.Data.Balance)
+	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(selectedProductMock.Password.String)))
 }
