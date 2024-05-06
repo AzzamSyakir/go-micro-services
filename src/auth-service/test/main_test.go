@@ -15,9 +15,14 @@ func Test(t *testing.T) {
 	fmt.Println("TestWeb started.")
 	authWeb := web.NewAuthWeb(t)
 	authWeb.Start()
+
 	userWeb := web.NewUserWeb(t)
-	ProductWeb := web.NewProductWeb(t)
-	ProductWeb.Start()
 	userWeb.Start()
+
+	productWeb := web.NewCategoryWeb(t)
+	productWeb.Start()
+
+	categoryWeb := web.NewCategoryWeb(t)
+	categoryWeb.Start()
 	fmt.Println("TestWeb finished.")
 }
