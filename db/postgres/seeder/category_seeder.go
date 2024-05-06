@@ -62,7 +62,7 @@ func (CategorySeeder *CategorySeeder) Down() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM Categorys WHERE id = $1",
+				"DELETE FROM Categories WHERE id = $1",
 				Category.Id,
 			)
 			return err

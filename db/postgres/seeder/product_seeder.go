@@ -32,7 +32,7 @@ func (ProductSeeder *ProductSeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO Products (id, sku, name, stock, price, category_id created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
+				"INSERT INTO Products (id, sku, name, stock, price, category_id, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
 				Product.Id,
 				Product.Sku,
 				Product.Name,

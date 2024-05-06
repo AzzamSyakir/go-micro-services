@@ -39,7 +39,7 @@ func (allSeeder *AllSeeder) Down() {
 	fmt.Println("Seeder down started.")
 	allSeeder.Session.Down()
 	allSeeder.User.Down()
-	allSeeder.Category.Down()
 	allSeeder.Product.Down()
+	allSeeder.Category.Down()
 	fmt.Println("Seeder down finished.")
 }
