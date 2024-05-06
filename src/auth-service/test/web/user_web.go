@@ -30,10 +30,10 @@ func NewUserWeb(test *testing.T) *UserWeb {
 
 func (userWeb *UserWeb) Start() {
 	userWeb.Test.Run("UserWeb_Fetchuser_Succeed", userWeb.ListUser)
+	userWeb.Test.Run("UserWeb_DeleteOneById_Succeed", userWeb.DeleteOneById)
+	userWeb.Test.Run("UserWeb_UpdateUser_Succeed", userWeb.UpdateUser)
 	userWeb.Test.Run("UserWeb_GetUserById_Succeed", userWeb.GetUserById)
 	userWeb.Test.Run("UserWeb_GetUserByEmail_Succeed", userWeb.GetUserByEmail)
-	userWeb.Test.Run("UserWeb_UpdateUser_Succeed", userWeb.UpdateUser)
-	userWeb.Test.Run("UserWeb_DeleteOneById_Succeed", userWeb.DeleteOneById)
 }
 func (userWeb *UserWeb) ListUser(t *testing.T) {
 	t.Parallel()
