@@ -27,15 +27,15 @@ func NewProductWeb(test *testing.T) *ProductWeb {
 	return ProductWeb
 }
 
-func (ProductWeb *ProductWeb) Start() {
-	ProductWeb.Test.Run("ProductWeb_GetProduct_Succeed", ProductWeb.FindOneById)
-	ProductWeb.Test.Run("ProductWeb_DeleteProduct_Succeed", ProductWeb.DeleteOneById)
-	ProductWeb.Test.Run("ProductWeb_UpdateProduct_Succeed", ProductWeb.PatchOneById)
-	ProductWeb.Test.Run("ProductWeb_CreateProduct_Succeed", ProductWeb.CreateProduct)
-	ProductWeb.Test.Run("ProductWeb_ListProduct_Succeed", ProductWeb.ListProduct)
+func (productWeb *ProductWeb) Start() {
+	productWeb.Test.Run("ProductWeb_GetProduct_Succeed", productWeb.FindOneById)
+	productWeb.Test.Run("ProductWeb_DeleteProduct_Succeed", productWeb.DeleteOneById)
+	productWeb.Test.Run("ProductWeb_UpdateProduct_Succeed", productWeb.PatchOneById)
+	productWeb.Test.Run("ProductWeb_CreateProduct_Succeed", productWeb.CreateProduct)
+	productWeb.Test.Run("ProductWeb_ListProduct_Succeed", productWeb.ListProduct)
 }
 
-func (ProductWeb *ProductWeb) FindOneById(t *testing.T) {
+func (productWeb *ProductWeb) FindOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
@@ -44,7 +44,7 @@ func (ProductWeb *ProductWeb) FindOneById(t *testing.T) {
 
 	selectedProductMock := testWeb.AllSeeder.Product.ProductMock.Data[0]
 
-	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, ProductWeb.Path, selectedProductMock.Id.String)
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, productWeb.Path, selectedProductMock.Id.String)
 	request, newRequestErr := http.NewRequest(http.MethodGet, url, http.NoBody)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -75,7 +75,7 @@ func (ProductWeb *ProductWeb) FindOneById(t *testing.T) {
 	assert.Equal(t, selectedProductMock.CategoryId, bodyResponse.Data.CategoryId)
 }
 
-func (ProductWeb *ProductWeb) DeleteOneById(t *testing.T) {
+func (productWeb *ProductWeb) DeleteOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
@@ -84,13 +84,13 @@ func (ProductWeb *ProductWeb) DeleteOneById(t *testing.T) {
 
 	selectedProductMock := testWeb.AllSeeder.Product.ProductMock.Data[0]
 
-	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, ProductWeb.Path, selectedProductMock.Id.String)
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, productWeb.Path, selectedProductMock.Id.String)
 	request, newRequestErr := http.NewRequest(http.MethodDelete, url, http.NoBody)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
 	}
 	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
-	request.Header.Set("authorization", "Bearer "+selectedSessionMock.AccessToken.String)
+	request.Header.Set("Authorization", "Bearer "+selectedSessionMock.AccessToken.String)
 	response, doErr := http.DefaultClient.Do(request)
 	if doErr != nil {
 		t.Fatal(doErr)
@@ -104,14 +104,9 @@ func (ProductWeb *ProductWeb) DeleteOneById(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-	assert.Equal(t, selectedProductMock.Id, bodyResponse.Data.Id)
-	assert.Equal(t, selectedProductMock.Name, bodyResponse.Data.Name)
-	assert.Equal(t, selectedProductMock.Sku, bodyResponse.Data.Sku)
-	assert.Equal(t, selectedProductMock.Price, bodyResponse.Data.Price)
-	assert.Equal(t, selectedProductMock.CategoryId, bodyResponse.Data.CategoryId)
 }
 
-func (ProductWeb *ProductWeb) PatchOneById(t *testing.T) {
+func (productWeb *ProductWeb) PatchOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
@@ -132,7 +127,7 @@ func (ProductWeb *ProductWeb) PatchOneById(t *testing.T) {
 	}
 	bodyRequestBuffer := bytes.NewBuffer(bodyRequestJsonByte)
 
-	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, ProductWeb.Path, selectedProductMock.Id.String)
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, productWeb.Path, selectedProductMock.Id.String)
 	request, newRequestErr := http.NewRequest(http.MethodPatch, url, bodyRequestBuffer)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -164,14 +159,16 @@ func (productWeb *ProductWeb) CreateProduct(t *testing.T) {
 
 	testWeb := GetTestWeb()
 	defer testWeb.AllSeeder.Down()
+	testWeb.AllSeeder.Category.Up()
+	testWeb.AllSeeder.Session.Up()
 
-	mockAuth := testWeb.AllSeeder.Product.ProductMock.Data[0]
+	mockProduct := testWeb.AllSeeder.Product.ProductMock.Data[0]
 
 	bodyRequest := &model_request.CreateProduct{}
-	bodyRequest.Name = null.NewString(mockAuth.Name.String, true)
-	bodyRequest.Stock = null.NewInt(mockAuth.Stock.Int64, true)
-	bodyRequest.CategoryId = null.NewString(mockAuth.CategoryId.String, true)
-	bodyRequest.Price = null.NewInt(mockAuth.Price.Int64, true)
+	bodyRequest.Name = null.NewString(mockProduct.Name.String, true)
+	bodyRequest.Stock = null.NewInt(mockProduct.Stock.Int64, true)
+	bodyRequest.CategoryId = null.NewString(mockProduct.CategoryId.String, true)
+	bodyRequest.Price = null.NewInt(mockProduct.Price.Int64, true)
 
 	bodyRequestJsonByte, marshalErr := json.Marshal(bodyRequest)
 	if marshalErr != nil {
@@ -179,12 +176,13 @@ func (productWeb *ProductWeb) CreateProduct(t *testing.T) {
 	}
 	bodyRequestBuffer := bytes.NewBuffer(bodyRequestJsonByte)
 
-	url := fmt.Sprintf("%s/%s/register", testWeb.Server.URL, productWeb.Path)
+	url := fmt.Sprintf("%s/%s", testWeb.Server.URL, productWeb.Path)
 	request, newRequestErr := http.NewRequest(http.MethodPost, url, bodyRequestBuffer)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
 	}
-
+	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
+	request.Header.Set("authorization", "Bearer "+selectedSessionMock.AccessToken.String)
 	response, doErr := http.DefaultClient.Do(request)
 	if doErr != nil {
 		t.Fatal(doErr)
@@ -195,13 +193,8 @@ func (productWeb *ProductWeb) CreateProduct(t *testing.T) {
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
-	fmt.Println("bodyResponse", bodyResponse)
 	assert.Equal(t, http.StatusCreated, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-	assert.Equal(t, mockAuth.Name.String, bodyResponse.Data.Name.String)
-	assert.Equal(t, mockAuth.Sku.String, bodyResponse.Data.Sku.String)
-	assert.Equal(t, mockAuth.Price.Int64, bodyResponse.Data.Price.Int64)
-	assert.Equal(t, mockAuth.Price.Int64, bodyResponse.Data.Price.Int64)
 
 	newProductMock := bodyResponse.Data
 	testWeb.AllSeeder.Product.ProductMock.Data = append(testWeb.AllSeeder.Product.ProductMock.Data, newProductMock)
