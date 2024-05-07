@@ -617,7 +617,6 @@ func (exposeUseCase *ExposeUseCase) UpdateCategory(id string, request *model_req
 func (exposeUseCase *ExposeUseCase) DetailCategory(id string) (result *model_response.Response[*entity.Category]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "categories", id)
-
 	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
 
 	if newRequestErr != nil {

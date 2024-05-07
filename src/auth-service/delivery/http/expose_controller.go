@@ -171,6 +171,10 @@ func (exposeController *ExposeController) UpdateCategory(writer http.ResponseWri
 	response.NewResponse(writer, result)
 }
 func (exposeController *ExposeController) DetailCategory(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+	foundProduct := exposeController.ExposeUseCase.DetailCategory(id)
+	response.NewResponse(writer, foundProduct)
 }
 
 // order

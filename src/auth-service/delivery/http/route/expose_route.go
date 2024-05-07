@@ -59,7 +59,7 @@ func (CategoryRoute *CategoryRoute) Register() {
 	CategoryRoute.Router.Use(CategoryRoute.Middleware.Middleware)
 	CategoryRoute.Router.HandleFunc("", CategoryRoute.CategoryController.CreateCategory).Methods("POST")
 	CategoryRoute.Router.HandleFunc("", CategoryRoute.CategoryController.ListCategories).Methods("GET")
-	CategoryRoute.Router.HandleFunc("/{id}", CategoryRoute.CategoryController.ListCategories).Methods("GET")
+	CategoryRoute.Router.HandleFunc("/{id}", CategoryRoute.CategoryController.DetailCategory).Methods("GET")
 	CategoryRoute.Router.HandleFunc("/{id}", CategoryRoute.CategoryController.DeleteCategory).Methods("DELETE")
 	CategoryRoute.Router.HandleFunc("/{id}", CategoryRoute.CategoryController.UpdateCategory).Methods("PATCH")
 }
