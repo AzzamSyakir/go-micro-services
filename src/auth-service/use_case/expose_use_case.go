@@ -394,44 +394,6 @@ func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_resp
 	}
 	return bodyResponseProduct
 }
-func (exposeUseCase *ExposeUseCase) UpdateStock(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s/%s", address, "products", "update-stock", id)
-	jsonPayload, err := json.Marshal(request)
-	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-	bodyResponseProduct := &model_response.Response[*entity.Product]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
-	}
-	return bodyResponseProduct
-}
 func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "products", id)

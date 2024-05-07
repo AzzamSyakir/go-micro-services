@@ -26,20 +26,6 @@ func (ProductController *ProductController) GetProduct(writer http.ResponseWrite
 	foundProduct := ProductController.ProductUseCase.GetOneById(id)
 	response.NewResponse(writer, foundProduct)
 }
-
-func (ProductController *ProductController) UpdateStock(writer http.ResponseWriter, reader *http.Request) {
-	vars := mux.Vars(reader)
-	id := vars["id"]
-
-	request := &model_request.ProductPatchOneByIdRequest{}
-	decodeErr := json.NewDecoder(reader.Body).Decode(request)
-	if decodeErr != nil {
-		panic(decodeErr)
-	}
-	result := ProductController.ProductUseCase.UpdateStock(id, request)
-
-	response.NewResponse(writer, result)
-}
 func (ProductController *ProductController) UpdateProduct(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]

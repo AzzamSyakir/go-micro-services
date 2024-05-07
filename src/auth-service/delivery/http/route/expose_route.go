@@ -108,7 +108,6 @@ func (productRoute *ProductRoute) Register() {
 	productRoute.Router.HandleFunc("", productRoute.ProductController.ListProducts).Methods("GET")
 	productRoute.Router.HandleFunc("/{id}", productRoute.ProductController.DetailProduct).Methods("GET")
 	productRoute.Router.HandleFunc("/{id}", productRoute.ProductController.DeleteProduct).Methods("DELETE")
-	productRoute.Router.HandleFunc("/update-stock/{id}", productRoute.ProductController.UpdateStock).Methods("PATCH")
 	productRoute.Router.HandleFunc("/{id}", productRoute.ProductController.UpdateProduct).Methods("PATCH")
 }
 

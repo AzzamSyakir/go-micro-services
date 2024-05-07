@@ -105,19 +105,7 @@ func (exposeController *ExposeController) DeleteProduct(writer http.ResponseWrit
 
 	response.NewResponse(writer, result)
 }
-func (exposeController *ExposeController) UpdateStock(writer http.ResponseWriter, reader *http.Request) {
-	vars := mux.Vars(reader)
-	id := vars["id"]
 
-	request := &model_request.ProductPatchOneByIdRequest{}
-	decodeErr := json.NewDecoder(reader.Body).Decode(request)
-	if decodeErr != nil {
-		panic(decodeErr)
-	}
-	result := exposeController.ExposeUseCase.UpdateStock(id, request)
-
-	response.NewResponse(writer, result)
-}
 func (exposeController *ExposeController) UpdateProduct(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
