@@ -38,7 +38,7 @@ func NewOrderMock(
 			},
 			{
 				Id:          null.NewString(uuid.NewString(), true),
-				UserId:      null.NewString(userMock.Data[0].Id.String, true),
+				UserId:      null.NewString(userMock.Data[1].Id.String, true),
 				ReceiptCode: null.NewString(uuid.NewString(), true),
 				TotalPrice:  null.NewInt(100000, true),
 				TotalPaid:   null.NewInt(200000, true),

@@ -5,11 +5,12 @@ import (
 )
 
 type AllSeeder struct {
-	User     *UserSeeder
-	Session  *SessionSeeder
-	Category *CategorySeeder
-	Product  *ProductSeeder
-	Order    *OrderSeeder
+	User         *UserSeeder
+	Session      *SessionSeeder
+	Category     *CategorySeeder
+	Product      *ProductSeeder
+	Order        *OrderSeeder
+	OrderProduct *OrderProductSeeder
 }
 
 func NewAllSeeder(
@@ -18,13 +19,16 @@ func NewAllSeeder(
 	category *CategorySeeder,
 	product *ProductSeeder,
 	order *OrderSeeder,
+	orderProduct *OrderProductSeeder,
+
 ) *AllSeeder {
 	allSeeder := &AllSeeder{
-		User:     user,
-		Session:  session,
-		Category: category,
-		Product:  product,
-		Order:    order,
+		User:         user,
+		Session:      session,
+		Category:     category,
+		Product:      product,
+		Order:        order,
+		OrderProduct: orderProduct,
 	}
 	return allSeeder
 }
@@ -45,6 +49,7 @@ func (allSeeder *AllSeeder) Down() {
 	allSeeder.User.Down()
 	allSeeder.Product.Down()
 	allSeeder.Category.Down()
+	allSeeder.OrderProduct.Down()
 	allSeeder.Order.Down()
 	fmt.Println("Seeder down finished.")
 }
