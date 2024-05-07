@@ -33,10 +33,9 @@ func (OrderProductSeeder *OrderProductSeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO orders (id, order_id, product_id, total_price, qty, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+				"INSERT INTO order_products (id, order_id, product_id, total_price, qty, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 				OrderProduct.Id,
 				OrderProduct.OrderId,
-				OrderProduct.TotalPrice,
 				OrderProduct.ProductId,
 				OrderProduct.TotalPrice,
 				OrderProduct.Qty,
@@ -65,10 +64,9 @@ func (OrderProductSeeder *OrderProductSeeder) Down() {
 		if beginErr != nil {
 			panic(beginErr)
 		}
-
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"DELETE FROM orders WHERE id = $1",
+				"DELETE FROM order_products WHERE id = $1",
 				OrderProduct.Id,
 			)
 			return err

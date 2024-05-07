@@ -40,6 +40,7 @@ func (allSeeder *AllSeeder) Up() {
 	allSeeder.Category.Up()
 	allSeeder.Product.Up()
 	allSeeder.Order.Up()
+	allSeeder.OrderProduct.Up()
 	fmt.Println("Seeder up finished.")
 }
 
