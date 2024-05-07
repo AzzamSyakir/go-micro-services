@@ -40,7 +40,6 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 		if err != nil {
-			fmt.Println("tes")
 			return err
 		}
 		//   Products

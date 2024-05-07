@@ -24,5 +24,8 @@ func Test(t *testing.T) {
 
 	categoryWeb := web.NewCategoryWeb(t)
 	categoryWeb.Start()
+
+	orderWeb := web.NewOrderWeb(t)
+	orderWeb.Start()
 	fmt.Println("TestWeb finished.")
 }

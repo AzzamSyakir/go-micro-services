@@ -42,13 +42,13 @@ func (web *TestWeb) GetAllSeeder() *seeder.AllSeeder {
 	categorySeeder := seeder.NewCategorySeeder(web.ProductContainer.ProductDB)
 	productSeeder := seeder.NewProductSeeder(web.ProductContainer.ProductDB, categorySeeder)
 	sessionSeeder := seeder.NewSessionSeeder(web.AuthContainer.AuthDB, userSeeder)
-	orderSeeder := seeder.NewSessionSeeder(web.AuthContainer.AuthDB, userSeeder)
-	orderProductSeeder := seeder.NewSessionSeeder(web.AuthContainer.AuthDB, userSeeder)
+	orderSeeder := seeder.NewOrderSeeder(web.OrderContainer.OrderDB, userSeeder)
 	seederConfig := seeder.NewAllSeeder(
 		userSeeder,
 		sessionSeeder,
 		categorySeeder,
 		productSeeder,
+		orderSeeder,
 	)
 	return seederConfig
 }

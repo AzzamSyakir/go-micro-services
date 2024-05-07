@@ -705,7 +705,6 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 			Message: "AuthUseCase error, order is failed" + err.Error(),
 		}
 	}
-	fmt.Println("UserId from token", session.UserId)
 	userId := session.UserId
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.OrderHost, exposeUseCase.Env.App.OrderPort)
 	url := fmt.Sprintf("%s/%s/%s", address, "orders", userId.String)

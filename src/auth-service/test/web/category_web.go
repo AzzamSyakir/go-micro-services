@@ -28,14 +28,14 @@ func NewCategoryWeb(test *testing.T) *CategoryWeb {
 }
 
 func (categoryWeb *CategoryWeb) Start() {
-	categoryWeb.Test.Run("CategoryWeb_GetCategory_Succeed", categoryWeb.FindOneById)
+	categoryWeb.Test.Run("CategoryWeb_GetCategory_Succeed", categoryWeb.GetCategoryById)
 	categoryWeb.Test.Run("CategoryWeb_DeleteCategory_Succeed", categoryWeb.DeleteOneById)
 	categoryWeb.Test.Run("CategoryWeb_UpdateCategory_Succeed", categoryWeb.PatchOneById)
 	categoryWeb.Test.Run("CategoryWeb_CreateCategory_Succeed", categoryWeb.CreateCategory)
 	categoryWeb.Test.Run("CategoryWeb_ListCategory_Succeed", categoryWeb.ListCategory)
 }
 
-func (categoryWeb *CategoryWeb) FindOneById(t *testing.T) {
+func (categoryWeb *CategoryWeb) GetCategoryById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
@@ -50,7 +50,7 @@ func (categoryWeb *CategoryWeb) FindOneById(t *testing.T) {
 		t.Fatal(newRequestErr)
 	}
 	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
-	request.Header.Set("authorization", "Bearer "+selectedSessionMock.AccessToken.String)
+	request.Header.Set("Authorization", "Bearer "+selectedSessionMock.AccessToken.String)
 	response, doErr := http.DefaultClient.Do(request)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -58,11 +58,13 @@ func (categoryWeb *CategoryWeb) FindOneById(t *testing.T) {
 	if doErr != nil {
 		t.Fatal(doErr)
 	}
+
 	bodyResponse := &model_response.Response[[]*entity.Category]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
+
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 }
