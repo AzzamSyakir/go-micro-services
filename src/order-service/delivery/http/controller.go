@@ -21,6 +21,16 @@ func NewOrderController(orderUseCase *use_case.OrderUseCase) *OrderController {
 	return orderControler
 }
 
+func (orderController *OrderController) ListOrders(writer http.ResponseWriter, reader *http.Request) {
+	result := orderController.OrderUseCase.ListOrders()
+	response.NewResponse(writer, result)
+}
+func (orderController *OrderController) DetailOrders(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	userId := vars["id"]
+	result := orderController.OrderUseCase.DetailOrders(userId)
+	response.NewResponse(writer, result)
+}
 func (orderController *OrderController) Orders(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	userId := vars["id"]

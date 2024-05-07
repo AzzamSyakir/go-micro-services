@@ -35,6 +35,47 @@ func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *rep
 	}
 	return OrderUseCase
 }
+func (orderUseCase *OrderUseCase) ListOrders() (result *model_response.Response[[]*entity.Order]) {
+	transaction, transactionErr := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+		result = &model_response.Response[[]*entity.Order]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+
+		return result
+	}
+
+	fetchOrder, fetchOrderErr := orderUseCase.OrderRepository.ListOrders(transaction)
+	if fetchOrderErr != nil {
+		errorMessage := fmt.Sprintf("orderUseCase ListOrder is failed, GetOrder failed : %s", fetchOrderErr)
+		result = &model_response.Response[[]*entity.Order]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		return result
+	}
+
+	if fetchOrder.Data == nil {
+		result = &model_response.Response[[]*entity.Order]{
+			Code:    http.StatusNotFound,
+			Message: "orderUseCase ListProduct is failed, data order is empty ",
+			Data:    nil,
+		}
+		return result
+	}
+
+	result = &model_response.Response[[]*entity.Order]{
+		Code:    http.StatusOK,
+		Message: "orderUseCase ListOrder is succeed.",
+		Data:    fetchOrder.Data,
+	}
+	return result
+}
+
 func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.OrderRequest) (result *model_response.Response[*model_response.OrderResponse]) {
 
 	beginErr := crdb.Execute(func() (err error) {
@@ -153,6 +194,50 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	}
 	return result
 }
+
+func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_response.Response[*entity.Order]) {
+	transaction, transactionErr := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+		result = &model_response.Response[*entity.Order]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+
+		return result
+	}
+	productFound, productFoundErr := orderUseCase.OrderRepository.GetOneById(transaction, id)
+	if productFoundErr != nil {
+		errorMessage := fmt.Sprintf("orderUseCase GetOneById is failed, GetProduct failed : %s", productFoundErr)
+		result = &model_response.Response[*entity.Order]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+
+		return result
+	}
+	errorMessage := fmt.Sprintf("orderUseCase FindOneById is failed, product is not found by id %s", id)
+	if productFound == nil {
+		result = &model_response.Response[*entity.Order]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+
+		return result
+	}
+
+	result = &model_response.Response[*entity.Order]{
+		Code:    http.StatusOK,
+		Message: "product-service UseCase FindOneById is succeed.",
+		Data:    productFound,
+	}
+
+	return result
+}
+
 func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, productId string, Qty int64, orderId string, totalOrderPrice int) (result *model_response.Response[[]*entity.OrderProducts]) {
 	orderProductsData := &entity.OrderProducts{
 		Id:         null.NewString(uuid.New().String(), true),
@@ -288,7 +373,7 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 
 func (orderUseCase OrderUseCase) UpdateStock(productId string, stock int64) (result *model_response.Response[*entity.Product]) {
 	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.ProductHost, orderUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s/%s", address, "products", "update-stock", productId)
+	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
 	payload := map[string]string{"stock": strconv.FormatInt(stock, 10)}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
