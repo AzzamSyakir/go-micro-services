@@ -28,117 +28,42 @@ func NewOrderWeb(test *testing.T) *OrderWeb {
 }
 
 func (orderWeb *OrderWeb) Start() {
-	// orderWeb.Test.Run("CategoryWeb_GetCategory_Succeed", orderWeb.FindOneById)
-	// orderWeb.Test.Run("CategoryWeb_DeleteCategory_Succeed", orderWeb.DeleteOneById)
-	// orderWeb.Test.Run("CategoryWeb_UpdateCategory_Succeed", orderWeb.PatchOneById)
+	orderWeb.Test.Run("OrderWeb_GetOrder_Succeed", orderWeb.FindOneById)
 	orderWeb.Test.Run("OrderWeb_Order_Succeed", orderWeb.Order)
-	// orderWeb.Test.Run("CategoryWeb_ListCategory_Succeed", orderWeb.ListOrder)
+	orderWeb.Test.Run("OrderWeb_ListOrder_Succeed", orderWeb.ListOrder)
 }
 
-// func (orderWeb *OrderWeb) FindOneById(t *testing.T) {
-// 	t.Parallel()
+func (orderWeb *OrderWeb) FindOneById(t *testing.T) {
+	t.Parallel()
 
-// 	testWeb := GetTestWeb()
-// 	testWeb.AllSeeder.Up()
-// 	defer testWeb.AllSeeder.Down()
+	testWeb := GetTestWeb()
+	testWeb.AllSeeder.Up()
+	defer testWeb.AllSeeder.Down()
 
-// 	selectedCategoryMock := testWeb.AllSeeder.Category.CategoryMock.Data[0]
+	selectedOrderMock := testWeb.AllSeeder.Order.OrderMock.Data[0]
 
-// 	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, orderWeb.Path, selectedCategoryMock.Id.String)
-// 	request, newRequestErr := http.NewRequest(http.MethodGet, url, http.NoBody)
-// 	if newRequestErr != nil {
-// 		t.Fatal(newRequestErr)
-// 	}
-// 	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
-// 	request.Header.Set("authorization", "Bearer "+selectedSessionMock.AccessToken.String)
-// 	response, doErr := http.DefaultClient.Do(request)
-// 	if newRequestErr != nil {
-// 		t.Fatal(newRequestErr)
-// 	}
-// 	if doErr != nil {
-// 		t.Fatal(doErr)
-// 	}
-// 	bodyResponse := &model_response.Response[*entity.Category]{}
-// 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
-// 	if decodeErr != nil {
-// 		t.Fatal(decodeErr)
-// 	}
-// 	assert.Equal(t, http.StatusOK, response.StatusCode)
-// 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-// }
-
-// func (orderWeb *OrderWeb) DeleteOneById(t *testing.T) {
-// 	t.Parallel()
-
-// 	testWeb := GetTestWeb()
-// 	testWeb.AllSeeder.Session.Up()
-// 	testWeb.AllSeeder.Category.Up()
-// 	defer testWeb.AllSeeder.Down()
-
-// 	selectedCategoryMock := testWeb.AllSeeder.Category.CategoryMock.Data[0]
-
-// 	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, orderWeb.Path, selectedCategoryMock.Id.String)
-// 	request, newRequestErr := http.NewRequest(http.MethodDelete, url, http.NoBody)
-// 	if newRequestErr != nil {
-// 		t.Fatal(newRequestErr)
-// 	}
-// 	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
-// 	request.Header.Set("Authorization", "Bearer "+selectedSessionMock.AccessToken.String)
-// 	response, doErr := http.DefaultClient.Do(request)
-// 	if doErr != nil {
-// 		t.Fatal(doErr)
-// 	}
-
-// 	bodyResponse := &model_response.Response[*entity.Category]{}
-// 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
-// 	if decodeErr != nil {
-// 		t.Fatal(decodeErr)
-// 	}
-// 	assert.Equal(t, http.StatusOK, response.StatusCode)
-// 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-// }
-
-// func (orderWeb *OrderWeb) PatchOneById(t *testing.T) {
-// 	t.Parallel()
-
-// 	testWeb := GetTestWeb()
-// 	testWeb.AllSeeder.Up()
-// 	defer testWeb.AllSeeder.Down()
-
-// 	selectedCategoryMock := testWeb.AllSeeder.Category.CategoryMock.Data[0]
-
-// 	bodyRequest := &model_request.CategoryRequest{}
-// 	bodyRequest.Name = null.NewString(selectedCategoryMock.Name.String+"patched", true)
-
-// 	bodyRequestJsonByte, marshalErr := json.Marshal(bodyRequest)
-// 	if marshalErr != nil {
-// 		t.Fatal(marshalErr)
-// 	}
-// 	bodyRequestBuffer := bytes.NewBuffer(bodyRequestJsonByte)
-
-// 	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, orderWeb.Path, selectedCategoryMock.Id.String)
-// 	request, newRequestErr := http.NewRequest(http.MethodPatch, url, bodyRequestBuffer)
-// 	if newRequestErr != nil {
-// 		t.Fatal(newRequestErr)
-// 	}
-// 	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
-// 	request.Header.Set("authorization", "Bearer "+selectedSessionMock.AccessToken.String)
-// 	response, doErr := http.DefaultClient.Do(request)
-// 	if doErr != nil {
-// 		t.Fatal(doErr)
-// 	}
-
-// 	bodyResponse := &model_response.Response[*entity.Category]{}
-// 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
-// 	if decodeErr != nil {
-// 		t.Fatal(decodeErr)
-// 	}
-
-// 	assert.Equal(t, http.StatusOK, response.StatusCode)
-// 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-// 	assert.Equal(t, selectedCategoryMock.Id, bodyResponse.Data.Id)
-// 	assert.Equal(t, bodyRequest.Name, bodyResponse.Data.Name)
-// }
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, orderWeb.Path, selectedOrderMock.Id.String)
+	request, newRequestErr := http.NewRequest(http.MethodGet, url, http.NoBody)
+	if newRequestErr != nil {
+		t.Fatal(newRequestErr)
+	}
+	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
+	request.Header.Set("authorization", "Bearer "+selectedSessionMock.AccessToken.String)
+	response, doErr := http.DefaultClient.Do(request)
+	if newRequestErr != nil {
+		t.Fatal(newRequestErr)
+	}
+	if doErr != nil {
+		t.Fatal(doErr)
+	}
+	bodyResponse := &model_response.Response[*entity.Order]{}
+	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
+	if decodeErr != nil {
+		t.Fatal(decodeErr)
+	}
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
+}
 
 func (orderWeb *OrderWeb) Order(t *testing.T) {
 	t.Parallel()
@@ -183,7 +108,7 @@ func (orderWeb *OrderWeb) Order(t *testing.T) {
 		t.Fatal(doErr)
 	}
 
-	bodyResponse := &model_response.Response[*entity.Category]{}
+	bodyResponse := &model_response.Response[*entity.Order]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
@@ -191,38 +116,38 @@ func (orderWeb *OrderWeb) Order(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 
-	newCategoryMock := bodyResponse.Data
-	testWeb.AllSeeder.Category.CategoryMock.Data = append(testWeb.AllSeeder.Category.CategoryMock.Data, newCategoryMock)
+	newOrderMock := bodyResponse.Data
+	testWeb.AllSeeder.Order.OrderMock.Data = append(testWeb.AllSeeder.Order.OrderMock.Data, newOrderMock)
 }
 
-// func (orderWeb *OrderWeb) ListOrder(t *testing.T) {
-// 	t.Parallel()
+func (orderWeb *OrderWeb) ListOrder(t *testing.T) {
+	t.Parallel()
 
-// 	testWeb := GetTestWeb()
-// 	testWeb.AllSeeder.Up()
-// 	defer testWeb.AllSeeder.Down()
+	testWeb := GetTestWeb()
+	testWeb.AllSeeder.Up()
+	defer testWeb.AllSeeder.Down()
 
-// 	url := fmt.Sprintf("%s/%s", testWeb.Server.URL, orderWeb.Path)
-// 	request, newRequestErr := http.NewRequest(http.MethodGet, url, http.NoBody)
-// 	if newRequestErr != nil {
-// 		t.Fatal(newRequestErr)
-// 	}
-// 	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
-// 	request.Header.Set("authorization", "Bearer "+selectedSessionMock.AccessToken.String)
-// 	response, doErr := http.DefaultClient.Do(request)
-// 	if newRequestErr != nil {
-// 		t.Fatal(newRequestErr)
-// 	}
-// 	if doErr != nil {
-// 		t.Fatal(doErr)
-// 	}
+	url := fmt.Sprintf("%s/%s", testWeb.Server.URL, orderWeb.Path)
+	request, newRequestErr := http.NewRequest(http.MethodGet, url, http.NoBody)
+	if newRequestErr != nil {
+		t.Fatal(newRequestErr)
+	}
+	selectedSessionMock := testWeb.AllSeeder.Session.SessionMock.Data[0]
+	request.Header.Set("authorization", "Bearer "+selectedSessionMock.AccessToken.String)
+	response, doErr := http.DefaultClient.Do(request)
+	if newRequestErr != nil {
+		t.Fatal(newRequestErr)
+	}
+	if doErr != nil {
+		t.Fatal(doErr)
+	}
 
-// 	bodyResponse := &model_response.Response[[]*entity.Category]{}
-// 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
-// 	if decodeErr != nil {
-// 		t.Fatal(decodeErr)
-// 	}
-// 	assert.Equal(t, http.StatusOK, response.StatusCode)
-// 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
-// 	assert.Equal(t, bodyResponse.Code, http.StatusOK)
-// }
+	bodyResponse := &model_response.Response[[]*entity.Order]{}
+	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
+	if decodeErr != nil {
+		t.Fatal(decodeErr)
+	}
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
+	assert.Equal(t, bodyResponse.Code, http.StatusOK)
+}
