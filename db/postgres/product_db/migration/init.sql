@@ -10,7 +10,7 @@ create table IF NOT EXISTS categories
 create table IF NOT EXISTS products
 (
     id uuid not null primary key,
-    Sku text not null unique ,
+    Sku text not null  ,
     Name text not null unique ,
     stock int not null ,
     price int not null ,

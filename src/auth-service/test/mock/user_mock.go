@@ -23,7 +23,7 @@ func NewUserMock() *UserMock {
 		Data: []*entity.User{
 			{
 				Id:        null.NewString(uuid.NewString(), true),
-				Name:      null.NewString(uuid.NewString(), true),
+				Name:      null.NewString("name"+uuid.NewString(), true),
 				Balance:   null.NewInt(100000, true),
 				Email:     null.NewString("email"+uuid.NewString()+"@mail.com", true),
 				Password:  null.NewString("password0", true),
@@ -33,7 +33,7 @@ func NewUserMock() *UserMock {
 			},
 			{
 				Id:        null.NewString(uuid.NewString(), true),
-				Name:      null.NewString(uuid.NewString(), true),
+				Name:      null.NewString("name"+uuid.NewString(), true),
 				Balance:   null.NewInt(100000, true),
 				Email:     null.NewString("email"+uuid.NewString()+"@mail.com", true),
 				Password:  null.NewString("password1", true),
