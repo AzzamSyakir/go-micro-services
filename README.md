@@ -43,7 +43,3 @@ make start-docker
 ```bash
 make start-test
 ```
-
-```bash
-make start-docker
-```
