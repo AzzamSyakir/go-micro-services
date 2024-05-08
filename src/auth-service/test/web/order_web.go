@@ -30,7 +30,7 @@ func NewOrderWeb(test *testing.T) *OrderWeb {
 func (orderWeb *OrderWeb) Start() {
 	orderWeb.Test.Run("OrderWeb_GetOrder_Succeed", orderWeb.FindOneById)
 	orderWeb.Test.Run("OrderWeb_Order_Succeed", orderWeb.Order)
-	// orderWeb.Test.Run("OrderWeb_ListOrder_Succeed", orderWeb.ListOrder)
+	orderWeb.Test.Run("OrderWeb_ListOrder_Succeed", orderWeb.ListOrder)
 }
 
 func (orderWeb *OrderWeb) FindOneById(t *testing.T) {
@@ -56,7 +56,7 @@ func (orderWeb *OrderWeb) FindOneById(t *testing.T) {
 	if doErr != nil {
 		t.Fatal(doErr)
 	}
-	bodyResponse := &model_response.Response[*entity.Order]{}
+	bodyResponse := &model_response.Response[*model_response.OrderResponse]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
@@ -154,7 +154,7 @@ func (orderWeb *OrderWeb) ListOrder(t *testing.T) {
 		t.Fatal(doErr)
 	}
 
-	bodyResponse := &model_response.Response[[]*entity.Order]{}
+	bodyResponse := &model_response.Response[[]*model_response.OrderResponse]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)

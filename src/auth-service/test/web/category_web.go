@@ -59,7 +59,7 @@ func (categoryWeb *CategoryWeb) GetCategoryById(t *testing.T) {
 		t.Fatal(doErr)
 	}
 
-	bodyResponse := &model_response.Response[[]*entity.Category]{}
+	bodyResponse := &model_response.Response[*entity.Category]{}
 	decodeErr := json.NewDecoder(response.Body).Decode(bodyResponse)
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
