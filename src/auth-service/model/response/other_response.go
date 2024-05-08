@@ -13,7 +13,6 @@ type SessionResponse struct {
 type OrderResponse struct {
 	Id          null.String             `json:"id"`
 	UserId      null.String             `json:"user_id"`
-	Name        null.String             `json:"name"`
 	ReceiptCode null.String             `json:"receipt_code"`
 	TotalPrice  null.Int                `json:"total_price"`
 	TotalPaid   null.Int                `json:"total_paid"`

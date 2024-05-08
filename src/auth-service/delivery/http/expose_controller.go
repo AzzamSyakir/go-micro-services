@@ -144,8 +144,8 @@ func (exposeController *ExposeController) CreateCategory(writer http.ResponseWri
 }
 
 func (exposeController *ExposeController) ListCategories(writer http.ResponseWriter, reader *http.Request) {
-	Category := exposeController.ExposeUseCase.ListCategories()
-	response.NewResponse(writer, Category)
+	foundCategory := exposeController.ExposeUseCase.ListCategories()
+	response.NewResponse(writer, foundCategory)
 }
 
 func (exposeController *ExposeController) DeleteCategory(writer http.ResponseWriter, reader *http.Request) {
@@ -173,8 +173,8 @@ func (exposeController *ExposeController) UpdateCategory(writer http.ResponseWri
 func (exposeController *ExposeController) DetailCategory(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
-	foundProduct := exposeController.ExposeUseCase.DetailCategory(id)
-	response.NewResponse(writer, foundProduct)
+	foundCategory := exposeController.ExposeUseCase.DetailCategory(id)
+	response.NewResponse(writer, foundCategory)
 }
 
 // order
@@ -191,4 +191,14 @@ func (exposeController *ExposeController) Orders(writer http.ResponseWriter, rea
 	}
 	result := exposeController.ExposeUseCase.Orders(tokenString, request)
 	response.NewResponse(writer, result)
+}
+func (exposeController *ExposeController) Detailorder(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+	foundOrder := exposeController.ExposeUseCase.DetailOrder(id)
+	response.NewResponse(writer, foundOrder)
+}
+func (exposeController *ExposeController) ListOrders(writer http.ResponseWriter, reader *http.Request) {
+	foundOrders := exposeController.ExposeUseCase.ListOrders()
+	response.NewResponse(writer, foundOrders)
 }

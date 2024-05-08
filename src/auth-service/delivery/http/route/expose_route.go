@@ -55,13 +55,13 @@ func NewCategoryRoute(router *mux.Router, CategoryController *http.ExposeControl
 	return CategoryRoute
 }
 
-func (CategoryRoute *CategoryRoute) Register() {
-	CategoryRoute.Router.Use(CategoryRoute.Middleware.Middleware)
-	CategoryRoute.Router.HandleFunc("", CategoryRoute.CategoryController.CreateCategory).Methods("POST")
-	CategoryRoute.Router.HandleFunc("", CategoryRoute.CategoryController.ListCategories).Methods("GET")
-	CategoryRoute.Router.HandleFunc("/{id}", CategoryRoute.CategoryController.DetailCategory).Methods("GET")
-	CategoryRoute.Router.HandleFunc("/{id}", CategoryRoute.CategoryController.DeleteCategory).Methods("DELETE")
-	CategoryRoute.Router.HandleFunc("/{id}", CategoryRoute.CategoryController.UpdateCategory).Methods("PATCH")
+func (categoryRoute *CategoryRoute) Register() {
+	categoryRoute.Router.Use(categoryRoute.Middleware.Middleware)
+	categoryRoute.Router.HandleFunc("", categoryRoute.CategoryController.CreateCategory).Methods("POST")
+	categoryRoute.Router.HandleFunc("", categoryRoute.CategoryController.ListCategories).Methods("GET")
+	categoryRoute.Router.HandleFunc("/{id}", categoryRoute.CategoryController.DetailCategory).Methods("GET")
+	categoryRoute.Router.HandleFunc("/{id}", categoryRoute.CategoryController.DeleteCategory).Methods("DELETE")
+	categoryRoute.Router.HandleFunc("/{id}", categoryRoute.CategoryController.UpdateCategory).Methods("PATCH")
 }
 
 // order route
@@ -82,6 +82,8 @@ func NewOrderRoute(router *mux.Router, orderController *http.ExposeController, m
 }
 func (orderRoute *OrderRoute) Register() {
 	orderRoute.Router.Use(orderRoute.Middleware.Middleware)
+	orderRoute.Router.HandleFunc("", orderRoute.OrderController.ListOrders).Methods("GET")
+	orderRoute.Router.HandleFunc("/{id}", orderRoute.OrderController.Detailorder).Methods("GET")
 	orderRoute.Router.HandleFunc("", orderRoute.OrderController.Orders).Methods("POST")
 }
 

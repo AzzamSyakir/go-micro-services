@@ -693,8 +693,8 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 		}
 		return result
 	}
-	bodyResponseOrder := &model_response.Response[*model_response.OrderResponse]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseOrder)
+	foundOrder := &model_response.Response[*model_response.OrderResponse]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(foundOrder)
 	if decodeErr != nil {
 		result = &model_response.Response[*model_response.OrderResponse]{
 			Code:    http.StatusBadRequest,
@@ -702,5 +702,72 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 			Data:    nil,
 		}
 	}
-	return bodyResponseOrder
+	return foundOrder
+}
+func (exposeUseCase *ExposeUseCase) DetailOrder(id string) (result *model_response.Response[*model_response.OrderResponse]) {
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.OrderHost, exposeUseCase.Env.App.OrderPort)
+	url := fmt.Sprintf("%s/%s/%s", address, "orders", id)
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+	if newRequestErr != nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	foundOrder := &model_response.Response[*model_response.OrderResponse]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(foundOrder)
+	if decodeErr != nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return foundOrder
+}
+func (exposeUseCase *ExposeUseCase) ListOrders() (result *model_response.Response[[]*model_response.OrderResponse]) {
+	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.OrderHost, exposeUseCase.Env.App.OrderPort)
+	url := fmt.Sprintf("%s/%s", address, "orders")
+	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
+
+	if newRequestErr != nil {
+		result = &model_response.Response[[]*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: newRequestErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+
+	responseRequest, doErr := http.DefaultClient.Do(newRequest)
+	if doErr != nil {
+		result = &model_response.Response[[]*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: doErr.Error(),
+			Data:    nil,
+		}
+		return result
+	}
+	foundOrders := &model_response.Response[[]*model_response.OrderResponse]{}
+	decodeErr := json.NewDecoder(responseRequest.Body).Decode(foundOrders)
+	if decodeErr != nil {
+		result = &model_response.Response[[]*model_response.OrderResponse]{
+			Code:    http.StatusBadRequest,
+			Message: decodeErr.Error(),
+			Data:    nil,
+		}
+	}
+	return foundOrders
 }
