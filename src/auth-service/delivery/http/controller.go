@@ -23,7 +23,7 @@ func NewAuthController(authUseCase *use_case.AuthUseCase, exposeUseCase *use_cas
 }
 func (authController *AuthController) Register(writer http.ResponseWriter, reader *http.Request) {
 
-	request := &model_request.Register{}
+	request := &model_request.RegisterRequest{}
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
 		http.Error(writer, decodeErr.Error(), 404)

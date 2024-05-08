@@ -13,12 +13,12 @@ import (
 )
 
 type WebContainer struct {
-	Env           *config.EnvConfig
-	OrderDatabase *config.DatabaseConfig
-	Repository    *RepositoryContainer
-	UseCase       *UseCaseContainer
-	Controller    *ControllerContainer
-	Route         *route.RootRoute
+	Env        *config.EnvConfig
+	OrderDB    *config.DatabaseConfig
+	Repository *RepositoryContainer
+	UseCase    *UseCaseContainer
+	Controller *ControllerContainer
+	Route      *route.RootRoute
 }
 
 func NewWebContainer() *WebContainer {
@@ -52,12 +52,12 @@ func NewWebContainer() *WebContainer {
 	rootRoute.Register()
 
 	webContainer := &WebContainer{
-		Env:           envConfig,
-		OrderDatabase: orderDBConfig,
-		Repository:    repositoryContainer,
-		UseCase:       useCaseContainer,
-		Controller:    controllerContainer,
-		Route:         rootRoute,
+		Env:        envConfig,
+		OrderDB:    orderDBConfig,
+		Repository: repositoryContainer,
+		UseCase:    useCaseContainer,
+		Controller: controllerContainer,
+		Route:      rootRoute,
 	}
 
 	return webContainer

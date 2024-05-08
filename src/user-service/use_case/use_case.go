@@ -111,7 +111,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 }
 
 func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
-	beginErr := crdb.Execute(func() (err error) {
+	transactionErr := crdb.Execute(func() (err error) {
 		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
 			return err
@@ -158,10 +158,10 @@ func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.
 		return err
 	})
 
-	if beginErr != nil {
+	if transactionErr != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase UpdateBalance  is failed, " + beginErr.Error(),
+			Message: "UserUserCase UpdateBalance  is failed, " + transactionErr.Error(),
 			Data:    nil,
 		}
 	}
@@ -170,7 +170,7 @@ func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.
 }
 
 func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
-	beginErr := crdb.Execute(func() (err error) {
+	transactionErr := crdb.Execute(func() (err error) {
 		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
 			return err
@@ -195,8 +195,22 @@ func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.Use
 		if request.Email.Valid {
 			foundUser.Email = request.Email
 		}
+		if request.Balance.Valid {
+			foundUser.Balance = request.Balance
+		}
 		if request.Password.Valid {
-			foundUser.Password = request.Password
+			hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
+			if hashedPasswordErr != nil {
+				err = transaction.Rollback()
+				result = &model_response.Response[*entity.User]{
+					Code:    http.StatusInternalServerError,
+					Message: "UserUseCase UpdateUser is failed, password hashing is failed.",
+					Data:    nil,
+				}
+				return err
+			}
+
+			foundUser.Password = null.NewString(string(hashedPassword), true)
 		}
 		if request.Balance.Valid {
 			foundUser.Balance = request.Balance
@@ -218,10 +232,10 @@ func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.Use
 		return err
 	})
 
-	if beginErr != nil {
+	if transactionErr != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase UpdateUser  is failed, " + beginErr.Error(),
+			Message: "UserUserCase UpdateUser  is failed, " + transactionErr.Error(),
 			Data:    nil,
 		}
 	}
@@ -230,8 +244,8 @@ func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.Use
 }
 
 func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.User]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	transactionErr := crdb.Execute(func() (err error) {
+		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
 			result = nil
 			return err
@@ -239,7 +253,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 
 		hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
 		if hashedPasswordErr != nil {
-			err = begin.Rollback()
+			err = transaction.Rollback()
 			result = &model_response.Response[*entity.User]{
 				Code:    http.StatusInternalServerError,
 				Message: "UserUseCase Register is failed, password hashing is failed.",
@@ -260,12 +274,12 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 			DeletedAt: null.NewTime(time.Time{}, false),
 		}
 
-		createdUser, err := userUseCase.UserRepository.CreateUser(begin, newUser)
+		createdUser, err := userUseCase.UserRepository.CreateUser(transaction, newUser)
 		if err != nil {
 			return err
 		}
 
-		err = begin.Commit()
+		err = transaction.Commit()
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusCreated,
 			Message: "UserUseCase Register is succeed.",
@@ -274,10 +288,10 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 		return err
 	})
 
-	if beginErr != nil {
+	if transactionErr != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUseCase Register  is failed, " + beginErr.Error(),
+			Message: "UserUseCase Register  is failed, " + transactionErr.Error(),
 			Data:    nil,
 		}
 	}
@@ -286,15 +300,15 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 }
 
 func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	transactionErr := crdb.Execute(func() (err error) {
+		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 		if err != nil {
 			return err
 		}
 
-		deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(begin, id)
+		deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(transaction, id)
 		if deletedUserErr != nil {
-			err = begin.Rollback()
+			err = transaction.Rollback()
 			result = &model_response.Response[*entity.User]{
 				Code:    http.StatusNotFound,
 				Message: "UserUserCase DeleteUser is failed, " + deletedUserErr.Error(),
@@ -303,7 +317,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 			return err
 		}
 		if deletedUser == nil {
-			err = begin.Rollback()
+			err = transaction.Rollback()
 			result = &model_response.Response[*entity.User]{
 				Code:    http.StatusNotFound,
 				Message: "UserUserCase DeleteUser is failed, user is not deleted by id, " + id,
@@ -312,7 +326,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 			return err
 		}
 
-		err = begin.Commit()
+		err = transaction.Commit()
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusOK,
 			Message: "UserUserCase DeleteUser is succeed.",
@@ -321,10 +335,10 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 		return err
 	})
 
-	if beginErr != nil {
+	if transactionErr != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase DeleteUser is failed, " + beginErr.Error(),
+			Message: "UserUserCase DeleteUser is failed, " + transactionErr.Error(),
 			Data:    nil,
 		}
 	}

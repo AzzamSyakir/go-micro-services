@@ -19,3 +19,5 @@ start-db:
 
 clean-docker:
 	clear && docker system prune && docker volume prune && docker image prune -a -f && docker container prune && docker buildx prune
+start-test:
+	clear && go test -v -count=1 ./src/auth-service/test

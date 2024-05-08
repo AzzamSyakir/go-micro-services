@@ -30,7 +30,7 @@ func (exposeController *ExposeController) FetchUser(writer http.ResponseWriter, 
 }
 func (exposeController *ExposeController) Register(writer http.ResponseWriter, reader *http.Request) {
 
-	request := &model_request.Register{}
+	request := &model_request.RegisterRequest{}
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
 		http.Error(writer, decodeErr.Error(), 404)
@@ -45,20 +45,6 @@ func (exposeController *ExposeController) DeleteUser(writer http.ResponseWriter,
 	id := vars["id"]
 
 	result := exposeController.ExposeUseCase.DeleteUser(id)
-
-	response.NewResponse(writer, result)
-}
-func (exposeController *ExposeController) UpdateBalance(writer http.ResponseWriter, reader *http.Request) {
-	vars := mux.Vars(reader)
-	id := vars["id"]
-
-	request := &model_request.UserPatchOneByIdRequest{}
-	decodeErr := json.NewDecoder(reader.Body).Decode(request)
-	if decodeErr != nil {
-		http.Error(writer, decodeErr.Error(), 404)
-	}
-
-	result := exposeController.ExposeUseCase.UpdateBalance(id, request)
 
 	response.NewResponse(writer, result)
 }
@@ -119,19 +105,7 @@ func (exposeController *ExposeController) DeleteProduct(writer http.ResponseWrit
 
 	response.NewResponse(writer, result)
 }
-func (exposeController *ExposeController) UpdateStock(writer http.ResponseWriter, reader *http.Request) {
-	vars := mux.Vars(reader)
-	id := vars["id"]
 
-	request := &model_request.ProductPatchOneByIdRequest{}
-	decodeErr := json.NewDecoder(reader.Body).Decode(request)
-	if decodeErr != nil {
-		panic(decodeErr)
-	}
-	result := exposeController.ExposeUseCase.UpdateStock(id, request)
-
-	response.NewResponse(writer, result)
-}
 func (exposeController *ExposeController) UpdateProduct(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
@@ -170,8 +144,8 @@ func (exposeController *ExposeController) CreateCategory(writer http.ResponseWri
 }
 
 func (exposeController *ExposeController) ListCategories(writer http.ResponseWriter, reader *http.Request) {
-	Category := exposeController.ExposeUseCase.ListCategories()
-	response.NewResponse(writer, Category)
+	foundCategory := exposeController.ExposeUseCase.ListCategories()
+	response.NewResponse(writer, foundCategory)
 }
 
 func (exposeController *ExposeController) DeleteCategory(writer http.ResponseWriter, reader *http.Request) {
@@ -197,6 +171,10 @@ func (exposeController *ExposeController) UpdateCategory(writer http.ResponseWri
 	response.NewResponse(writer, result)
 }
 func (exposeController *ExposeController) DetailCategory(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+	foundCategory := exposeController.ExposeUseCase.DetailCategory(id)
+	response.NewResponse(writer, foundCategory)
 }
 
 // order
@@ -213,4 +191,14 @@ func (exposeController *ExposeController) Orders(writer http.ResponseWriter, rea
 	}
 	result := exposeController.ExposeUseCase.Orders(tokenString, request)
 	response.NewResponse(writer, result)
+}
+func (exposeController *ExposeController) Detailorder(writer http.ResponseWriter, reader *http.Request) {
+	vars := mux.Vars(reader)
+	id := vars["id"]
+	foundOrder := exposeController.ExposeUseCase.DetailOrder(id)
+	response.NewResponse(writer, foundOrder)
+}
+func (exposeController *ExposeController) ListOrders(writer http.ResponseWriter, reader *http.Request) {
+	foundOrders := exposeController.ExposeUseCase.ListOrders()
+	response.NewResponse(writer, foundOrders)
 }

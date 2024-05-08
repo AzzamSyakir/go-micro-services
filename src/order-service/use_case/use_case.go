@@ -35,12 +35,64 @@ func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *rep
 	}
 	return OrderUseCase
 }
+func (orderUseCase *OrderUseCase) ListOrders() (result *model_response.Response[[]*model_response.OrderResponse]) {
+	transaction, transactionErr := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+		result = &model_response.Response[[]*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+
+		return result
+	}
+
+	fetchOrder, fetchOrderErr := orderUseCase.OrderRepository.ListOrders(transaction)
+	if fetchOrderErr != nil {
+		errorMessage := fmt.Sprintf("orderUseCase ListOrder is failed, GetOrder failed : %s", fetchOrderErr)
+		result = &model_response.Response[[]*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		return result
+	}
+	for _, order := range fetchOrder.Data {
+		orderProductFound, orderProductFoundErr := orderUseCase.OrderRepository.GetOrderProductsByOrderId(transaction, order.Id.String)
+		if orderProductFoundErr != nil {
+			errorMessage := fmt.Sprintf("order-service DetailOrder is failed, GetOrderProducts failed : %s", orderProductFoundErr)
+			result = &model_response.Response[[]*model_response.OrderResponse]{
+				Code:    http.StatusNotFound,
+				Message: errorMessage,
+				Data:    nil,
+			}
+			return result
+		}
+		order.Products = orderProductFound.Data
+	}
+	if fetchOrder.Data == nil {
+		result = &model_response.Response[[]*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: "orderUseCase ListProduct is failed, data order is empty ",
+			Data:    nil,
+		}
+		return result
+	}
+
+	result = &model_response.Response[[]*model_response.OrderResponse]{
+		Code:    http.StatusOK,
+		Message: "orderUseCase ListOrder is succeed.",
+		Data:    fetchOrder.Data,
+	}
+	return result
+}
+
 func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.OrderRequest) (result *model_response.Response[*model_response.OrderResponse]) {
 
 	beginErr := crdb.Execute(func() (err error) {
 		begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 		if err != nil {
-			fmt.Println("tes")
 			return err
 		}
 		//   Products
@@ -152,6 +204,60 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 			Data:    nil,
 		}
 	}
+	return result
+}
+
+func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_response.Response[*model_response.OrderResponse]) {
+	transaction, transactionErr := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+	if transactionErr != nil {
+		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+
+		return result
+	}
+
+	orderProductFound, orderProductFoundErr := orderUseCase.OrderRepository.GetOrderProductsByOrderId(transaction, id)
+	if orderProductFoundErr != nil {
+		errorMessage := fmt.Sprintf("order-service DetailOrder is failed, GetOrderProducts failed : %s", orderProductFoundErr)
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		return result
+	}
+	orderFound, orderFoundErr := orderUseCase.OrderRepository.DetailOrder(transaction, id)
+	if orderFoundErr != nil {
+		errorMessage := fmt.Sprintf("order-service DetailOrder is failed, GetOrder failed : %s", orderFoundErr)
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: errorMessage,
+			Data:    nil,
+		}
+		return result
+	}
+	orderErrorMessage := fmt.Sprintf("order-service, DetailOrder is failed, order is not found by id %s", id)
+	if orderFound == nil {
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: orderErrorMessage,
+			Data:    nil,
+		}
+
+		return result
+	}
+
+	result = &model_response.Response[*model_response.OrderResponse]{
+		Code:    http.StatusOK,
+		Message: "order-service, DetailOrder is succeed.",
+		Data:    orderFound,
+	}
+	result.Data.Products = orderProductFound.Data
+
 	return result
 }
 func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, productId string, Qty int64, orderId string, totalOrderPrice int) (result *model_response.Response[[]*entity.OrderProducts]) {
@@ -289,7 +395,7 @@ func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_re
 
 func (orderUseCase OrderUseCase) UpdateStock(productId string, stock int64) (result *model_response.Response[*entity.Product]) {
 	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.ProductHost, orderUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s/%s", address, "products", "update-stock", productId)
+	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
 	payload := map[string]string{"stock": strconv.FormatInt(stock, 10)}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {

@@ -13,6 +13,92 @@ func NewOrderRepository() *OrderRepository {
 	orderRepository := &OrderRepository{}
 	return orderRepository
 }
+func DeserializeOrderRows(rows *sql.Rows) []*model_response.OrderResponse {
+	var foundOrders []*model_response.OrderResponse
+	for rows.Next() {
+		foundOrder := &model_response.OrderResponse{}
+		scanErr := rows.Scan(
+			&foundOrder.Id,
+			&foundOrder.UserId,
+			&foundOrder.TotalPrice,
+			&foundOrder.TotalPaid,
+			&foundOrder.TotalReturn,
+			&foundOrder.ReceiptCode,
+			&foundOrder.CreatedAt,
+			&foundOrder.UpdatedAt,
+			&foundOrder.DeletedAt,
+		)
+		if scanErr != nil {
+			panic(scanErr)
+		}
+		foundOrders = append(foundOrders, foundOrder)
+	}
+	return foundOrders
+}
+func DeserializeOrderProductRows(rows *sql.Rows) []*entity.OrderProducts {
+	var foundOrders []*entity.OrderProducts
+	for rows.Next() {
+		foundOrder := &entity.OrderProducts{}
+		scanErr := rows.Scan(
+			&foundOrder.Id,
+			&foundOrder.OrderId,
+			&foundOrder.ProductId,
+			&foundOrder.TotalPrice,
+			&foundOrder.Qty,
+			&foundOrder.CreatedAt,
+			&foundOrder.UpdatedAt,
+			&foundOrder.DeletedAt,
+		)
+		if scanErr != nil {
+			panic(scanErr)
+		}
+		foundOrders = append(foundOrders, foundOrder)
+	}
+	return foundOrders
+}
+
+func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *model_response.Response[[]*model_response.OrderResponse], err error) {
+	var rows *sql.Rows
+	var queryErr error
+	rows, queryErr = begin.Query(
+		`SELECT id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at FROM "orders" `,
+	)
+
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return result, err
+
+	}
+	defer rows.Close()
+	var orders []*model_response.OrderResponse
+	for rows.Next() {
+		order := &model_response.OrderResponse{}
+		scanErr := rows.Scan(
+			&order.Id,
+			&order.UserId,
+			&order.TotalPrice,
+			&order.TotalPaid,
+			&order.TotalReturn,
+			&order.ReceiptCode,
+			&order.CreatedAt,
+			&order.UpdatedAt,
+			&order.DeletedAt,
+		)
+		if scanErr != nil {
+			result = nil
+			err = scanErr
+			return result, err
+		}
+		orders = append(orders, order)
+	}
+
+	result = &model_response.Response[[]*model_response.OrderResponse]{
+		Data: orders,
+	}
+	err = nil
+	return result, err
+}
 
 func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Order) (result *model_response.Response[*model_response.OrderResponse], err error) {
 	rows, queryErr := begin.Query(
@@ -55,6 +141,33 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 	err = nil
 	return result, err
 }
+
+func (orderRepository OrderRepository) DetailOrder(tx *sql.Tx, id string) (result *model_response.OrderResponse, err error) {
+	var rows *sql.Rows
+	var queryErr error
+	rows, queryErr = tx.Query(
+		`SELECT id, user_id, total_price, total_paid, total_return, receipt_code,  created_at, updated_at, deleted_at FROM "orders" WHERE id=$1 LIMIT 1;`,
+		id,
+	)
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return result, err
+	}
+	defer rows.Close()
+
+	foundOrder := DeserializeOrderRows(rows)
+	if len(foundOrder) == 0 {
+		result = nil
+		err = nil
+		return result, err
+	}
+
+	result = foundOrder[0]
+	err = nil
+	return result, err
+}
+
 func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProducts *entity.OrderProducts) (result *entity.OrderProducts, err error) {
 	rows, queryErr := begin.Query(
 		`INSERT INTO "order_products"(id, order_id, product_id, total_price, qty, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
@@ -82,6 +195,49 @@ func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProduc
 	}(rows)
 
 	result = orderProducts
+	err = nil
+	return result, err
+}
+
+func (orderRepository *OrderRepository) GetOrderProductsByOrderId(tx *sql.Tx, order_id string) (result *model_response.Response[[]*entity.OrderProducts], err error) {
+	var rows *sql.Rows
+	var queryErr error
+	rows, queryErr = tx.Query(
+		`SELECT id, order_id, product_id,  total_price, qty,  created_at, updated_at, deleted_at FROM "order_products" WHERE order_id=$1;`,
+		order_id,
+	)
+
+	if queryErr != nil {
+		result = nil
+		err = queryErr
+		return result, err
+
+	}
+	defer rows.Close()
+	var fetchOrderProducts []*entity.OrderProducts
+	for rows.Next() {
+		fetchOrderProduct := &entity.OrderProducts{}
+		scanErr := rows.Scan(
+			&fetchOrderProduct.Id,
+			&fetchOrderProduct.OrderId,
+			&fetchOrderProduct.ProductId,
+			&fetchOrderProduct.TotalPrice,
+			&fetchOrderProduct.Qty,
+			&fetchOrderProduct.CreatedAt,
+			&fetchOrderProduct.UpdatedAt,
+			&fetchOrderProduct.DeletedAt,
+		)
+		if scanErr != nil {
+			result = nil
+			err = scanErr
+			return result, err
+		}
+		fetchOrderProducts = append(fetchOrderProducts, fetchOrderProduct)
+	}
+
+	result = &model_response.Response[[]*entity.OrderProducts]{
+		Data: fetchOrderProducts,
+	}
 	err = nil
 	return result, err
 }

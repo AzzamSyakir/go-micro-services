@@ -39,20 +39,6 @@ func (userController *UserController) FetchUser(writer http.ResponseWriter, read
 	response.NewResponse(writer, fetchUser)
 }
 
-func (userController *UserController) UpdateBalance(writer http.ResponseWriter, reader *http.Request) {
-	vars := mux.Vars(reader)
-	id := vars["id"]
-
-	request := &model_request.UserPatchOneByIdRequest{}
-	decodeErr := json.NewDecoder(reader.Body).Decode(request)
-	if decodeErr != nil {
-		http.Error(writer, decodeErr.Error(), 404)
-	}
-
-	result := userController.UserUseCase.UpdateBalance(id, request)
-
-	response.NewResponse(writer, result)
-}
 func (userController *UserController) UpdateUser(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
