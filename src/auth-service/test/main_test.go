@@ -19,7 +19,7 @@ func Test(t *testing.T) {
 	userWeb := web.NewUserWeb(t)
 	userWeb.Start()
 
-	productWeb := web.NewCategoryWeb(t)
+	productWeb := web.NewProductWeb(t)
 	productWeb.Start()
 
 	categoryWeb := web.NewCategoryWeb(t)

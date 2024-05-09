@@ -69,7 +69,7 @@ func (categoryWeb *CategoryWeb) GetCategoryById(t *testing.T) {
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 }
 
-func (CategoryWeb *CategoryWeb) DeleteOneById(t *testing.T) {
+func (categoryWeb *CategoryWeb) DeleteOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
@@ -79,7 +79,7 @@ func (CategoryWeb *CategoryWeb) DeleteOneById(t *testing.T) {
 
 	selectedCategoryMock := testWeb.AllSeeder.Category.CategoryMock.Data[0]
 
-	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, CategoryWeb.Path, selectedCategoryMock.Id.String)
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, categoryWeb.Path, selectedCategoryMock.Id.String)
 	request, newRequestErr := http.NewRequest(http.MethodDelete, url, http.NoBody)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -100,7 +100,7 @@ func (CategoryWeb *CategoryWeb) DeleteOneById(t *testing.T) {
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 }
 
-func (CategoryWeb *CategoryWeb) PatchOneById(t *testing.T) {
+func (categoryWeb *CategoryWeb) PatchOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
@@ -118,7 +118,7 @@ func (CategoryWeb *CategoryWeb) PatchOneById(t *testing.T) {
 	}
 	bodyRequestBuffer := bytes.NewBuffer(bodyRequestJsonByte)
 
-	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, CategoryWeb.Path, selectedCategoryMock.Id.String)
+	url := fmt.Sprintf("%s/%s/%s", testWeb.Server.URL, categoryWeb.Path, selectedCategoryMock.Id.String)
 	request, newRequestErr := http.NewRequest(http.MethodPatch, url, bodyRequestBuffer)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
@@ -135,14 +135,13 @@ func (CategoryWeb *CategoryWeb) PatchOneById(t *testing.T) {
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
-
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	assert.Equal(t, selectedCategoryMock.Id, bodyResponse.Data.Id)
 	assert.Equal(t, bodyRequest.Name, bodyResponse.Data.Name)
 }
 
-func (CategoryWeb *CategoryWeb) CreateCategory(t *testing.T) {
+func (categoryWeb *CategoryWeb) CreateCategory(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
@@ -160,7 +159,7 @@ func (CategoryWeb *CategoryWeb) CreateCategory(t *testing.T) {
 	}
 	bodyRequestBuffer := bytes.NewBuffer(bodyRequestJsonByte)
 
-	url := fmt.Sprintf("%s/%s", testWeb.Server.URL, CategoryWeb.Path)
+	url := fmt.Sprintf("%s/%s", testWeb.Server.URL, categoryWeb.Path)
 	request, newRequestErr := http.NewRequest(http.MethodPost, url, bodyRequestBuffer)
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
