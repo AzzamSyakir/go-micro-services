@@ -70,6 +70,7 @@ services:
 
   auth-db:
     image: postgres:latest
+    command: -c 'max_connections=500'
     container_name: auth-db
     restart: always
     environment:
@@ -88,6 +89,7 @@ services:
 
   user-db:
     image: postgres:latest
+    command: -c 'max_connections=500'
     container_name: user-db
     restart: always
     environment:
@@ -106,6 +108,7 @@ services:
 
   product-db:
     image: postgres:latest
+    command: -c 'max_connections=500'
     container_name: product-db
     restart: always
     environment:
@@ -124,6 +127,7 @@ services:
 
   order-db:
     image: postgres:latest
+    command: -c 'max_connections=500'
     container_name: order-db
     restart: always
     environment:
