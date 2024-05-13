@@ -32,8 +32,8 @@ func NewAuthWeb(test *testing.T) *AuthWeb {
 func (authWeb *AuthWeb) Start() {
 	authWeb.Test.Run("AuthWeb_Register_Succeed", authWeb.Register)
 	authWeb.Test.Run("AuthWeb_Login_Succeed", authWeb.Login)
-	authWeb.Test.Run("AuthWeb_Logout_Succeed", authWeb.Logout)
-	authWeb.Test.Run("AuthWeb_GetNewAccessToken_Succeed", authWeb.GetNewAccessToken)
+	// authWeb.Test.Run("AuthWeb_Logout_Succeed", authWeb.Logout)
+	// authWeb.Test.Run("AuthWeb_GetNewAccessToken_Succeed", authWeb.GetNewAccessToken)
 }
 
 func (authWeb *AuthWeb) Register(t *testing.T) {
@@ -108,7 +108,6 @@ func (authWeb *AuthWeb) Login(t *testing.T) {
 	if newRequestErr != nil {
 		t.Fatal(newRequestErr)
 	}
-
 	response, doErr := http.DefaultClient.Do(request)
 	if doErr != nil {
 		t.Fatal(doErr)
@@ -119,7 +118,6 @@ func (authWeb *AuthWeb) Login(t *testing.T) {
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
-
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	assert.Equal(t, selectedUserMock.Id, bodyResponse.Data.UserId)

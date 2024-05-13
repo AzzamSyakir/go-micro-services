@@ -48,8 +48,8 @@ func NewAuthDB(envConfig *EnvConfig) *PostgresDatabase {
 		panic(err)
 	}
 	connection.SetConnMaxLifetime(300)
-	connection.SetMaxIdleConns(50)
-	connection.SetMaxOpenConns(50)
+	connection.SetMaxIdleConns(10)
+	connection.SetMaxOpenConns(10)
 	userDB := &PostgresDatabase{
 		Connection: connection,
 	}

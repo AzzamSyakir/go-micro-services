@@ -37,7 +37,7 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *en
 	return result, err
 }
 
-func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_response.Response[[]*entity.User], err error) {
+func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *model_response.Response[[]*entity.User], err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -50,29 +50,29 @@ func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_re
 		return result, err
 	}
 	defer rows.Close()
-	var fetchUsers []*entity.User
+	var ListUsers []*entity.User
 	for rows.Next() {
-		fetchUser := &entity.User{}
+		ListUser := &entity.User{}
 		scanErr := rows.Scan(
-			&fetchUser.Id,
-			&fetchUser.Name,
-			&fetchUser.Email,
-			&fetchUser.Password,
-			&fetchUser.Balance,
-			&fetchUser.CreatedAt,
-			&fetchUser.UpdatedAt,
-			&fetchUser.DeletedAt,
+			&ListUser.Id,
+			&ListUser.Name,
+			&ListUser.Email,
+			&ListUser.Password,
+			&ListUser.Balance,
+			&ListUser.CreatedAt,
+			&ListUser.UpdatedAt,
+			&ListUser.DeletedAt,
 		)
 		if scanErr != nil {
 			result = nil
 			err = scanErr
 			return result, err
 		}
-		fetchUsers = append(fetchUsers, fetchUser)
+		ListUsers = append(ListUsers, ListUser)
 	}
 
 	result = &model_response.Response[[]*entity.User]{
-		Data: fetchUsers,
+		Data: ListUsers,
 	}
 	err = nil
 	return result, err

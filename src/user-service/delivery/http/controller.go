@@ -34,9 +34,9 @@ func (userController *UserController) GetOneByEmail(writer http.ResponseWriter, 
 	foundUser := userController.UserUseCase.GetOneByEmail(email)
 	response.NewResponse(writer, foundUser)
 }
-func (userController *UserController) FetchUser(writer http.ResponseWriter, reader *http.Request) {
-	fetchUser, _ := userController.UserUseCase.FetchUser()
-	response.NewResponse(writer, fetchUser)
+func (userController *UserController) ListUser(writer http.ResponseWriter, reader *http.Request) {
+	ListUser, _ := userController.UserUseCase.ListUser()
+	response.NewResponse(writer, ListUser)
 }
 
 func (userController *UserController) UpdateUser(writer http.ResponseWriter, reader *http.Request) {

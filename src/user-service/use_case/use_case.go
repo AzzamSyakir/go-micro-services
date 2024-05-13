@@ -339,7 +339,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 	return result, err
 }
 
-func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*entity.User], err error) {
+func (userUseCase *UserUseCase) ListUser() (result *model_response.Response[[]*entity.User], err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -352,10 +352,10 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 		return result, rollback
 	}
 
-	fetchUser, err := userUseCase.UserRepository.FetchUser(begin)
+	ListUser, err := userUseCase.UserRepository.ListUser(begin)
 	if err != nil {
 		rollback := begin.Rollback()
-		errorMessage := fmt.Sprintf("UserUseCase fetchUser is failed, query failed : %s", err)
+		errorMessage := fmt.Sprintf("UserUseCase ListUser is failed, query failed : %s", err)
 		result = &model_response.Response[[]*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -364,11 +364,11 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 		return result, rollback
 	}
 
-	if fetchUser.Data == nil {
+	if ListUser.Data == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.User]{
 			Code:    http.StatusNotFound,
-			Message: "User UseCase FetchUser is failed, data User is empty ",
+			Message: "User UseCase ListUser is failed, data User is empty ",
 			Data:    nil,
 		}
 		return result, rollback
@@ -376,8 +376,8 @@ func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*
 	commit := begin.Commit()
 	result = &model_response.Response[[]*entity.User]{
 		Code:    http.StatusOK,
-		Message: "User UseCase FetchUser is succeed.",
-		Data:    fetchUser.Data,
+		Message: "User UseCase ListUser is succeed.",
+		Data:    ListUser.Data,
 	}
 	return result, commit
 }

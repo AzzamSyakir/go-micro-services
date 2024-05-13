@@ -24,9 +24,9 @@ func NewExposeController(exposeUseCase *use_case.ExposeUseCase) *ExposeControlle
 
 // users
 
-func (exposeController *ExposeController) FetchUser(writer http.ResponseWriter, reader *http.Request) {
-	fetchUser := exposeController.ExposeUseCase.ListUsers()
-	response.NewResponse(writer, fetchUser)
+func (exposeController *ExposeController) ListUser(writer http.ResponseWriter, reader *http.Request) {
+	ListUser := exposeController.ExposeUseCase.ListUsers()
+	response.NewResponse(writer, ListUser)
 }
 func (exposeController *ExposeController) Register(writer http.ResponseWriter, reader *http.Request) {
 
