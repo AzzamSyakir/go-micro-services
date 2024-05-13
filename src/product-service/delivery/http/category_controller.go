@@ -67,7 +67,7 @@ func (CategoryController *CategoryController) DeleteCategory(writer http.Respons
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
-	result := CategoryController.CategoryUseCase.DeleteCategory(id)
+	result, _ := CategoryController.CategoryUseCase.DeleteCategory(id)
 
 	response.NewResponse(writer, result)
 }

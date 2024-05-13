@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb"
 	"github.com/google/uuid"
 	"github.com/guregu/null"
 )
@@ -190,8 +189,8 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 		return result, rollback
 	}
 
-	listCategories, listCategoriesErr := categoryUseCase.CategoryRepository.ListCategories(begin)
-	if listCategoriesErr != nil {
+	listCategories, err := categoryUseCase.CategoryRepository.ListCategories(begin)
+	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Category]{
 			Code:    http.StatusCreated,
@@ -205,7 +204,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Category]{
 			Code:    http.StatusCreated,
-			Message: "CategoryUseCase UpdateCategory is failed, Category is empty, " + err.Error(),
+			Message: "CategoryUseCase UpdateCategory is failed, Category is empty, ",
 			Data:    nil,
 		}
 		return result, rollback
@@ -219,49 +218,43 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) DeleteCategory(id string) (result *model_response.Response[*entity.Category]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		deletedcategory, deletedcategoryErr := categoryUseCase.CategoryRepository.DeleteOneById(begin, id)
-		if deletedcategoryErr != nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Category]{
-				Code:    http.StatusNotFound,
-				Message: "CategoryUseCase Deletecategory is failed, " + deletedcategoryErr.Error(),
-				Data:    nil,
-			}
-			return err
-		}
-		if deletedcategory == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Category]{
-				Code:    http.StatusNotFound,
-				Message: "CategoryUseCase Deletecategory is failed, category is not deleted by id, " + id,
-				Data:    nil,
-			}
-			return err
-		}
-
-		err = begin.Commit()
+func (categoryUseCase *CategoryUseCase) DeleteCategory(id string) (result *model_response.Response[*entity.Category], err error) {
+	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusOK,
-			Message: "CategoryUseCase Deletecategory is succeed.",
-			Data:    deletedcategory,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusInternalServerError,
-			Message: "CategoryUseCase Deletecategory is failed, " + beginErr.Error(),
+			Code:    http.StatusCreated,
+			Message: "CategoryUseCase DeleteCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
 
-	return result
+	deletedcategory, err := categoryUseCase.CategoryRepository.DeleteOneById(begin, id)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusCreated,
+			Message: "CategoryUseCase DeleteCategory is failed, Query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	if deletedcategory == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusCreated,
+			Message: "CategoryUseCase DeleteCategory is failed, category is not deleted by id , " + id,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	commit := begin.Commit()
+	result = &model_response.Response[*entity.Category]{
+		Code:    http.StatusCreated,
+		Message: "CategoryUseCase DeleteCategory is succed.",
+		Data:    deletedcategory,
+	}
+	return result, commit
 }
