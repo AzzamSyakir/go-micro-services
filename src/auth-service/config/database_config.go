@@ -3,7 +3,6 @@ package config
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -48,9 +47,9 @@ func NewAuthDB(envConfig *EnvConfig) *PostgresDatabase {
 	if err != nil {
 		panic(err)
 	}
-	connection.SetConnMaxIdleTime(10 * time.Second)
-	connection.SetConnMaxLifetime(30 * time.Second)
-	connection.SetMaxOpenConns(500)
+	connection.SetConnMaxLifetime(300)
+	connection.SetMaxIdleConns(50)
+	connection.SetMaxOpenConns(50)
 	userDB := &PostgresDatabase{
 		Connection: connection,
 	}

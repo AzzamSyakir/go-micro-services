@@ -50,9 +50,10 @@ func NewUserDB(envConfig *EnvConfig) *PostgresDatabase {
 	if err != nil {
 		panic(err)
 	}
-	connection.SetConnMaxIdleTime(10 * time.Second)
-	connection.SetConnMaxLifetime(30 * time.Second)
-	connection.SetMaxOpenConns(500)
+	connection.SetConnMaxLifetime(300 * time.Second)
+	connection.SetMaxIdleConns(10)
+	connection.SetMaxOpenConns(10)
+
 	userDB := &PostgresDatabase{
 		Connection: connection,
 	}
