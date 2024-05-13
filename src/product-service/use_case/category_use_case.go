@@ -38,7 +38,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.Ca
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusCreated,
-			Message: "CategoryUseCase addCategory is failed, begin, " + err.Error(),
+			Message: "CategoryUseCase addCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback
@@ -73,47 +73,47 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.Ca
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_response.Response[*entity.Category]) {
-	transaction, transactionErr := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_response.Response[*entity.Category], err error) {
+	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "CategoryUseCase GetCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
 
-		return result
+		return result, rollback
 	}
-	categoryFound, categoryFoundErr := categoryUseCase.CategoryRepository.GetOneById(transaction, id)
-	if categoryFoundErr != nil {
-		errorMessage := fmt.Sprintf("categoryUseCase GetOneById is failed, Getcategory failed : %s", categoryFoundErr)
+	categoryFound, err := categoryUseCase.CategoryRepository.GetOneById(begin, id)
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "CategoryUseCase GetCategory is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
 
-		return result
+		return result, rollback
 	}
-	errorMessage := fmt.Sprintf("categoryUseCase GetOneById is failed, category is not found by id %s", id)
+	rollback := begin.Rollback()
 	if categoryFound == nil {
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "CategoryUseCase GetCategory is failed, category not found by id, " + id,
 			Data:    nil,
 		}
 
-		return result
+		return result, rollback
 	}
-
+	commit := begin.Commit()
 	result = &model_response.Response[*entity.Category]{
 		Code:    http.StatusOK,
 		Message: "CategoryUseCase GetOneById is succeed.",
 		Data:    categoryFound,
 	}
 
-	return result
+	return result, commit
 }
 
 func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
@@ -167,9 +167,9 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model
 }
 
 func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response.Response[[]*entity.Category]) {
-	transaction, transactionErr := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+	begin, beginErr := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if beginErr != nil {
+		errorMessage := fmt.Sprintf("begin failed :%s", beginErr)
 		result = &model_response.Response[[]*entity.Category]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -179,7 +179,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 		return result
 	}
 
-	listCategories, listCategoriesErr := categoryUseCase.CategoryRepository.ListCategories(transaction)
+	listCategories, listCategoriesErr := categoryUseCase.CategoryRepository.ListCategories(begin)
 	if listCategoriesErr != nil {
 		errorMessage := fmt.Sprintf("categoryUseCase ListCategory is failed, Get data category  failed : %s", listCategoriesErr)
 		result = &model_response.Response[[]*entity.Category]{
