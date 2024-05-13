@@ -33,7 +33,7 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *en
 	}
 
 	result = toCreateUser
-	err = nil
+	err = begin.Commit()
 	return result, err
 }
 
