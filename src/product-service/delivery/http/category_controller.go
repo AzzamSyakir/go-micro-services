@@ -37,7 +37,7 @@ func (CategoryController *CategoryController) UpdateCategory(writer http.Respons
 	if decodeErr != nil {
 		panic(decodeErr)
 	}
-	result := CategoryController.CategoryUseCase.UpdateCategory(id, request)
+	result, _ := CategoryController.CategoryUseCase.UpdateCategory(id, request)
 
 	response.NewResponse(writer, result)
 }

@@ -38,7 +38,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.Ca
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusCreated,
-			Message: "CategoryUseCase addCategory is failed, begin fail, " + err.Error(),
+			Message: "CategoryUseCase AddCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback
@@ -58,7 +58,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.Ca
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusCreated,
-			Message: "CategoryUseCase addCategory is failed, query to db fail, " + err.Error(),
+			Message: "CategoryUseCase AddCategory is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback
@@ -116,54 +116,67 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
+func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category], err error) {
 
-		foundCategory, err := categoryUseCase.CategoryRepository.GetOneById(begin, id)
-		if err != nil {
-			return err
-		}
-		if foundCategory == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Category]{
-				Code:    http.StatusNotFound,
-				Message: "CategoryUseCase Update Category is failed, category is not found by id.",
-				Data:    nil,
-			}
-			return err
-		}
-
-		if request.Name.Valid {
-			foundCategory.Name = request.Name
-		}
-		foundCategory.UpdatedAt = null.NewTime(time.Now(), true)
-
-		patchedcategory, err := categoryUseCase.CategoryRepository.PatchOneById(begin, id, foundCategory)
-		if err != nil {
-			return err
-		}
-
-		err = begin.Commit()
+	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusOK,
-			Message: "CategoryUseCase Update Category is succeed.",
-			Data:    patchedcategory,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusInternalServerError,
-			Message: "CategoryUseCase Update Category  is failed, " + beginErr.Error(),
+			Code:    http.StatusCreated,
+			Message: "CategoryUseCase UpdateCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
-	return result
+	foundCategory, err := categoryUseCase.CategoryRepository.GetOneById(begin, id)
+	if err != nil {
+		begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+		if err != nil {
+			rollback := begin.Rollback()
+			result = &model_response.Response[*entity.Category]{
+				Code:    http.StatusCreated,
+				Message: "CategoryUseCase UpdateCategory is failed, query to db fail, " + err.Error(),
+				Data:    nil,
+			}
+			return result, rollback
+		}
+	}
+	if foundCategory == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusNotFound,
+			Message: "CategoryUseCase Update Category is failed, category is not found by id, " + id,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	if request.Name.Valid {
+		foundCategory.Name = request.Name
+	}
+	foundCategory.UpdatedAt = null.NewTime(time.Now(), true)
+
+	patchedcategory, err := categoryUseCase.CategoryRepository.PatchOneById(begin, id, foundCategory)
+	if err != nil {
+		begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+		if err != nil {
+			rollback := begin.Rollback()
+			result = &model_response.Response[*entity.Category]{
+				Code:    http.StatusCreated,
+				Message: "CategoryUseCase UpdateCategory is failed, query to db fail, " + err.Error(),
+				Data:    nil,
+			}
+			return result, rollback
+		}
+	}
+
+	commit := begin.Commit()
+	result = &model_response.Response[*entity.Category]{
+		Code:    http.StatusOK,
+		Message: "CategoryUseCase UpdateCategory is succeed.",
+		Data:    patchedcategory,
+	}
+	return result, commit
 }
 
 func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response.Response[[]*entity.Category]) {
