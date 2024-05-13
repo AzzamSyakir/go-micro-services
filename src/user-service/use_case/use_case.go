@@ -247,11 +247,13 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 
 	transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
+		rollback := transaction.Rollback()
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
 			Message: "UserUseCase Register is failed, transaction fail," + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
 
 	hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
@@ -279,7 +281,13 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 
 	createdUser, err := userUseCase.UserRepository.CreateUser(transaction, newUser)
 	if err != nil {
-		return result, err
+		rollback := transaction.Rollback()
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusInternalServerError,
+			Message: "UserUseCase Register is failed, query to db fail" + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
 	}
 
 	err = transaction.Commit()
@@ -290,51 +298,39 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 	}
 	return result, err
 }
-func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User]) {
-	transactionErr := crdb.Execute(func() (err error) {
-		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(transaction, id)
-		if deletedUserErr != nil {
-			err = transaction.Rollback()
-			result = &model_response.Response[*entity.User]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase DeleteUser is failed, " + deletedUserErr.Error(),
-				Data:    nil,
-			}
-			return err
-		}
-		if deletedUser == nil {
-			err = transaction.Rollback()
-			result = &model_response.Response[*entity.User]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase DeleteUser is failed, user is not deleted by id, " + id,
-				Data:    nil,
-			}
-			return err
-		}
-
-		err = transaction.Commit()
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusOK,
-			Message: "UserUserCase DeleteUser is succeed.",
-			Data:    deletedUser,
-		}
-		return err
-	})
-
-	if transactionErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase DeleteUser is failed, " + transactionErr.Error(),
-			Data:    nil,
-		}
+func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User], err error) {
+	transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if err != nil {
+		return result, err
 	}
 
-	return result
+	deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(transaction, id)
+	if deletedUserErr != nil {
+		err = transaction.Rollback()
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: "UserUserCase DeleteUser is failed, " + deletedUserErr.Error(),
+			Data:    nil,
+		}
+		return result, err
+	}
+	if deletedUser == nil {
+		err = transaction.Rollback()
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: "UserUserCase DeleteUser is failed, user is not deleted by id, " + id,
+			Data:    nil,
+		}
+		return result, err
+	}
+
+	err = transaction.Commit()
+	result = &model_response.Response[*entity.User]{
+		Code:    http.StatusOK,
+		Message: "UserUserCase DeleteUser is succeed.",
+		Data:    deletedUser,
+	}
+	return result, err
 }
 
 func (userUseCase *UserUseCase) FetchUser() (result *model_response.Response[[]*entity.User]) {
