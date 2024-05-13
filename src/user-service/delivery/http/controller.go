@@ -62,15 +62,14 @@ func (userController *UserController) CreateUser(writer http.ResponseWriter, rea
 		http.Error(writer, decodeErr.Error(), 404)
 	}
 
-	result := userController.UserUseCase.CreateUser(request)
-
+	result, _ := userController.UserUseCase.CreateUser(request)
 	response.NewResponse(writer, result)
 }
 func (userController *UserController) DeleteUser(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
-	result := userController.UserUseCase.DeleteUser(id)
+	result, _ := userController.UserUseCase.DeleteUser(id)
 
 	response.NewResponse(writer, result)
 }

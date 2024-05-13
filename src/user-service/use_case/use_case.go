@@ -243,62 +243,53 @@ func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.Use
 	return result
 }
 
-func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.User]) {
-	transactionErr := crdb.Execute(func() (err error) {
-		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-		if err != nil {
-			result = nil
-			return err
-		}
+func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.User], err error) {
 
-		hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
-		if hashedPasswordErr != nil {
-			err = transaction.Rollback()
-			result = &model_response.Response[*entity.User]{
-				Code:    http.StatusInternalServerError,
-				Message: "UserUseCase Register is failed, password hashing is failed.",
-				Data:    nil,
-			}
-			return err
-		}
-
-		currentTime := null.NewTime(time.Now(), true)
-		newUser := &entity.User{
-			Id:        null.NewString(uuid.NewString(), true),
-			Name:      request.Name,
-			Email:     request.Email,
-			Password:  null.NewString(string(hashedPassword), true),
-			Balance:   request.Balance,
-			CreatedAt: currentTime,
-			UpdatedAt: currentTime,
-			DeletedAt: null.NewTime(time.Time{}, false),
-		}
-
-		createdUser, err := userUseCase.UserRepository.CreateUser(transaction, newUser)
-		if err != nil {
-			return err
-		}
-
-		err = transaction.Commit()
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusCreated,
-			Message: "UserUseCase Register is succeed.",
-			Data:    createdUser,
-		}
-		return err
-	})
-
-	if transactionErr != nil {
+	transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if err != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUseCase Register  is failed, " + transactionErr.Error(),
+			Message: "UserUseCase Register is failed, transaction fail," + err.Error(),
 			Data:    nil,
 		}
 	}
 
-	return result
-}
+	hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
+	if hashedPasswordErr != nil {
+		err = transaction.Rollback()
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusInternalServerError,
+			Message: "UserUseCase Register is failed, password hashing is failed.",
+			Data:    nil,
+		}
+		return result, err
+	}
 
+	currentTime := null.NewTime(time.Now(), true)
+	newUser := &entity.User{
+		Id:        null.NewString(uuid.NewString(), true),
+		Name:      request.Name,
+		Email:     request.Email,
+		Password:  null.NewString(string(hashedPassword), true),
+		Balance:   request.Balance,
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		DeletedAt: null.NewTime(time.Time{}, false),
+	}
+
+	createdUser, err := userUseCase.UserRepository.CreateUser(transaction, newUser)
+	if err != nil {
+		return result, err
+	}
+
+	err = transaction.Commit()
+	result = &model_response.Response[*entity.User]{
+		Code:    http.StatusCreated,
+		Message: "UserUseCase Register is succeed.",
+		Data:    createdUser,
+	}
+	return result, err
+}
 func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User]) {
 	transactionErr := crdb.Execute(func() (err error) {
 		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
