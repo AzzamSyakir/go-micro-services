@@ -24,14 +24,14 @@ func (userController *UserController) GetOneById(writer http.ResponseWriter, rea
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
-	foundUser := userController.UserUseCase.GetOneById(id)
+	foundUser, _ := userController.UserUseCase.GetOneById(id)
 	response.NewResponse(writer, foundUser)
 }
 func (userController *UserController) GetOneByEmail(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	email := vars["email"]
 
-	foundUser := userController.UserUseCase.GetOneByEmail(email)
+	foundUser, _ := userController.UserUseCase.GetOneByEmail(email)
 	response.NewResponse(writer, foundUser)
 }
 func (userController *UserController) ListUser(writer http.ResponseWriter, reader *http.Request) {
