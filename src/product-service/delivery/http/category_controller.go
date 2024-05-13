@@ -58,7 +58,7 @@ func (CategoryController *CategoryController) CreateCategory(writer http.Respons
 }
 
 func (CategoryController *CategoryController) ListCategories(writer http.ResponseWriter, reader *http.Request) {
-	Category := CategoryController.CategoryUseCase.ListCategories()
+	Category, _ := CategoryController.CategoryUseCase.ListCategories()
 	response.NewResponse(writer, Category)
 
 }

@@ -1,7 +1,6 @@
 package use_case
 
 import (
-	"fmt"
 	"go-micro-services/src/product-service/config"
 	"go-micro-services/src/product-service/entity"
 	model_request "go-micro-services/src/product-service/model/request/controller"
@@ -179,48 +178,45 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response.Response[[]*entity.Category]) {
-	begin, beginErr := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-	if beginErr != nil {
-		errorMessage := fmt.Sprintf("begin failed :%s", beginErr)
+func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response.Response[[]*entity.Category], err error) {
+	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Category]{
-			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Code:    http.StatusCreated,
+			Message: "CategoryUseCase ListCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
-
-		return result
+		return result, rollback
 	}
 
 	listCategories, listCategoriesErr := categoryUseCase.CategoryRepository.ListCategories(begin)
 	if listCategoriesErr != nil {
-		errorMessage := fmt.Sprintf("categoryUseCase ListCategory is failed, Get data category  failed : %s", listCategoriesErr)
+		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Category]{
-			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Code:    http.StatusCreated,
+			Message: "CategoryUseCase ListCategory is failed, Query to db, " + err.Error(),
 			Data:    nil,
 		}
-
-		return result
+		return result, rollback
 	}
 
 	if listCategories.Data == nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Category]{
-			Code:    http.StatusNotFound,
-			Message: "category UseCase ListCategories is failed, data category is empty ",
+			Code:    http.StatusCreated,
+			Message: "CategoryUseCase UpdateCategory is failed, Category is empty, " + err.Error(),
 			Data:    nil,
 		}
-
-		return result
+		return result, rollback
 	}
-
+	commit := begin.Commit()
 	result = &model_response.Response[[]*entity.Category]{
-		Code:    http.StatusOK,
-		Message: "category UseCase Listcategories is succeed.",
+		Code:    http.StatusCreated,
+		Message: "CategoryUseCase ListCategory is Succed, ",
 		Data:    listCategories.Data,
 	}
-
-	return result
+	return result, commit
 }
 
 func (categoryUseCase *CategoryUseCase) DeleteCategory(id string) (result *model_response.Response[*entity.Category]) {
