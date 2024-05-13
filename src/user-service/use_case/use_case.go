@@ -284,7 +284,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 		rollback := transaction.Rollback()
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUseCase Register is failed, query to db fail" + err.Error(),
+			Message: "UserUseCase Register is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback
