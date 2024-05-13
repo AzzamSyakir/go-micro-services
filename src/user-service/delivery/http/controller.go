@@ -49,7 +49,7 @@ func (userController *UserController) UpdateUser(writer http.ResponseWriter, rea
 		http.Error(writer, decodeErr.Error(), 404)
 	}
 
-	result := userController.UserUseCase.UpdateUser(id, request)
+	result, _ := userController.UserUseCase.UpdateUser(id, request)
 
 	response.NewResponse(writer, result)
 }

@@ -169,78 +169,84 @@ func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.
 	return result
 }
 
-func (userUseCase *UserUseCase) UpdateUser(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
-	transactionErr := crdb.Execute(func() (err error) {
-		transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		foundUser, err := userUseCase.UserRepository.GetOneById(transaction, id)
-		if err != nil {
-			return err
-		}
-		if foundUser == nil {
-			err = transaction.Rollback()
-			result = &model_response.Response[*entity.User]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase UpdateUser is failed, User is not found by id.",
-				Data:    nil,
-			}
-			return err
-		}
-		if request.Name.Valid {
-			foundUser.Name = request.Name
-		}
-		if request.Email.Valid {
-			foundUser.Email = request.Email
-		}
-		if request.Balance.Valid {
-			foundUser.Balance = request.Balance
-		}
-		if request.Password.Valid {
-			hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
-			if hashedPasswordErr != nil {
-				err = transaction.Rollback()
-				result = &model_response.Response[*entity.User]{
-					Code:    http.StatusInternalServerError,
-					Message: "UserUseCase UpdateUser is failed, password hashing is failed.",
-					Data:    nil,
-				}
-				return err
-			}
-
-			foundUser.Password = null.NewString(string(hashedPassword), true)
-		}
-		if request.Balance.Valid {
-			foundUser.Balance = request.Balance
-		}
-
-		foundUser.UpdatedAt = null.NewTime(time.Now(), true)
-
-		patchedUser, err := userUseCase.UserRepository.PatchOneById(transaction, id, foundUser)
-		if err != nil {
-			return err
-		}
-
-		err = transaction.Commit()
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusOK,
-			Message: "UserUserCase UpdateUser is succeed.",
-			Data:    patchedUser,
-		}
-		return err
-	})
-
-	if transactionErr != nil {
+func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User], err error) {
+	transaction, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if err != nil {
+		rollback := transaction.Rollback()
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase UpdateUser  is failed, " + transactionErr.Error(),
+			Message: "UserUseCase UpdateUser is failed, transaction fail, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
 
-	return result
+	foundUser, err := userUseCase.UserRepository.GetOneById(transaction, userId)
+	if err != nil {
+		rollback := transaction.Rollback()
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusInternalServerError,
+			Message: "UserUseCase UpdateUser is failed, query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	if foundUser == nil {
+		rollback := transaction.Rollback()
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusNotFound,
+			Message: "UserUserCase UpdateUser is failed, User is not found by id " + userId,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	if request.Name.Valid {
+		foundUser.Name = request.Name
+	}
+	if request.Email.Valid {
+		foundUser.Email = request.Email
+	}
+	if request.Balance.Valid {
+		foundUser.Balance = request.Balance
+	}
+	if request.Password.Valid {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
+		if err != nil {
+			rollback := transaction.Rollback()
+			result = &model_response.Response[*entity.User]{
+				Code:    http.StatusInternalServerError,
+				Message: "UserUseCase UpdateUser is failed, password hashing is failed, " + err.Error(),
+				Data:    nil,
+			}
+			return result, rollback
+		}
+
+		foundUser.Password = null.NewString(string(hashedPassword), true)
+	}
+	if request.Balance.Valid {
+		foundUser.Balance = request.Balance
+	}
+
+	foundUser.UpdatedAt = null.NewTime(time.Now(), true)
+
+	patchedUser, err := userUseCase.UserRepository.PatchOneById(transaction, userId, foundUser)
+	if err != nil {
+		rollback := transaction.Rollback()
+		result = &model_response.Response[*entity.User]{
+			Code:    http.StatusInternalServerError,
+			Message: "UserUseCase UpdateUser is failed, query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	err = transaction.Commit()
+	result = &model_response.Response[*entity.User]{
+		Code:    http.StatusOK,
+		Message: "UserUserCase UpdateUser is succeed.",
+		Data:    patchedUser,
+	}
+	return result, err
 }
 
 func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.User], err error) {
