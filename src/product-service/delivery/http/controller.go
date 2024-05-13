@@ -50,7 +50,7 @@ func (productController *ProductController) CreateProduct(writer http.ResponseWr
 		return
 	}
 
-	result := productController.ProductUseCase.CreateProduct(request)
+	result, _ := productController.ProductUseCase.CreateProduct(request)
 
 	response.NewResponse(writer, result)
 }

@@ -33,62 +33,62 @@ func NewProductUseCase(
 	}
 	return productUseCase
 }
-func (productUseCase *ProductUseCase) CreateProduct(request *model_request.CreateProduct) (result *model_response.Response[*entity.Product]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-		if err != nil {
-			result = nil
-			return err
-		}
-		if request.Name.String == "" || request.Price.Int64 == 0 || request.Stock.Int64 == 0 {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Product]{
-				Code:    http.StatusBadRequest,
-				Message: "Please input data correctly, data cannot be empty",
-				Data:    nil,
-			}
-			return err
-		}
-		firstLetter := strings.ToUpper(string(request.Name.String[0]))
-		rand.Seed(time.Now().UnixNano())
-		randomDigits := rand.Intn(900) + 100
-		sku := fmt.Sprintf("%s%d", firstLetter, randomDigits)
-
-		currentTime := null.NewTime(time.Now(), true)
-		newproduct := &entity.Product{
-			Id:         null.NewString(uuid.NewString(), true),
-			Name:       request.Name,
-			Sku:        null.NewString(sku, true),
-			Price:      request.Price,
-			Stock:      request.Stock,
-			CategoryId: request.CategoryId,
-			CreatedAt:  currentTime,
-			UpdatedAt:  currentTime,
-			DeletedAt:  null.NewTime(time.Time{}, false),
-		}
-
-		createdProduct, err := productUseCase.ProductRepository.CreateProduct(begin, newproduct)
-		if err != nil {
-			return err
-		}
-
-		err = begin.Commit()
+func (productUseCase *ProductUseCase) CreateProduct(request *model_request.CreateProduct) (result *model_response.Response[*entity.Product], err error) {
+	begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusCreated,
-			Message: "product-service UseCase, addProduct is succeed.",
-			Data:    createdProduct,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusInternalServerError,
-			Message: "product-service UseCase, addProduct  is failed, " + beginErr.Error(),
+			Code:    http.StatusBadRequest,
+			Message: "ProductUseCase CreateProduct is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
-	return result
+	if request.Name.String == "" || request.Price.Int64 == 0 || request.Stock.Int64 == 0 {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: "ProductUseCase CreateProduct is failed, Please input data correctly, data cannot be empty",
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	firstLetter := strings.ToUpper(string(request.Name.String[0]))
+	rand.Seed(time.Now().UnixNano())
+	randomDigits := rand.Intn(900) + 100
+	sku := fmt.Sprintf("%s%d", firstLetter, randomDigits)
+
+	currentTime := null.NewTime(time.Now(), true)
+	newproduct := &entity.Product{
+		Id:         null.NewString(uuid.NewString(), true),
+		Name:       request.Name,
+		Sku:        null.NewString(sku, true),
+		Price:      request.Price,
+		Stock:      request.Stock,
+		CategoryId: request.CategoryId,
+		CreatedAt:  currentTime,
+		UpdatedAt:  currentTime,
+		DeletedAt:  null.NewTime(time.Time{}, false),
+	}
+
+	createdProduct, err := productUseCase.ProductRepository.CreateProduct(begin, newproduct)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusBadRequest,
+			Message: "ProductUseCase CreateProduct is failed, query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	commit := begin.Commit()
+	result = &model_response.Response[*entity.Product]{
+		Code:    http.StatusBadRequest,
+		Message: "ProductUseCase CreateProduct is success",
+		Data:    createdProduct,
+	}
+	return result, commit
 }
 
 func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_response.Response[*entity.Product]) {
