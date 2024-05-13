@@ -48,7 +48,6 @@ func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_re
 		result = nil
 		err = queryErr
 		return result, err
-
 	}
 	defer rows.Close()
 	var fetchUsers []*entity.User
@@ -75,7 +74,7 @@ func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_re
 	result = &model_response.Response[[]*entity.User]{
 		Data: fetchUsers,
 	}
-	err = nil
+	err = begin.Commit()
 	return result, err
 }
 
