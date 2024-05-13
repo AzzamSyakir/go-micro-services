@@ -33,7 +33,7 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *en
 	}
 
 	result = toCreateUser
-	err = begin.Commit()
+	err = nil
 	return result, err
 }
 
@@ -74,7 +74,7 @@ func (userRepository *UserRepository) FetchUser(begin *sql.Tx) (result *model_re
 	result = &model_response.Response[[]*entity.User]{
 		Data: fetchUsers,
 	}
-	err = begin.Commit()
+	err = nil
 	return result, err
 }
 
