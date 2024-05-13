@@ -32,13 +32,12 @@ func NewUserUseCase(
 }
 
 func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Response[*entity.User], err error) {
-	begin, beginErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-	if beginErr != nil {
+	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if err != nil {
 		rollback := begin.Rollback()
-		errorMessage := fmt.Sprintf("begin failed :%s", beginErr)
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "UserUseCase GetOneById is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback
@@ -74,13 +73,12 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 }
 
 func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User], err error) {
-	begin, beginErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-	if beginErr != nil {
+	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if err != nil {
 		rollback := begin.Rollback()
-		errorMessage := fmt.Sprintf("begin failed :%s", beginErr)
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "UserUseCase GetOneByEmail is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback
