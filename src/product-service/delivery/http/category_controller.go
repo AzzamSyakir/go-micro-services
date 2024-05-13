@@ -52,7 +52,7 @@ func (CategoryController *CategoryController) CreateCategory(writer http.Respons
 		return
 	}
 
-	result := CategoryController.CategoryUseCase.CreateCategory(request)
+	result, _ := CategoryController.CategoryUseCase.CreateCategory(request)
 
 	response.NewResponse(writer, result)
 }

@@ -248,6 +248,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 	}
 	return result, commit
 }
+
 func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User], err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {

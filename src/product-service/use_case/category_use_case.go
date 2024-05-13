@@ -31,45 +31,46 @@ func NewCategoryUseCase(
 	}
 	return categoryUseCase
 }
-func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-		if err != nil {
-			result = nil
-			return err
-		}
+func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category], err error) {
 
-		currentTime := null.NewTime(time.Now(), true)
-		newCategory := &entity.Category{
-			Id:        null.NewString(uuid.NewString(), true),
-			Name:      request.Name,
-			CreatedAt: currentTime,
-			UpdatedAt: currentTime,
-			DeletedAt: null.NewTime(time.Time{}, false),
-		}
-
-		createdCategory, err := categoryUseCase.CategoryRepository.CreateCategory(begin, newCategory)
-		if err != nil {
-			return err
-		}
-
-		err = begin.Commit()
+	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusCreated,
-			Message: "CategoryUseCase addCategory is succeed.",
-			Data:    createdCategory,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusInternalServerError,
-			Message: "CategoryUseCase addCategory  is failed, " + beginErr.Error(),
+			Message: "CategoryUseCase addCategory is failed, begin, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
-	return result
+
+	currentTime := null.NewTime(time.Now(), true)
+	newCategory := &entity.Category{
+		Id:        null.NewString(uuid.NewString(), true),
+		Name:      request.Name,
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		DeletedAt: null.NewTime(time.Time{}, false),
+	}
+
+	createdCategory, err := categoryUseCase.CategoryRepository.CreateCategory(begin, newCategory)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusCreated,
+			Message: "CategoryUseCase addCategory is failed, query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	commit := begin.Commit()
+	result = &model_response.Response[*entity.Category]{
+		Code:    http.StatusCreated,
+		Message: "CategoryUseCase Register is succeed.",
+		Data:    createdCategory,
+	}
+	return result, commit
 }
 
 func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_response.Response[*entity.Category]) {
