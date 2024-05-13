@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb"
 	"github.com/google/uuid"
 	"github.com/guregu/null"
 )
@@ -91,192 +90,192 @@ func (productUseCase *ProductUseCase) CreateProduct(request *model_request.Creat
 	return result, commit
 }
 
-func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_response.Response[*entity.Product]) {
-	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_response.Response[*entity.Product], err error) {
+	begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "product-service UseCase, DetailProduct, begin failed, " + err.Error(),
 			Data:    nil,
 		}
 
-		return result
+		return result, rollback
 	}
-	productFound, productFoundErr := productUseCase.ProductRepository.GetOneById(transaction, id)
-	if productFoundErr != nil {
-		errorMessage := fmt.Sprintf("product-service UseCase, DetailProduct is failed, GetProduct failed : %s", productFoundErr)
+	productFound, err := productUseCase.ProductRepository.GetOneById(begin, id)
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "product-service UseCase, DetailProduct is failed, GetProduct failed, " + err.Error(),
 			Data:    nil,
 		}
-
-		return result
+		return result, rollback
 	}
-	errorMessage := fmt.Sprintf("product-service UseCase, DetailProduct is failed, product is not found by id %s", id)
 	if productFound == nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "product-service UseCase, DetailProduct is failed, product is not found by id" + id,
 			Data:    nil,
 		}
-
-		return result
+		return result, rollback
 	}
 
+	commit := begin.Commit()
 	result = &model_response.Response[*entity.Product]{
 		Code:    http.StatusOK,
 		Message: "product-service UseCase, DetailProduct is succeed.",
 		Data:    productFound,
 	}
 
-	return result
+	return result, commit
 }
 
-func (productUseCase *ProductUseCase) UpdateProduct(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		foundProduct, err := productUseCase.ProductRepository.GetOneById(begin, id)
-		if err != nil {
-			return err
-		}
-		if foundProduct == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Product]{
-				Code:    http.StatusNotFound,
-				Message: "product-service UseCase Update Stock is failed, product is not found by id.",
-				Data:    nil,
-			}
-			return err
-		}
-
-		if request.Name.Valid {
-			foundProduct.Name = request.Name
-		}
-		if request.Stock.Valid {
-			foundProduct.Stock = request.Stock
-		}
-		if request.Price.Valid {
-			foundProduct.Price = request.Price
-		}
-		if request.CategoryId.Valid {
-			foundProduct.CategoryId = request.CategoryId
-		}
-		foundProduct.UpdatedAt = null.NewTime(time.Now(), true)
-
-		patchedProduct, err := productUseCase.ProductRepository.PatchOneById(begin, id, foundProduct)
-		if err != nil {
-			return err
-		}
-
-		err = begin.Commit()
+func (productUseCase *ProductUseCase) UpdateProduct(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product], err error) {
+	begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusOK,
-			Message: "ProductProductCase Update Stock is succeed.",
-			Data:    patchedProduct,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusInternalServerError,
-			Message: "ProductProductCase Update Stock  is failed, " + beginErr.Error(),
+			Code:    http.StatusNotFound,
+			Message: "product-service UseCase, UpdateProduct fail begin is failed," + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
-	return result
+
+	foundProduct, err := productUseCase.ProductRepository.GetOneById(begin, id)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: "product-service UseCase Update Product is failed, product is not found by id" + id,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	if foundProduct == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: "product-service UseCase Update Product is failed, product is not found by id, " + id,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	if request.Name.Valid {
+		foundProduct.Name = request.Name
+	}
+	if request.Stock.Valid {
+		foundProduct.Stock = request.Stock
+	}
+	if request.Price.Valid {
+		foundProduct.Price = request.Price
+	}
+	if request.CategoryId.Valid {
+		foundProduct.CategoryId = request.CategoryId
+	}
+	foundProduct.UpdatedAt = null.NewTime(time.Now(), true)
+
+	patchedProduct, err := productUseCase.ProductRepository.PatchOneById(begin, id, foundProduct)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: "product-service UseCase, Query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	commit := begin.Commit()
+	result = &model_response.Response[*entity.Product]{
+		Code:    http.StatusNotFound,
+		Message: "product-service UseCase Update Product is succes.",
+		Data:    patchedProduct,
+	}
+	return result, commit
 }
 
-func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Response[[]*entity.Product]) {
-	transaction, transactionErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+func (productUseCase *ProductUseCase) ListProduct() (result *model_response.Response[[]*entity.Product], err error) {
+	begin, beginErr := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if beginErr != nil {
+		rollback := begin.Rollback()
+		errorMessage := fmt.Sprintf("begin failed :%s", beginErr)
 		result = &model_response.Response[[]*entity.Product]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
 		}
-
-		return result
+		return result, rollback
 	}
 
-	fetchproduct, fetchproductErr := productUseCase.ProductRepository.ListProducts(transaction)
+	fetchproduct, fetchproductErr := productUseCase.ProductRepository.ListProducts(begin)
 	if fetchproductErr != nil {
+		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("product-service UseCase, ListProduct is failed, Getproduct failed : %s", fetchproductErr)
 		result = &model_response.Response[[]*entity.Product]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
 
 	if fetchproduct.Data == nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Product]{
 			Code:    http.StatusNotFound,
 			Message: "product-service UseCase, ListProduct is failed, data product is empty ",
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
-
+	commit := begin.Commit()
 	result = &model_response.Response[[]*entity.Product]{
 		Code:    http.StatusOK,
 		Message: "product-service UseCase, ListProduct is succeed.",
 		Data:    fetchproduct.Data,
 	}
-	return result
+	return result, commit
 }
 
-func (productUseCase *ProductUseCase) DeleteProduct(id string) (result *model_response.Response[*entity.Product]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		deletedproduct, deletedproductErr := productUseCase.ProductRepository.DeleteOneById(begin, id)
-		if deletedproductErr != nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Product]{
-				Code:    http.StatusNotFound,
-				Message: "product-service UseCase, DeleteProduct is failed, " + deletedproductErr.Error(),
-				Data:    nil,
-			}
-			return err
-		}
-		if deletedproduct == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Product]{
-				Code:    http.StatusNotFound,
-				Message: "product-service UseCase, DeleteProduct is failed, product is not deleted by id, " + id,
-				Data:    nil,
-			}
-			return err
-		}
-
-		err = begin.Commit()
+func (productUseCase *ProductUseCase) DeleteProduct(id string) (result *model_response.Response[*entity.Product], err error) {
+	begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusOK,
-			Message: "product-service UseCase DeleteProduct is succeed.",
-			Data:    deletedproduct,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusInternalServerError,
-			Message: "product-service UseCase DeleteProduct is failed, " + beginErr.Error(),
+			Code:    http.StatusNotFound,
+			Message: "product-service UseCase, DeleteProduct is failed, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
-
-	return result
+	deletedproduct, deletedproductErr := productUseCase.ProductRepository.DeleteOneById(begin, id)
+	if deletedproductErr != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: "product-service UseCase, DeleteProduct is failed, " + deletedproductErr.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	if deletedproduct == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Product]{
+			Code:    http.StatusNotFound,
+			Message: "product-service UseCase, DeleteProduct is failed, product is not deleted by id, " + id,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	rollback := begin.Commit()
+	result = &model_response.Response[*entity.Product]{
+		Code:    http.StatusOK,
+		Message: "product-service UseCase DeleteProduct is succeed.",
+		Data:    deletedproduct,
+	}
+	return result, rollback
 }

@@ -23,7 +23,7 @@ func NewProductController(productUseCase *use_case.ProductUseCase) *ProductContr
 func (ProductController *ProductController) GetProduct(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
-	foundProduct := ProductController.ProductUseCase.GetOneById(id)
+	foundProduct, _ := ProductController.ProductUseCase.GetOneById(id)
 	response.NewResponse(writer, foundProduct)
 }
 func (ProductController *ProductController) UpdateProduct(writer http.ResponseWriter, reader *http.Request) {
@@ -35,7 +35,7 @@ func (ProductController *ProductController) UpdateProduct(writer http.ResponseWr
 	if decodeErr != nil {
 		panic(decodeErr)
 	}
-	result := ProductController.ProductUseCase.UpdateProduct(id, request)
+	result, _ := ProductController.ProductUseCase.UpdateProduct(id, request)
 
 	response.NewResponse(writer, result)
 }
@@ -56,7 +56,7 @@ func (productController *ProductController) CreateProduct(writer http.ResponseWr
 }
 
 func (productController *ProductController) ListProduct(writer http.ResponseWriter, reader *http.Request) {
-	product := productController.ProductUseCase.ListProduct()
+	product, _ := productController.ProductUseCase.ListProduct()
 	response.NewResponse(writer, product)
 }
 
@@ -64,7 +64,7 @@ func (productController *ProductController) DeleteProduct(writer http.ResponseWr
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
-	result := productController.ProductUseCase.DeleteProduct(id)
+	result, _ := productController.ProductUseCase.DeleteProduct(id)
 
 	response.NewResponse(writer, result)
 }
