@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb"
 	"github.com/google/uuid"
 	"github.com/guregu/null"
 	"golang.org/x/crypto/bcrypt"
@@ -32,141 +31,88 @@ func NewUserUseCase(
 	return userUseCase
 }
 
-func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Response[*entity.User]) {
+func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Response[*entity.User], err error) {
 	begin, beginErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if beginErr != nil {
+		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("begin failed :%s", beginErr)
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
 	GetOneById, GetOneByIdErr := userUseCase.UserRepository.GetOneById(begin, id)
 	if GetOneByIdErr != nil {
+		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase GetOneById is failed, GetUser failed : %s", GetOneByIdErr)
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
 	if GetOneById == nil {
+		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, User is not found by id %s", id)
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
-
+	commit := begin.Commit()
 	result = &model_response.Response[*entity.User]{
 		Code:    http.StatusOK,
 		Message: "User UseCase FindOneById is succeed.",
 		Data:    GetOneById,
 	}
-	return result
+	return result, commit
 }
 
-func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User]) {
+func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User], err error) {
 	begin, beginErr := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if beginErr != nil {
+		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("begin failed :%s", beginErr)
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
 	GetOneByEmail, GetOneByEmailErr := userUseCase.UserRepository.GetOneByEmail(begin, email)
 	if GetOneByEmailErr != nil {
+		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase GetOneByEmail is failed, GetUser failed : %s", GetOneByEmailErr)
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
 	if GetOneByEmail == nil {
+		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("User UseCase FindOneByemail is failed, User is not found by email %s", email)
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
-
+	commit := begin.Commit()
 	result = &model_response.Response[*entity.User]{
 		Code:    http.StatusOK,
 		Message: "User UseCase FindOneById is succeed.",
 		Data:    GetOneByEmail,
 	}
-	return result
-}
-
-func (userUseCase *UserUseCase) UpdateBalance(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		foundUser, err := userUseCase.UserRepository.GetOneById(begin, id)
-		if err != nil {
-			return err
-		}
-		if foundUser == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.User]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase UpdateBalance is failed, User is not found by id.",
-				Data:    nil,
-			}
-			return err
-		}
-		if request.Balance.Valid {
-			foundUser.Balance = request.Balance
-		} else {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.User]{
-				Code:    http.StatusNotFound,
-				Message: "UserUserCase UpdateBalance is failed, balance is not provided ",
-				Data:    nil,
-			}
-			return err
-		}
-
-		foundUser.UpdatedAt = null.NewTime(time.Now(), true)
-
-		patchedUser, err := userUseCase.UserRepository.PatchOneById(begin, id, foundUser)
-		if err != nil {
-			return err
-		}
-
-		err = begin.Commit()
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusOK,
-			Message: "UserUserCase UpdateBalance is succeed.",
-			Data:    patchedUser,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusInternalServerError,
-			Message: "UserUserCase UpdateBalance  is failed, " + beginErr.Error(),
-			Data:    nil,
-		}
-	}
-
-	return result
+	return result, commit
 }
 
 func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User], err error) {
