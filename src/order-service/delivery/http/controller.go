@@ -22,7 +22,7 @@ func NewOrderController(orderUseCase *use_case.OrderUseCase) *OrderController {
 }
 
 func (orderController *OrderController) ListOrders(writer http.ResponseWriter, reader *http.Request) {
-	result := orderController.OrderUseCase.ListOrders()
+	result, _ := orderController.OrderUseCase.ListOrders()
 	response.NewResponse(writer, result)
 }
 func (orderController *OrderController) DetailOrders(writer http.ResponseWriter, reader *http.Request) {
@@ -41,6 +41,6 @@ func (orderController *OrderController) Orders(writer http.ResponseWriter, reade
 		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
 		return
 	}
-	result := orderController.OrderUseCase.Order(userId, request)
+	result, _ := orderController.OrderUseCase.Order(userId, request)
 	response.NewResponse(writer, result)
 }

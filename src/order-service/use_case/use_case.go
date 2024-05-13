@@ -16,7 +16,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb"
 	"github.com/google/uuid"
 	"github.com/guregu/null"
 )
@@ -35,182 +34,181 @@ func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *rep
 	}
 	return OrderUseCase
 }
-func (orderUseCase *OrderUseCase) ListOrders() (result *model_response.Response[[]*model_response.OrderResponse]) {
-	transaction, transactionErr := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
-	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+func (orderUseCase *OrderUseCase) ListOrders() (result *model_response.Response[[]*model_response.OrderResponse], err error) {
+	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[[]*model_response.OrderResponse]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "Order-Service orderUseCase ListOrder is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
 
-		return result
+		return result, rollback
 	}
 
-	fetchOrder, fetchOrderErr := orderUseCase.OrderRepository.ListOrders(transaction)
-	if fetchOrderErr != nil {
-		errorMessage := fmt.Sprintf("orderUseCase ListOrder is failed, GetOrder failed : %s", fetchOrderErr)
+	fetchOrder, err := orderUseCase.OrderRepository.ListOrders(begin)
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[[]*model_response.OrderResponse]{
 			Code:    http.StatusNotFound,
-			Message: errorMessage,
+			Message: "Order-Service orderUseCase ListOrder is failed, query to db  fail, " + err.Error(),
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
 	for _, order := range fetchOrder.Data {
-		orderProductFound, orderProductFoundErr := orderUseCase.OrderRepository.GetOrderProductsByOrderId(transaction, order.Id.String)
-		if orderProductFoundErr != nil {
-			errorMessage := fmt.Sprintf("order-service DetailOrder is failed, GetOrderProducts failed : %s", orderProductFoundErr)
+		orderProductFound, err := orderUseCase.OrderRepository.GetOrderProductsByOrderId(begin, order.Id.String)
+		if err != nil {
+			rollback := begin.Rollback()
 			result = &model_response.Response[[]*model_response.OrderResponse]{
 				Code:    http.StatusNotFound,
-				Message: errorMessage,
+				Message: "order-service DetailOrder is failed, GetOrderProducts fail" + err.Error(),
 				Data:    nil,
 			}
-			return result
+			return result, rollback
 		}
 		order.Products = orderProductFound.Data
 	}
 	if fetchOrder.Data == nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[[]*model_response.OrderResponse]{
 			Code:    http.StatusNotFound,
-			Message: "orderUseCase ListProduct is failed, data order is empty ",
+			Message: "orderUseCase ListProduct is failed, data order is empty",
 			Data:    nil,
 		}
-		return result
+		return result, rollback
 	}
-
+	commit := begin.Commit()
 	result = &model_response.Response[[]*model_response.OrderResponse]{
 		Code:    http.StatusOK,
 		Message: "orderUseCase ListOrder is succeed.",
 		Data:    fetchOrder.Data,
 	}
-	return result
+	return result, commit
 }
 
-func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.OrderRequest) (result *model_response.Response[*model_response.OrderResponse]) {
-
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-		//   Products
-		var totalOrderPrice int
-		for i, products := range request.Products {
-			productId := products.ProductId.String
-			product := orderUseCase.GetProduct(productId)
-			if product.Data == nil {
-				err = begin.Rollback()
-				result = &model_response.Response[*model_response.OrderResponse]{
-					Code:    http.StatusBadRequest,
-					Message: "product not found",
-					Data:    nil,
-				}
-				return err
-			}
-			if products.Qty.Int64 > product.Data.Stock.Int64 {
-				err = begin.Rollback()
-				result = &model_response.Response[*model_response.OrderResponse]{
-					Code:    http.StatusBadRequest,
-					Message: "OrderUseCase fail, product out of stock",
-					Data:    nil,
-				}
-				return err
-			}
-			totalProductPrice := products.Qty.Int64 * product.Data.Price.Int64
-			request.Products[i].TotalPrice.Int64 = totalProductPrice
-			totalOrderPrice += int(totalProductPrice)
-			finalStock := product.Data.Stock.Int64 - products.Qty.Int64
-			orderUseCase.UpdateStock(productId, finalStock)
-		}
-		//  User
-		user := orderUseCase.GetUser(userId)
-		if user.Data == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*model_response.OrderResponse]{
-				Code:    http.StatusBadRequest,
-				Message: "user not found",
-				Data:    nil,
-			}
-			return err
-		}
-		finalBalance := user.Data.Balance.Int64 - int64(totalOrderPrice)
-		orderUseCase.UpdateBalance(userId, finalBalance)
-		//    orders
-		if request.TotalPaid.Int64 < int64(totalOrderPrice) {
-			err = begin.Rollback()
-			result = &model_response.Response[*model_response.OrderResponse]{
-				Code:    http.StatusBadRequest,
-				Message: "OrderUseCase fail,  total paid is not enough, total paid	 required " + string(strconv.FormatInt(int64(totalOrderPrice), 10)),
-				Data:    nil,
-			}
-			return err
-		}
-		totalReturn := request.TotalPaid.Int64 - int64(totalOrderPrice)
-		firstLetter := strings.ToUpper(string(user.Data.Name.String[0]))
-		rand.Seed(time.Now().UnixNano())
-		randomDigits := rand.Intn(900) + 100
-		receiptCode := fmt.Sprintf("%s%d", firstLetter, randomDigits)
-		orderData := &entity.Order{
-			Id:          null.NewString(uuid.New().String(), true),
-			UserId:      user.Data.Id,
-			ReceiptCode: null.NewString(receiptCode, true),
-			TotalPrice:  null.NewInt(int64(totalOrderPrice), true),
-			TotalPaid:   request.TotalPaid,
-			TotalReturn: null.NewInt(totalReturn, true),
-			CreatedAt:   null.NewTime(time.Now(), true),
-			UpdatedAt:   null.NewTime(time.Now(), true),
-		}
-
-		order, orderErr := orderUseCase.OrderRepository.Order(begin, orderData)
-		if orderErr != nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*model_response.OrderResponse]{
-				Code:    http.StatusBadRequest,
-				Message: "orderUseCase fail, order is failed, " + orderErr.Error(),
-				Data:    nil,
-			}
-
-			return err
-		}
-		//    orderProducts
-		var productsInfo []*entity.OrderProducts
-		for _, orderProducts := range request.Products {
-			productId := orderProducts.ProductId.String
-			Qty := orderProducts.Qty.Int64
-
-			orderProduct := orderUseCase.OrderProducts(begin, request, productId, Qty, order.Data.Id.String, totalOrderPrice)
-			productsInfoLoop := orderProduct.Data
-			productsInfo = append(productsInfo, productsInfoLoop...)
-		}
-
-		err = begin.Commit()
-
+func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.OrderRequest) (result *model_response.Response[*model_response.OrderResponse], err error) {
+	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusOK,
-			Message: "orderUseCase success, order is success",
-			Data:    order.Data,
-		}
-		result.Data.Products = productsInfo
-
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusInternalServerError,
-			Message: "OrderUseCase order  is failed, " + beginErr.Error(),
+			Code:    http.StatusNotFound,
+			Message: "Order-Service orderUseCase Order is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
+
+		return result, rollback
 	}
-	return result
+	//   Products
+	var totalOrderPrice int
+	for i, products := range request.Products {
+		productId := products.ProductId.String
+		product := orderUseCase.GetProduct(productId)
+		if product.Data == nil {
+			rollback := begin.Rollback()
+			result = &model_response.Response[*model_response.OrderResponse]{
+				Code:    http.StatusNotFound,
+				Message: "Order-Service orderUseCase Order is failed, product  not found.",
+				Data:    nil,
+			}
+
+			return result, rollback
+		}
+		if products.Qty.Int64 > product.Data.Stock.Int64 {
+			rollback := begin.Rollback()
+			result = &model_response.Response[*model_response.OrderResponse]{
+				Code:    http.StatusNotFound,
+				Message: "Order-Service orderUseCase Order is failed, product out of stock.",
+				Data:    nil,
+			}
+			return result, rollback
+		}
+		totalProductPrice := products.Qty.Int64 * product.Data.Price.Int64
+		request.Products[i].TotalPrice.Int64 = totalProductPrice
+		totalOrderPrice += int(totalProductPrice)
+		finalStock := product.Data.Stock.Int64 - products.Qty.Int64
+		orderUseCase.UpdateStock(productId, finalStock)
+	}
+	//  User
+	user := orderUseCase.GetUser(userId)
+	if user.Data == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: "Order-Service orderUseCase Order is failed, user not found.",
+			Data:    nil,
+		}
+
+		return result, rollback
+	}
+	finalBalance := user.Data.Balance.Int64 - int64(totalOrderPrice)
+	orderUseCase.UpdateBalance(userId, finalBalance)
+	//    orders
+	if request.TotalPaid.Int64 < int64(totalOrderPrice) {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: "order-service OrderUseCase is failed, oorder fail,  total paid is not enough, total paid	 required " + string(strconv.FormatInt(int64(totalOrderPrice), 10)),
+			Data:    nil,
+		}
+
+		return result, rollback
+	}
+	totalReturn := request.TotalPaid.Int64 - int64(totalOrderPrice)
+	firstLetter := strings.ToUpper(string(user.Data.Name.String[0]))
+	rand.Seed(time.Now().UnixNano())
+	randomDigits := rand.Intn(900) + 100
+	receiptCode := fmt.Sprintf("%s%d", firstLetter, randomDigits)
+	orderData := &entity.Order{
+		Id:          null.NewString(uuid.New().String(), true),
+		UserId:      user.Data.Id,
+		ReceiptCode: null.NewString(receiptCode, true),
+		TotalPrice:  null.NewInt(int64(totalOrderPrice), true),
+		TotalPaid:   request.TotalPaid,
+		TotalReturn: null.NewInt(totalReturn, true),
+		CreatedAt:   null.NewTime(time.Now(), true),
+		UpdatedAt:   null.NewTime(time.Now(), true),
+	}
+
+	order, err := orderUseCase.OrderRepository.Order(begin, orderData)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*model_response.OrderResponse]{
+			Code:    http.StatusNotFound,
+			Message: "order-service OrderUseCase is failed, order  fail,  query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+
+		return result, rollback
+	}
+	//    orderProducts
+	var productsInfo []*entity.OrderProducts
+	for _, orderProducts := range request.Products {
+		productId := orderProducts.ProductId.String
+		Qty := orderProducts.Qty.Int64
+
+		orderProduct := orderUseCase.OrderProducts(begin, request, productId, Qty, order.Data.Id.String, totalOrderPrice)
+		productsInfoLoop := orderProduct.Data
+		productsInfo = append(productsInfo, productsInfoLoop...)
+	}
+
+	commit := begin.Commit()
+
+	result = &model_response.Response[*model_response.OrderResponse]{
+		Code:    http.StatusOK,
+		Message: "orderUseCase success, order is success",
+		Data:    order.Data,
+	}
+	result.Data.Products = productsInfo
+
+	return result, commit
 }
 
 func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_response.Response[*model_response.OrderResponse]) {
-	transaction, transactionErr := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+	begin, transactionErr := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 	if transactionErr != nil {
-		errorMessage := fmt.Sprintf("transaction failed :%s", transactionErr)
+		errorMessage := fmt.Sprintf("begin failed :%s", transactionErr)
 		result = &model_response.Response[*model_response.OrderResponse]{
 			Code:    http.StatusNotFound,
 			Message: errorMessage,
@@ -220,7 +218,7 @@ func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_respons
 		return result
 	}
 
-	orderProductFound, orderProductFoundErr := orderUseCase.OrderRepository.GetOrderProductsByOrderId(transaction, id)
+	orderProductFound, orderProductFoundErr := orderUseCase.OrderRepository.GetOrderProductsByOrderId(begin, id)
 	if orderProductFoundErr != nil {
 		errorMessage := fmt.Sprintf("order-service DetailOrder is failed, GetOrderProducts failed : %s", orderProductFoundErr)
 		result = &model_response.Response[*model_response.OrderResponse]{
@@ -230,7 +228,7 @@ func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_respons
 		}
 		return result
 	}
-	orderFound, orderFoundErr := orderUseCase.OrderRepository.DetailOrder(transaction, id)
+	orderFound, orderFoundErr := orderUseCase.OrderRepository.DetailOrder(begin, id)
 	if orderFoundErr != nil {
 		errorMessage := fmt.Sprintf("order-service DetailOrder is failed, GetOrder failed : %s", orderFoundErr)
 		result = &model_response.Response[*model_response.OrderResponse]{
