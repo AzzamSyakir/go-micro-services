@@ -3,6 +3,7 @@ package config
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -47,9 +48,10 @@ func NewProductDB(envConfig *EnvConfig) *PostgresDatabase {
 	if err != nil {
 		panic(err)
 	}
-	connection.SetConnMaxLifetime(300)
+	connection.SetConnMaxLifetime(300 * time.Second)
 	connection.SetMaxIdleConns(10)
 	connection.SetMaxOpenConns(10)
+
 	productDB := &PostgresDatabase{
 		Connection: connection,
 	}
