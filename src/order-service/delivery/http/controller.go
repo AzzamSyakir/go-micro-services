@@ -28,7 +28,7 @@ func (orderController *OrderController) ListOrders(writer http.ResponseWriter, r
 func (orderController *OrderController) DetailOrders(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	userId := vars["id"]
-	result := orderController.OrderUseCase.DetailOrders(userId)
+	result, _ := orderController.OrderUseCase.DetailOrders(userId)
 	response.NewResponse(writer, result)
 }
 func (orderController *OrderController) Orders(writer http.ResponseWriter, reader *http.Request) {
