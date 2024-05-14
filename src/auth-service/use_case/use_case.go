@@ -40,7 +40,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
+			Code:    http.StatusInternalServerError,
 			Message: "AuthUseCase Login failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -106,7 +106,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 
 		commit := begin.Commit()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
+			Code:    http.StatusOK,
 			Message: "AuthUseCase Login is succeed",
 			Data:    patchedSession,
 		}
@@ -135,10 +135,9 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		}
 		return result, rollback
 	}
-
 	commit := begin.Commit()
 	result = &model_response.Response[*entity.Session]{
-		Code:    http.StatusBadRequest,
+		Code:    http.StatusOK,
 		Message: "AuthUseCase Login is succeed",
 		Data:    createdSession,
 	}
@@ -150,7 +149,7 @@ func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_respon
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
+			Code:    http.StatusInternalServerError,
 			Message: "AuthUseCase Logout failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -210,7 +209,7 @@ func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
+			Code:    http.StatusInternalServerError,
 			Message: "AuthUseCase GetNewAccesToken failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
