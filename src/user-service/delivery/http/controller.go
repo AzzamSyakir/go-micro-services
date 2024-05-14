@@ -24,19 +24,19 @@ func (userController *UserController) GetOneById(writer http.ResponseWriter, rea
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
-	foundUser := userController.UserUseCase.GetOneById(id)
+	foundUser, _ := userController.UserUseCase.GetOneById(id)
 	response.NewResponse(writer, foundUser)
 }
 func (userController *UserController) GetOneByEmail(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	email := vars["email"]
 
-	foundUser := userController.UserUseCase.GetOneByEmail(email)
+	foundUser, _ := userController.UserUseCase.GetOneByEmail(email)
 	response.NewResponse(writer, foundUser)
 }
-func (userController *UserController) FetchUser(writer http.ResponseWriter, reader *http.Request) {
-	fetchUser := userController.UserUseCase.FetchUser()
-	response.NewResponse(writer, fetchUser)
+func (userController *UserController) ListUser(writer http.ResponseWriter, reader *http.Request) {
+	ListUser, _ := userController.UserUseCase.ListUser()
+	response.NewResponse(writer, ListUser)
 }
 
 func (userController *UserController) UpdateUser(writer http.ResponseWriter, reader *http.Request) {
@@ -49,7 +49,7 @@ func (userController *UserController) UpdateUser(writer http.ResponseWriter, rea
 		http.Error(writer, decodeErr.Error(), 404)
 	}
 
-	result := userController.UserUseCase.UpdateUser(id, request)
+	result, _ := userController.UserUseCase.UpdateUser(id, request)
 
 	response.NewResponse(writer, result)
 }
@@ -62,15 +62,14 @@ func (userController *UserController) CreateUser(writer http.ResponseWriter, rea
 		http.Error(writer, decodeErr.Error(), 404)
 	}
 
-	result := userController.UserUseCase.CreateUser(request)
-
+	result, _ := userController.UserUseCase.CreateUser(request)
 	response.NewResponse(writer, result)
 }
 func (userController *UserController) DeleteUser(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
-	result := userController.UserUseCase.DeleteUser(id)
+	result, _ := userController.UserUseCase.DeleteUser(id)
 
 	response.NewResponse(writer, result)
 }

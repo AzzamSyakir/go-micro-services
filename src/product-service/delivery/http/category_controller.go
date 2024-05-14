@@ -23,7 +23,7 @@ func NewCategoryController(categoryUseCase *use_case.CategoryUseCase) *CategoryC
 func (categoryController *CategoryController) GetCategory(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
-	foundCategory := categoryController.CategoryUseCase.GetOneById(id)
+	foundCategory, _ := categoryController.CategoryUseCase.GetOneById(id)
 	response.NewResponse(writer, foundCategory)
 
 }
@@ -37,7 +37,7 @@ func (CategoryController *CategoryController) UpdateCategory(writer http.Respons
 	if decodeErr != nil {
 		panic(decodeErr)
 	}
-	result := CategoryController.CategoryUseCase.UpdateCategory(id, request)
+	result, _ := CategoryController.CategoryUseCase.UpdateCategory(id, request)
 
 	response.NewResponse(writer, result)
 }
@@ -52,13 +52,13 @@ func (CategoryController *CategoryController) CreateCategory(writer http.Respons
 		return
 	}
 
-	result := CategoryController.CategoryUseCase.CreateCategory(request)
+	result, _ := CategoryController.CategoryUseCase.CreateCategory(request)
 
 	response.NewResponse(writer, result)
 }
 
 func (CategoryController *CategoryController) ListCategories(writer http.ResponseWriter, reader *http.Request) {
-	Category := CategoryController.CategoryUseCase.ListCategories()
+	Category, _ := CategoryController.CategoryUseCase.ListCategories()
 	response.NewResponse(writer, Category)
 
 }
@@ -67,7 +67,7 @@ func (CategoryController *CategoryController) DeleteCategory(writer http.Respons
 	vars := mux.Vars(reader)
 	id := vars["id"]
 
-	result := CategoryController.CategoryUseCase.DeleteCategory(id)
+	result, _ := CategoryController.CategoryUseCase.DeleteCategory(id)
 
 	response.NewResponse(writer, result)
 }

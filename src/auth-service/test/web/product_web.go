@@ -19,8 +19,8 @@ type ProductWeb struct {
 	Path string
 }
 
-func NewProductWeb(test *testing.T) *CategoryWeb {
-	ProductWeb := &CategoryWeb{
+func NewProductWeb(test *testing.T) *ProductWeb {
+	ProductWeb := &ProductWeb{
 		Test: test,
 		Path: "products",
 	}

@@ -29,7 +29,7 @@ func NewUserWeb(test *testing.T) *UserWeb {
 }
 
 func (userWeb *UserWeb) Start() {
-	userWeb.Test.Run("UserWeb_Fetchuser_Succeed", userWeb.ListUser)
+	userWeb.Test.Run("UserWeb_ListUser_Succeed", userWeb.ListUser)
 	userWeb.Test.Run("UserWeb_DeleteUser_Succeed", userWeb.DeleteOneById)
 	userWeb.Test.Run("UserWeb_UpdateUser_Succeed", userWeb.UpdateUser)
 	userWeb.Test.Run("UserWeb_GetUserById_Succeed", userWeb.GetUserById)
