@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"go-micro-services/src/auth-service/entity"
 )
 
@@ -153,6 +154,7 @@ func (sessionRepository *AuthRepository) PatchOneById(begin *sql.Tx, id string, 
 	return result, err
 }
 func (sessionRepository *AuthRepository) DeleteOneById(begin *sql.Tx, id string) (result *entity.Session, err error) {
+	fmt.Println("tes di repo")
 	rows, queryErr := begin.Query(
 		`DELETE FROM sessions WHERE id=$1  RETURNING id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at;`,
 		id,
@@ -169,7 +171,6 @@ func (sessionRepository *AuthRepository) DeleteOneById(begin *sql.Tx, id string)
 		err = nil
 		return result, err
 	}
-
 	result = foundSessions[0]
 	err = nil
 	return result, err

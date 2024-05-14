@@ -46,7 +46,7 @@ func (authController *AuthController) Logout(writer http.ResponseWriter, reader 
 	token := reader.Header.Get("Authorization")
 	tokenString := strings.Replace(token, "Bearer ", "", 1)
 
-	result := authController.AuthUseCase.Logout(tokenString)
+	result, _ := authController.AuthUseCase.Logout(tokenString)
 	response.NewResponse(writer, result)
 }
 

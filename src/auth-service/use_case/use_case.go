@@ -146,51 +146,64 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 	return result, commit
 }
 
-func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_response.Response[*entity.Session]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		foundSession, err := authUseCase.AuthRepository.FindOneByAccToken(begin, accessToken)
-		if err != nil {
-			return err
-		}
-
-		if foundSession == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Session]{
-				Code:    http.StatusNotFound,
-				Message: "AuthUseCase Logout is failed, session is not found by access token.",
-				Data:    nil,
-			}
-			return err
-		}
-
-		deletedSession, err := authUseCase.AuthRepository.DeleteOneById(begin, foundSession.Id.String)
-		if err != nil {
-			return err
-		}
-
-		err = begin.Commit()
+func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_response.Response[*entity.Session], err error) {
+	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusOK,
-			Message: "AuthUseCase Logout is succeed.",
-			Data:    deletedSession,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusInternalServerError,
-			Message: "AuthUseCase Logout  is failed, " + beginErr.Error(),
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Logout failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
 
-	return result
+	foundSession, err := authUseCase.AuthRepository.FindOneByAccToken(begin, accessToken)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Logout failed, Invalid token, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	if foundSession == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Logout is failed, session is not found by access token.",
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	deletedSession, err := authUseCase.AuthRepository.DeleteOneById(begin, foundSession.Id.String)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Logout failed, query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	if deletedSession == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Logout failed, delete session failed",
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	commit := begin.Commit()
+	result = &model_response.Response[*entity.Session]{
+		Code:    http.StatusOK,
+		Message: "AuthUseCase Logout is succeed.",
+		Data:    deletedSession,
+	}
+	return result, commit
 }
 
 func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *model_response.Response[*entity.Session]) {
