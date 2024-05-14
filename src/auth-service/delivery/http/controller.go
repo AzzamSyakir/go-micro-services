@@ -39,7 +39,7 @@ func (authController *AuthController) Login(writer http.ResponseWriter, reader *
 	if decodeErr != nil {
 		http.Error(writer, decodeErr.Error(), 404)
 	}
-	foundUser := authController.AuthUseCase.Login(request)
+	foundUser, _ := authController.AuthUseCase.Login(request)
 	response.NewResponse(writer, foundUser)
 }
 func (authController *AuthController) Logout(writer http.ResponseWriter, reader *http.Request) {

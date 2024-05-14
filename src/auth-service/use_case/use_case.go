@@ -36,112 +36,114 @@ func NewAuthUseCase(
 	return authUseCase
 }
 
-func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (result *model_response.Response[*entity.Session]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
-		if err != nil {
-			result = nil
-			return err
-		}
-
-		foundUser := authUseCase.FindUserByEmail(request.Email.String)
-		if foundUser.Data == nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Session]{
-				Code:    http.StatusBadRequest,
-				Message: "AuthUseCase Login fail, GetUser failed, " + foundUser.Message,
-				Data:    nil,
-			}
-			return err
-		}
-		if foundUser.Errors == true {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Session]{
-				Code:    http.StatusNotFound,
-				Message: "AuthUseCase Login fail, GetUser failed, " + foundUser.Message,
-				Data:    nil,
-			}
-			return err
-		}
-
-		comparePasswordErr := bcrypt.CompareHashAndPassword([]byte(foundUser.Data.Password.String), []byte(request.Password.String))
-		if comparePasswordErr != nil {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Session]{
-				Code:    http.StatusNotFound,
-				Message: "AuthUseCase Login is failed, password is not match.",
-				Data:    nil,
-			}
-			return err
-		}
-
-		accessToken := null.NewString(uuid.NewString(), true)
-		refreshToken := null.NewString(uuid.NewString(), true)
-		currentTime := null.NewTime(time.Now(), true)
-		accessTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Minute*10), true)
-		refreshTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Hour*24*2), true)
-
-		foundSession, err := authUseCase.AuthRepository.GetOneByUserId(begin, foundUser.Data.Id.String)
-		if err != nil {
-			return err
-		}
-
-		if foundSession != nil {
-
-			foundSession.AccessToken = accessToken
-			foundSession.RefreshToken = refreshToken
-			foundSession.AccessTokenExpiredAt = accessTokenExpiredAt
-			foundSession.RefreshTokenExpiredAt = refreshTokenExpiredAt
-			foundSession.UpdatedAt = currentTime
-			patchedSession, err := authUseCase.AuthRepository.PatchOneById(begin, foundSession.Id.String, foundSession)
-			if err != nil {
-				return err
-			}
-
-			err = begin.Commit()
-			result = &model_response.Response[*entity.Session]{
-				Code:    http.StatusOK,
-				Message: "AuthUseCase Login is succeed.",
-				Data:    patchedSession,
-			}
-			return err
-		}
-
-		newSession := &entity.Session{
-			Id:                    null.NewString(uuid.NewString(), true),
-			UserId:                foundUser.Data.Id,
-			AccessToken:           accessToken,
-			RefreshToken:          refreshToken,
-			AccessTokenExpiredAt:  accessTokenExpiredAt,
-			RefreshTokenExpiredAt: refreshTokenExpiredAt,
-			CreatedAt:             currentTime,
-			UpdatedAt:             currentTime,
-			DeletedAt:             null.NewTime(time.Time{}, false),
-		}
-
-		createdSession, err := authUseCase.AuthRepository.CreateSession(begin, newSession)
-		if err != nil {
-			return err
-		}
-
-		err = begin.Commit()
+func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (result *model_response.Response[*entity.Session], err error) {
+	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusCreated,
-			Message: "AuthUseCase Login is succeed.",
-			Data:    createdSession,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusInternalServerError,
-			Message: "AuthUseCase Login  is failed, " + beginErr.Error(),
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Login failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
 
-	return result
+	foundUser := authUseCase.FindUserByEmail(request.Email.String)
+	if foundUser.Data == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Login fail, GetUser failed, " + foundUser.Message,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	comparePasswordErr := bcrypt.CompareHashAndPassword([]byte(foundUser.Data.Password.String), []byte(request.Password.String))
+	if comparePasswordErr != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusNotFound,
+			Message: "AuthUseCase Login is failed, password is not match.",
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	accessToken := null.NewString(uuid.NewString(), true)
+	refreshToken := null.NewString(uuid.NewString(), true)
+	currentTime := null.NewTime(time.Now(), true)
+	accessTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Minute*10), true)
+	refreshTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Hour*24*2), true)
+
+	foundSession, err := authUseCase.AuthRepository.GetOneByUserId(begin, foundUser.Data.Id.String)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Login failed, query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	if foundSession != nil {
+
+		foundSession.AccessToken = accessToken
+		foundSession.RefreshToken = refreshToken
+		foundSession.AccessTokenExpiredAt = accessTokenExpiredAt
+		foundSession.RefreshTokenExpiredAt = refreshTokenExpiredAt
+		foundSession.UpdatedAt = currentTime
+		patchedSession, err := authUseCase.AuthRepository.PatchOneById(begin, foundSession.Id.String, foundSession)
+		if err != nil {
+			rollback := begin.Rollback()
+			result = &model_response.Response[*entity.Session]{
+				Code:    http.StatusBadRequest,
+				Message: "AuthUseCase Login failed, query to db fail, " + err.Error(),
+				Data:    nil,
+			}
+			return result, rollback
+		}
+
+		commit := begin.Commit()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Login is succeed",
+			Data:    patchedSession,
+		}
+		return result, commit
+	}
+
+	newSession := &entity.Session{
+		Id:                    null.NewString(uuid.NewString(), true),
+		UserId:                foundUser.Data.Id,
+		AccessToken:           accessToken,
+		RefreshToken:          refreshToken,
+		AccessTokenExpiredAt:  accessTokenExpiredAt,
+		RefreshTokenExpiredAt: refreshTokenExpiredAt,
+		CreatedAt:             currentTime,
+		UpdatedAt:             currentTime,
+		DeletedAt:             null.NewTime(time.Time{}, false),
+	}
+
+	createdSession, err := authUseCase.AuthRepository.CreateSession(begin, newSession)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase Login failed, query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	commit := begin.Commit()
+	result = &model_response.Response[*entity.Session]{
+		Code:    http.StatusBadRequest,
+		Message: "AuthUseCase Login is succeed",
+		Data:    createdSession,
+	}
+	return result, commit
 }
 
 func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_response.Response[*entity.Session]) {
