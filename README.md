@@ -36,7 +36,10 @@ git clone "github repo links"
 ```bash
 go mod tidy
 ```
-
 ```bash
 make start-docker
+```
+### run test
+```bash
+make start-test
 ```
