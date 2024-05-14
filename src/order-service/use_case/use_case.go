@@ -39,7 +39,7 @@ func (orderUseCase *OrderUseCase) ListOrders() (result *model_response.Response[
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: "Order-Service orderUseCase ListOrder is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -51,7 +51,7 @@ func (orderUseCase *OrderUseCase) ListOrders() (result *model_response.Response[
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "Order-Service orderUseCase ListOrder is failed, query to db  fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -62,7 +62,7 @@ func (orderUseCase *OrderUseCase) ListOrders() (result *model_response.Response[
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &model_response.Response[[]*model_response.OrderResponse]{
-				Code:    http.StatusNotFound,
+				Code:    http.StatusBadRequest,
 				Message: "order-service DetailOrder is failed, GetOrderProducts fail" + err.Error(),
 				Data:    nil,
 			}
@@ -73,7 +73,7 @@ func (orderUseCase *OrderUseCase) ListOrders() (result *model_response.Response[
 	if fetchOrder.Data == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "orderUseCase ListProduct is failed, data order is empty",
 			Data:    nil,
 		}
@@ -93,7 +93,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: "Order-Service orderUseCase Order is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -108,7 +108,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 		if product.Data == nil {
 			rollback := begin.Rollback()
 			result = &model_response.Response[*model_response.OrderResponse]{
-				Code:    http.StatusNotFound,
+				Code:    http.StatusBadRequest,
 				Message: "Order-Service orderUseCase Order is failed, product  not found.",
 				Data:    nil,
 			}
@@ -118,7 +118,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 		if products.Qty.Int64 > product.Data.Stock.Int64 {
 			rollback := begin.Rollback()
 			result = &model_response.Response[*model_response.OrderResponse]{
-				Code:    http.StatusNotFound,
+				Code:    http.StatusBadRequest,
 				Message: "Order-Service orderUseCase Order is failed, product out of stock.",
 				Data:    nil,
 			}
@@ -135,7 +135,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	if user.Data == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "Order-Service orderUseCase Order is failed, user not found.",
 			Data:    nil,
 		}
@@ -148,7 +148,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	if request.TotalPaid.Int64 < int64(totalOrderPrice) {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "order-service OrderUseCase is failed, oorder fail,  total paid is not enough, total paid	 required " + string(strconv.FormatInt(int64(totalOrderPrice), 10)),
 			Data:    nil,
 		}
@@ -175,7 +175,7 @@ func (orderUseCase *OrderUseCase) Order(userId string, request *model_request.Or
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "order-service OrderUseCase is failed, order  fail,  query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -210,7 +210,7 @@ func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_respons
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: "order-service DetailOrder is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -221,7 +221,7 @@ func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_respons
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "order-service DetailOrder is failed, GetOrderProducts fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -232,7 +232,7 @@ func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_respons
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf(": %s", orderFoundErr)
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -241,21 +241,21 @@ func (orderUseCase *OrderUseCase) DetailOrders(id string) (result *model_respons
 	if orderFound == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "order-service, DetailOrder is failed, order is not found by id, " + id,
 			Data:    nil,
 		}
 
 		return result, rollback
 	}
-	rollback := begin.Rollback()
+	commit := begin.Commit()
 	result = &model_response.Response[*model_response.OrderResponse]{
-		Code:    http.StatusNotFound,
-		Message: "order-service, DetailOrder is failed, order is not found by id, " + id,
-		Data:    nil,
+		Code:    http.StatusOK,
+		Message: "order-service, DetailOrder is succeed.",
+		Data:    orderFound,
 	}
 	result.Data.Products = orderProductFound.Data
-	return result, rollback
+	return result, commit
 }
 
 func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, productId string, Qty int64, orderId string, totalOrderPrice int) (result *model_response.Response[[]*entity.OrderProducts]) {

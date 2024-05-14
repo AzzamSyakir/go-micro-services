@@ -35,7 +35,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.Ca
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusInternalServerError,
 			Message: "CategoryUseCase AddCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -55,7 +55,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.Ca
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusBadRequest,
 			Message: "CategoryUseCase AddCategory is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -76,7 +76,7 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: "CategoryUseCase GetCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -87,7 +87,7 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "CategoryUseCase GetCategory is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -97,7 +97,7 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 	rollback := begin.Rollback()
 	if categoryFound == nil {
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "CategoryUseCase GetCategory is failed, category not found by id, " + id,
 			Data:    nil,
 		}
@@ -120,7 +120,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusInternalServerError,
 			Message: "CategoryUseCase UpdateCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -132,7 +132,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &model_response.Response[*entity.Category]{
-				Code:    http.StatusCreated,
+				Code:    http.StatusBadRequest,
 				Message: "CategoryUseCase UpdateCategory is failed, query to db fail, " + err.Error(),
 				Data:    nil,
 			}
@@ -142,7 +142,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model
 	if foundCategory == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "CategoryUseCase Update Category is failed, category is not found by id, " + id,
 			Data:    nil,
 		}
@@ -182,7 +182,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusInternalServerError,
 			Message: "CategoryUseCase ListCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -193,7 +193,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusBadRequest,
 			Message: "CategoryUseCase ListCategory is failed, Query to db, " + err.Error(),
 			Data:    nil,
 		}
@@ -203,7 +203,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 	if listCategories.Data == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[[]*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusBadRequest,
 			Message: "CategoryUseCase UpdateCategory is failed, Category is empty, ",
 			Data:    nil,
 		}
@@ -211,7 +211,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *model_response
 	}
 	commit := begin.Commit()
 	result = &model_response.Response[[]*entity.Category]{
-		Code:    http.StatusCreated,
+		Code:    http.StatusOK,
 		Message: "CategoryUseCase ListCategory is Succed, ",
 		Data:    listCategories.Data,
 	}
@@ -223,7 +223,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(id string) (result *model
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusInternalServerError,
 			Message: "CategoryUseCase DeleteCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -234,7 +234,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(id string) (result *model
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusBadRequest,
 			Message: "CategoryUseCase DeleteCategory is failed, Query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -243,7 +243,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(id string) (result *model
 	if deletedcategory == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusCreated,
+			Code:    http.StatusBadRequest,
 			Message: "CategoryUseCase DeleteCategory is failed, category is not deleted by id , " + id,
 			Data:    nil,
 		}
@@ -252,7 +252,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(id string) (result *model
 
 	commit := begin.Commit()
 	result = &model_response.Response[*entity.Category]{
-		Code:    http.StatusCreated,
+		Code:    http.StatusOK,
 		Message: "CategoryUseCase DeleteCategory is succed.",
 		Data:    deletedcategory,
 	}
