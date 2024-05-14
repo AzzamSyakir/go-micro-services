@@ -32,8 +32,8 @@ func NewAuthWeb(test *testing.T) *AuthWeb {
 func (authWeb *AuthWeb) Start() {
 	authWeb.Test.Run("AuthWeb_Register_Succeed", authWeb.Register)
 	authWeb.Test.Run("AuthWeb_Login_Succeed", authWeb.Login)
-	// authWeb.Test.Run("AuthWeb_Logout_Succeed", authWeb.Logout)
-	// authWeb.Test.Run("AuthWeb_GetNewAccessToken_Succeed", authWeb.GetNewAccessToken)
+	authWeb.Test.Run("AuthWeb_Logout_Succeed", authWeb.Logout)
+	authWeb.Test.Run("AuthWeb_GetNewAccessToken_Succeed", authWeb.GetNewAccessToken)
 }
 
 func (authWeb *AuthWeb) Register(t *testing.T) {

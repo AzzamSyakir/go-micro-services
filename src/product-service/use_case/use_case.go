@@ -83,7 +83,7 @@ func (productUseCase *ProductUseCase) CreateProduct(request *model_request.Creat
 
 	commit := begin.Commit()
 	result = &model_response.Response[*entity.Product]{
-		Code:    http.StatusOK,
+		Code:    http.StatusCreated,
 		Message: "ProductUseCase CreateProduct is success",
 		Data:    createdProduct,
 	}
