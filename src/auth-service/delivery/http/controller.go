@@ -54,6 +54,6 @@ func (authController *AuthController) GetNewAccessToken(writer http.ResponseWrit
 	token := reader.Header.Get("Authorization")
 	tokenString := strings.Replace(token, "Bearer ", "", 1)
 
-	result := authController.AuthUseCase.GetNewAccessToken(tokenString)
+	result, _ := authController.AuthUseCase.GetNewAccessToken(tokenString)
 	response.NewResponse(writer, result)
 }

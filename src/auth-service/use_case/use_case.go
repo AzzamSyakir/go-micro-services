@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb"
 	"github.com/google/uuid"
 	"github.com/guregu/null"
 	"golang.org/x/crypto/bcrypt"
@@ -206,54 +205,69 @@ func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_respon
 	return result, commit
 }
 
-func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *model_response.Response[*entity.Session]) {
-	beginErr := crdb.Execute(func() (err error) {
-		begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
-		if err != nil {
-			return err
-		}
-
-		foundSession, err := authUseCase.AuthRepository.FindOneByRefToken(begin, refreshToken)
-		if err != nil {
-			return err
-		}
-
-		if foundSession.RefreshTokenExpiredAt.Time.Before(time.Now()) {
-			err = begin.Rollback()
-			result = &model_response.Response[*entity.Session]{
-				Code:    http.StatusNotFound,
-				Message: "AuthUseCase GetNewAccessToken is failed, refresh token is expired.",
-				Data:    nil,
-			}
-			return err
-
-		}
-
-		foundSession.AccessToken = null.NewString(uuid.NewString(), true)
-		foundSession.UpdatedAt = null.NewTime(time.Now(), true)
-		patchedSession, err := authUseCase.AuthRepository.PatchOneById(begin, foundSession.Id.String, foundSession)
-		if err != nil {
-			return err
-		}
-
-		err = begin.Commit()
+func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *model_response.Response[*entity.Session], err error) {
+	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusOK,
-			Message: "AuthUseCase GetNewAccessToken is succeed.",
-			Data:    patchedSession,
-		}
-		return err
-	})
-
-	if beginErr != nil {
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusInternalServerError,
-			Message: "AuthUseCase GetNewAccessToken is failed, " + beginErr.Error(),
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase GetNewAccesToken failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
+	}
+	foundSession, err := authUseCase.AuthRepository.FindOneByRefToken(begin, refreshToken)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase GetNewAccesToken failed, query to db fail, " + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
 	}
 
-	return result
+	if foundSession == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase GetNewAccesToken  failed, session is not found by refresh token.",
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	if foundSession.RefreshTokenExpiredAt.Time.Before(time.Now()) {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusNotFound,
+			Message: "AuthUseCase GetNewAccessToken is failed, refresh token is expired.",
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	foundSession.AccessToken = null.NewString(uuid.NewString(), true)
+	foundSession.UpdatedAt = null.NewTime(time.Now(), true)
+	patchedSession, err := authUseCase.AuthRepository.PatchOneById(begin, foundSession.Id.String, foundSession)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: "AuthUseCase GetNewAccesToken  failed, query to db fail," + err.Error(),
+			Data:    nil,
+		}
+		return result, rollback
+	}
+
+	commit := begin.Commit()
+	result = &model_response.Response[*entity.Session]{
+		Code:    http.StatusOK,
+		Message: "AuthUseCase GetNewAccessToken is succeed.",
+		Data:    patchedSession,
+	}
+	return result, commit
+
 }
 
 func (authUseCase *AuthUseCase) FindUserByEmail(email string) (result *model_response.Response[*entity.User]) {
