@@ -36,7 +36,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: "UserUseCase GetOneById is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -47,7 +47,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase GetOneById is failed, GetUser failed : %s", GetOneByIdErr)
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -57,7 +57,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, User is not found by id %s", id)
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -77,7 +77,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: "UserUseCase GetOneByEmail is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -88,7 +88,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase GetOneByEmail is failed, GetUser failed : %s", GetOneByEmailErr)
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -98,7 +98,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("User UseCase FindOneByemail is failed, User is not found by email %s", email)
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -129,7 +129,7 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusInternalServerError,
+			Code:    http.StatusBadRequest,
 			Message: "UserUseCase UpdateUser is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -138,7 +138,7 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request
 	if foundUser == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "UserUserCase UpdateUser is failed, User is not found by id " + userId,
 			Data:    nil,
 		}
@@ -158,7 +158,7 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &model_response.Response[*entity.User]{
-				Code:    http.StatusInternalServerError,
+				Code:    http.StatusBadRequest,
 				Message: "UserUseCase UpdateUser is failed, password hashing is failed, " + err.Error(),
 				Data:    nil,
 			}
@@ -210,7 +210,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 	if hashedPasswordErr != nil {
 		err = begin.Rollback()
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusInternalServerError,
+			Code:    http.StatusBadRequest,
 			Message: "UserUseCase Register is failed, password hashing is failed.",
 			Data:    nil,
 		}
@@ -259,7 +259,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 	if deletedUserErr != nil {
 		err = begin.Rollback()
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: "UserUserCase DeleteUser is failed, " + deletedUserErr.Error(),
 			Data:    nil,
 		}
@@ -268,7 +268,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 	if deletedUser == nil {
 		err = begin.Rollback()
 		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusBadRequest,
 			Message: "UserUserCase DeleteUser is failed, user is not deleted by id, " + id,
 			Data:    nil,
 		}
@@ -290,7 +290,7 @@ func (userUseCase *UserUseCase) ListUser() (result *model_response.Response[[]*e
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("begin failed :%s", err)
 		result = &model_response.Response[[]*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -302,7 +302,7 @@ func (userUseCase *UserUseCase) ListUser() (result *model_response.Response[[]*e
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase ListUser is failed, query failed : %s", err)
 		result = &model_response.Response[[]*entity.User]{
-			Code:    http.StatusNotFound,
+			Code:    http.StatusInternalServerError,
 			Message: errorMessage,
 			Data:    nil,
 		}
