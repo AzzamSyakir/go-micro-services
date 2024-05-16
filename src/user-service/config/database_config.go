@@ -9,9 +9,7 @@ import (
 )
 
 type DatabaseConfig struct {
-	UserDB    *PostgresDatabase
-	ProductDB *PostgresDatabase
-	OrderDB   *PostgresDatabase
+	UserDB *PostgresDatabase
 }
 
 type PostgresDatabase struct {
