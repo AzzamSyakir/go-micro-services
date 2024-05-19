@@ -71,7 +71,6 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *model_response.Re
 	}
 	return result, commit
 }
-
 func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User], err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
@@ -112,7 +111,6 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *model_respo
 	}
 	return result, commit
 }
-
 func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User], err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
@@ -192,7 +190,6 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request
 	}
 	return result, commit
 }
-
 func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *model_response.Response[*entity.User], err error) {
 
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
@@ -248,7 +245,6 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 	}
 	return result, commit
 }
-
 func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User], err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
@@ -283,7 +279,6 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *model_response.Re
 	}
 	return result, err
 }
-
 func (userUseCase *UserUseCase) ListUser() (result *model_response.Response[[]*entity.User], err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {

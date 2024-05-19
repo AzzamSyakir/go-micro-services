@@ -25,3 +25,7 @@ start-db:
 
 start-test:
 	clear && go test -v -count=1 ./src/auth-service/test
+
+generate-proto-user:
+	protoc --proto_path=src/user-service/delivery/grpc/proto src/user-service/delivery/grpc/proto/*.proto --go_out=src/user-service/delivery/grpc --go-grpc_out=src/user-service/delivery/grpc
+	 
