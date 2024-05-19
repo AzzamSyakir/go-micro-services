@@ -7,11 +7,12 @@ option go_package = "pb/";
 
 
 service UserService{
-  rpc ListUsers(empty) returns (UserResponse);
-  rpc DeleteUser(ById) returns (UserResponse);
-  rpc DetailUser(ById) returns (UserResponse);
-  rpc GetByEmail(ByEmail) returns (UserResponse);
+  rpc GetOneById(ById) returns (UserResponse);
+  rpc GetOneByEmail(ByEmail) returns (UserResponse);
   rpc UpdateUser(Update) returns (UserResponse);
+  rpc CreateUser(Create) returns (UserResponse);
+  rpc DeleteUser(ById) returns (UserResponse);
+  rpc ListUsers(empty) returns (UserResponse);
 }
 
 message User{
@@ -41,4 +42,10 @@ message Update{
   optional string name=2;
   optional string email=3;
   optional string password=4;
+}
+message Create{
+  string name=1;
+  string balance=2;
+  string email=3;
+  string password=4;
 }
