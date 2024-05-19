@@ -2,6 +2,8 @@ syntax = "proto3";
 package  go_micro_services;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
 
 option go_package = "pb/";
 
@@ -12,16 +14,18 @@ service UserService{
   rpc UpdateUser(Update) returns (UserResponse);
   rpc CreateUser(Create) returns (UserResponse);
   rpc DeleteUser(ById) returns (UserResponse);
-  rpc ListUsers(empty) returns (UserResponse);
+  rpc ListUsers(UserResponseRepeated) returns (UserResponse);
 }
 
-message User{
-  string id=1;
-  string name=2;
-  string email=3;
-  string password=4;
-  google.protobuf.Timestamp created_at=5;
-  google.protobuf.Timestamp updated_at=6;
+message User {
+  string id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue email = 3;
+  google.protobuf.StringValue password = 4;
+  google.protobuf.StringValue balance = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  google.protobuf.Timestamp deleted_at = 8;
 }
 
 message ById {
@@ -35,6 +39,11 @@ message empty {}
 message UserResponse{
   int64 code=1;
   string message=2;
+  User data=3;
+}
+message UserResponseRepeated{
+  int64 code=1;
+  string message=2;
   repeated User data=3;
 }
 message Update{
@@ -42,10 +51,11 @@ message Update{
   optional string name=2;
   optional string email=3;
   optional string password=4;
+  optional string balance=5;
 }
 message Create{
-  string name=1;
-  string balance=2;
-  string email=3;
-  string password=4;
+  google.protobuf.StringValue name=1;
+  google.protobuf.StringValue balance=2;
+  google.protobuf.StringValue email=3;
+  google.protobuf.StringValue password=4;
 }

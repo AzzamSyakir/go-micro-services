@@ -3,17 +3,16 @@ package use_case
 import (
 	"fmt"
 	"go-micro-services/src/user-service/config"
-	pb "go-micro-services/src/user-service/delivery/grpc/pb"
-	"go-micro-services/src/user-service/entity"
-	model_request "go-micro-services/src/user-service/model/request/controller"
-	model_response "go-micro-services/src/user-service/model/response"
+	"go-micro-services/src/user-service/delivery/grpc/pb"
 	"go-micro-services/src/user-service/repository"
 	"net/http"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	"github.com/guregu/null"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserUseCase struct {
@@ -113,7 +112,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *pb.UserResp
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request.UserPatchOneByIdRequest) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) UpdateUser(userId string, request *pb.Update) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -144,17 +143,17 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request
 		}
 		return result, rollback
 	}
-	if request.Name.Valid {
-		foundUser.Name = request.Name
+	if request.Name != nil {
+		foundUser.Name.Value = *request.Name
 	}
-	if request.Email.Valid {
-		foundUser.Email = request.Email
+	if request.Email != nil {
+		foundUser.Email.Value = *request.Email
 	}
-	if request.Balance.Valid {
-		foundUser.Balance = request.Balance
+	if request.Balance != nil {
+		foundUser.Balance.Value = *request.Balance
 	}
-	if request.Password.Valid {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
+	if request.Password != nil {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*request.Password), bcrypt.DefaultCost)
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &pb.UserResponse{
@@ -165,13 +164,13 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request
 			return result, rollback
 		}
 
-		foundUser.Password = null.NewString(string(hashedPassword), true)
+		foundUser.Password.Value = string(hashedPassword)
 	}
-	if request.Balance.Valid {
-		foundUser.Balance = request.Balance
+	if request.Balance != nil {
+		foundUser.Balance.Value = *request.Balance
 	}
-
-	foundUser.UpdatedAt = null.NewTime(time.Now(), true)
+	time := time.Now()
+	foundUser.UpdatedAt = timestamppb.New(time)
 
 	patchedUser, err := userUseCase.UserRepository.PatchOneById(begin, userId, foundUser)
 	if err != nil {
@@ -192,7 +191,7 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *model_request
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) CreateUser(request *pb.Create) (result *pb.UserResponse, err error) {
 
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
@@ -205,7 +204,7 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 		return result, rollback
 	}
 
-	hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.String), bcrypt.DefaultCost)
+	hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.Value), bcrypt.DefaultCost)
 	if hashedPasswordErr != nil {
 		err = begin.Rollback()
 		result = &pb.UserResponse{
@@ -217,15 +216,15 @@ func (userUseCase *UserUseCase) CreateUser(request *model_request.CreateUser) (r
 	}
 
 	currentTime := null.NewTime(time.Now(), true)
-	newUser := &entity.User{
-		Id:        null.NewString(uuid.NewString(), true),
+	newUser := &pb.User{
+		Id:        uuid.NewString(),
 		Name:      request.Name,
 		Email:     request.Email,
-		Password:  null.NewString(string(hashedPassword), true),
+		Password:  &wrappers.StringValue{Value: string(hashedPassword)},
 		Balance:   request.Balance,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
-		DeletedAt: null.NewTime(time.Time{}, false),
+		CreatedAt: timestamppb.New(currentTime.Time),
+		UpdatedAt: timestamppb.New(currentTime.Time),
+		DeletedAt: &timestamppb.Timestamp{},
 	}
 
 	createdUser, err := userUseCase.UserRepository.CreateUser(begin, newUser)
@@ -281,12 +280,12 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *pb.UserResponse, 
 	}
 	return result, err
 }
-func (userUseCase *UserUseCase) ListUser() (result *model_response.Response[[]*entity.User], err error) {
+func (userUseCase *UserUseCase) ListUser() (result *pb.UserResponseRepeated, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("begin failed :%s", err)
-		result = &model_response.Response[[]*entity.User]{
+		result = &pb.UserResponseRepeated{
 			Code:    http.StatusInternalServerError,
 			Message: errorMessage,
 			Data:    nil,
@@ -298,7 +297,7 @@ func (userUseCase *UserUseCase) ListUser() (result *model_response.Response[[]*e
 	if err != nil {
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase ListUser is failed, query failed : %s", err)
-		result = &model_response.Response[[]*entity.User]{
+		result = &pb.UserResponseRepeated{
 			Code:    http.StatusInternalServerError,
 			Message: errorMessage,
 			Data:    nil,
@@ -308,7 +307,7 @@ func (userUseCase *UserUseCase) ListUser() (result *model_response.Response[[]*e
 
 	if ListUser.Data == nil {
 		rollback := begin.Rollback()
-		result = &model_response.Response[[]*entity.User]{
+		result = &pb.UserResponseRepeated{
 			Code:    http.StatusNotFound,
 			Message: "User UseCase ListUser is failed, data User is empty ",
 			Data:    nil,
@@ -316,7 +315,7 @@ func (userUseCase *UserUseCase) ListUser() (result *model_response.Response[[]*e
 		return result, rollback
 	}
 	commit := begin.Commit()
-	result = &model_response.Response[[]*entity.User]{
+	result = &pb.UserResponseRepeated{
 		Code:    http.StatusOK,
 		Message: "User UseCase ListUser is succeed.",
 		Data:    ListUser.Data,

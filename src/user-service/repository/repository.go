@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"go-micro-services/src/user-service/entity"
+	"go-micro-services/src/user-service/delivery/grpc/pb"
 	model_response "go-micro-services/src/user-service/model/response"
 )
 
@@ -14,7 +14,7 @@ func NewUserRepository() *UserRepository {
 	return userRepository
 }
 
-func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *entity.User) (result *entity.User, err error) {
+func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *pb.User) (result *pb.User, err error) {
 	_, queryErr := begin.Query(
 		`INSERT INTO "users" (id, name, email, password, balance, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
 		toCreateUser.Id,
@@ -37,7 +37,7 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *en
 	return result, err
 }
 
-func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *model_response.Response[[]*entity.User], err error) {
+func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *model_response.Response[[]*pb.User], err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -50,9 +50,9 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *model_res
 		return result, err
 	}
 	defer rows.Close()
-	var ListUsers []*entity.User
+	var ListUsers []*pb.User
 	for rows.Next() {
-		ListUser := &entity.User{}
+		ListUser := &pb.User{}
 		scanErr := rows.Scan(
 			&ListUser.Id,
 			&ListUser.Name,
@@ -71,17 +71,17 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *model_res
 		ListUsers = append(ListUsers, ListUser)
 	}
 
-	result = &model_response.Response[[]*entity.User]{
+	result = &model_response.Response[[]*pb.User]{
 		Data: ListUsers,
 	}
 	err = nil
 	return result, err
 }
 
-func DeserializeUserRows(rows *sql.Rows) []*entity.User {
-	var foundUsers []*entity.User
+func DeserializeUserRows(rows *sql.Rows) []*pb.User {
+	var foundUsers []*pb.User
 	for rows.Next() {
-		foundUser := &entity.User{}
+		foundUser := &pb.User{}
 		scanErr := rows.Scan(
 			&foundUser.Id,
 			&foundUser.Name,
@@ -100,7 +100,7 @@ func DeserializeUserRows(rows *sql.Rows) []*entity.User {
 	return foundUsers
 }
 
-func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (result *entity.User, err error) {
+func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (result *pb.User, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -127,7 +127,7 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 	return result, err
 }
 
-func (userRepository *UserRepository) GetOneByEmail(begin *sql.Tx, email string) (result *entity.User, err error) {
+func (userRepository *UserRepository) GetOneByEmail(begin *sql.Tx, email string) (result *pb.User, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -154,7 +154,7 @@ func (userRepository *UserRepository) GetOneByEmail(begin *sql.Tx, email string)
 	return result, err
 }
 
-func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *entity.User) (result *entity.User, err error) {
+func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *pb.User) (result *pb.User, err error) {
 	rows, queryErr := begin.Query(
 		`UPDATE "users" SET id=$1, name=$2, email=$3, password=$4, balance=$5, created_at=$6, updated_at=$7, deleted_at=$8 WHERE id = $9 ;`,
 		toPatchUser.Id,
@@ -180,7 +180,7 @@ func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toP
 	return result, err
 }
 
-func (userRepository *UserRepository) DeleteUser(begin *sql.Tx, id string) (result *entity.User, err error) {
+func (userRepository *UserRepository) DeleteUser(begin *sql.Tx, id string) (result *pb.User, err error) {
 	rows, queryErr := begin.Query(
 		`DELETE FROM "users" WHERE id=$1 RETURNING id, name,  email, password, balance, created_at, updated_at, deleted_at`,
 		id,
