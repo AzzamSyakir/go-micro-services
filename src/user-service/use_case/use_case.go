@@ -1,6 +1,7 @@
 package use_case
 
 import (
+	"context"
 	"fmt"
 	"go-micro-services/src/user-service/config"
 	"go-micro-services/src/user-service/delivery/grpc/pb"
@@ -25,14 +26,14 @@ func NewUserUseCase(
 	databaseConfig *config.DatabaseConfig,
 	userRepository *repository.UserRepository,
 ) *UserUseCase {
-	userUseCase := &UserUseCase{
-		DatabaseConfig: databaseConfig,
-		UserRepository: userRepository,
+	return &UserUseCase{
+		UnimplementedUserServiceServer: pb.UnimplementedUserServiceServer{},
+		DatabaseConfig:                 databaseConfig,
+		UserRepository:                 userRepository,
 	}
-	return userUseCase
 }
 
-func (userUseCase *UserUseCase) GetOneById(id string) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) GetOneById(context context.Context, id *pb.ById) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -43,7 +44,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *pb.UserResponse, 
 		}
 		return result, rollback
 	}
-	GetOneById, GetOneByIdErr := userUseCase.UserRepository.GetOneById(begin, id)
+	GetOneById, GetOneByIdErr := userUseCase.UserRepository.GetOneById(begin, id.Id)
 	if GetOneByIdErr != nil {
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase GetOneById is failed, GetUser failed : %s", GetOneByIdErr)
@@ -72,7 +73,7 @@ func (userUseCase *UserUseCase) GetOneById(id string) (result *pb.UserResponse, 
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) GetOneByEmail(context context.Context, email *pb.ByEmail) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -83,7 +84,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *pb.UserResp
 		}
 		return result, rollback
 	}
-	GetOneByEmail, GetOneByEmailErr := userUseCase.UserRepository.GetOneByEmail(begin, email)
+	GetOneByEmail, GetOneByEmailErr := userUseCase.UserRepository.GetOneByEmail(begin, email.Email)
 	if GetOneByEmailErr != nil {
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase GetOneByEmail is failed, GetUser failed : %s", GetOneByEmailErr)
@@ -112,7 +113,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(email string) (result *pb.UserResp
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) UpdateUser(userId string, request *pb.Update) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.Update) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -124,7 +125,7 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *pb.Update) (r
 		return result, rollback
 	}
 
-	foundUser, err := userUseCase.UserRepository.GetOneById(begin, userId)
+	foundUser, err := userUseCase.UserRepository.GetOneById(begin, request.Id)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
@@ -138,7 +139,7 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *pb.Update) (r
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
 			Code:    http.StatusBadRequest,
-			Message: "UserUserCase UpdateUser is failed, User is not found by id " + userId,
+			Message: "UserUserCase UpdateUser is failed, User is not found by id " + request.Id,
 			Data:    nil,
 		}
 		return result, rollback
@@ -172,7 +173,7 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *pb.Update) (r
 	time := time.Now()
 	foundUser.UpdatedAt = timestamppb.New(time)
 
-	patchedUser, err := userUseCase.UserRepository.PatchOneById(begin, userId, foundUser)
+	patchedUser, err := userUseCase.UserRepository.PatchOneById(begin, request.Id, foundUser)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
@@ -191,7 +192,7 @@ func (userUseCase *UserUseCase) UpdateUser(userId string, request *pb.Update) (r
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) CreateUser(request *pb.Create) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.Create) (result *pb.UserResponse, err error) {
 
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
@@ -246,13 +247,13 @@ func (userUseCase *UserUseCase) CreateUser(request *pb.Create) (result *pb.UserR
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) DeleteUser(id string) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) DeleteUser(context context.Context, id *pb.ById) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		return result, err
 	}
 
-	deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(begin, id)
+	deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(begin, id.Id)
 	if deletedUserErr != nil {
 		err = begin.Rollback()
 		result = &pb.UserResponse{
@@ -266,7 +267,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *pb.UserResponse, 
 		err = begin.Rollback()
 		result = &pb.UserResponse{
 			Code:    http.StatusBadRequest,
-			Message: "UserUserCase DeleteUser is failed, user is not deleted by id, " + id,
+			Message: "UserUserCase DeleteUser is failed, user is not deleted by id, " + id.Id,
 			Data:    nil,
 		}
 		return result, err
@@ -280,7 +281,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *pb.UserResponse, 
 	}
 	return result, err
 }
-func (userUseCase *UserUseCase) ListUsers() (result *pb.UserResponseRepeated, err error) {
+func (userUseCase *UserUseCase) ListUsers(ctx context.Context, empty *pb.Empty) (result *pb.UserResponseRepeated, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()

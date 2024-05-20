@@ -36,7 +36,7 @@ type UserServiceClient interface {
 	UpdateUser(ctx context.Context, in *Update, opts ...grpc.CallOption) (*UserResponse, error)
 	CreateUser(ctx context.Context, in *Create, opts ...grpc.CallOption) (*UserResponse, error)
 	DeleteUser(ctx context.Context, in *ById, opts ...grpc.CallOption) (*UserResponse, error)
-	ListUsers(ctx context.Context, in *UserResponseRepeated, opts ...grpc.CallOption) (*UserResponse, error)
+	ListUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*UserResponseRepeated, error)
 }
 
 type userServiceClient struct {
@@ -92,8 +92,8 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *ById, opts ...gr
 	return out, nil
 }
 
-func (c *userServiceClient) ListUsers(ctx context.Context, in *UserResponseRepeated, opts ...grpc.CallOption) (*UserResponse, error) {
-	out := new(UserResponse)
+func (c *userServiceClient) ListUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*UserResponseRepeated, error) {
+	out := new(UserResponseRepeated)
 	err := c.cc.Invoke(ctx, UserService_ListUsers_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ type UserServiceServer interface {
 	UpdateUser(context.Context, *Update) (*UserResponse, error)
 	CreateUser(context.Context, *Create) (*UserResponse, error)
 	DeleteUser(context.Context, *ById) (*UserResponse, error)
-	ListUsers(context.Context, *UserResponseRepeated) (*UserResponse, error)
+	ListUsers(context.Context, *Empty) (*UserResponseRepeated, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -133,7 +133,7 @@ func (UnimplementedUserServiceServer) CreateUser(context.Context, *Create) (*Use
 func (UnimplementedUserServiceServer) DeleteUser(context.Context, *ById) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
-func (UnimplementedUserServiceServer) ListUsers(context.Context, *UserResponseRepeated) (*UserResponse, error) {
+func (UnimplementedUserServiceServer) ListUsers(context.Context, *Empty) (*UserResponseRepeated, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUsers not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
@@ -240,7 +240,7 @@ func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _UserService_ListUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserResponseRepeated)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -252,7 +252,7 @@ func _UserService_ListUsers_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: UserService_ListUsers_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).ListUsers(ctx, req.(*UserResponseRepeated))
+		return srv.(UserServiceServer).ListUsers(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

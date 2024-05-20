@@ -14,7 +14,7 @@ service UserService{
   rpc UpdateUser(Update) returns (UserResponse);
   rpc CreateUser(Create) returns (UserResponse);
   rpc DeleteUser(ById) returns (UserResponse);
-  rpc ListUsers(UserResponseRepeated) returns (UserResponse);
+  rpc ListUsers(empty) returns (UserResponseRepeated);
 }
 
 message User {

@@ -33,7 +33,7 @@ func NewWebContainer() *WebContainer {
 
 	userUseCase := use_case.NewUserUseCase(userDBConfig, userRepository)
 	grpcServer := grpc.NewServer()
-	pb.RegisterUserServiceServer(grpcServer, userUseCase.UnimplementedUserServiceServer)
+	pb.RegisterUserServiceServer(grpcServer, userUseCase)
 
 	useCaseContainer := NewUseCaseContainer(userUseCase)
 	webContainer := &WebContainer{
