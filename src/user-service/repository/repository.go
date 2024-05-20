@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"go-micro-services/src/user-service/delivery/grpc/pb"
-	model_response "go-micro-services/src/user-service/model/response"
 )
 
 type UserRepository struct {
@@ -37,7 +36,7 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *pb
 	return result, err
 }
 
-func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *model_response.Response[[]*pb.User], err error) {
+func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *pb.UserResponseRepeated, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -71,7 +70,7 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *model_res
 		ListUsers = append(ListUsers, ListUser)
 	}
 
-	result = &model_response.Response[[]*pb.User]{
+	result = &pb.UserResponseRepeated{
 		Data: ListUsers,
 	}
 	err = nil
