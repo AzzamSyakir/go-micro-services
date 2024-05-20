@@ -3,13 +3,12 @@ package container
 import (
 	"fmt"
 	"go-micro-services/src/user-service/config"
-	httpdelivery "go-micro-services/src/user-service/delivery/http"
-	"go-micro-services/src/user-service/delivery/http/route"
+	"go-micro-services/src/user-service/delivery/grpc/pb"
 	"go-micro-services/src/user-service/repository"
 	"go-micro-services/src/user-service/use_case"
 
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
 type WebContainer struct {
@@ -17,8 +16,7 @@ type WebContainer struct {
 	UserDB     *config.DatabaseConfig
 	Repository *RepositoryContainer
 	UseCase    *UseCaseContainer
-	Controller *ControllerContainer
-	Route      *route.RootRoute
+	Grpc       *grpc.Server
 }
 
 func NewWebContainer() *WebContainer {
@@ -34,30 +32,16 @@ func NewWebContainer() *WebContainer {
 	repositoryContainer := NewRepositoryContainer(userRepository)
 
 	userUseCase := use_case.NewUserUseCase(userDBConfig, userRepository)
+	grpcServer := grpc.NewServer()
+	pb.RegisterUserServiceServer(grpcServer, userUseCase.UnimplementedUserServiceServer)
 
 	useCaseContainer := NewUseCaseContainer(userUseCase)
-
-	userController := httpdelivery.NewUserController(userUseCase)
-
-	controllerContainer := NewControllerContainer(userController)
-
-	router := mux.NewRouter()
-	userRoute := route.NewUserRoute(router, userController)
-
-	rootRoute := route.NewRootRoute(
-		router,
-		userRoute,
-	)
-
-	rootRoute.Register()
-
 	webContainer := &WebContainer{
 		Env:        envConfig,
 		UserDB:     userDBConfig,
 		Repository: repositoryContainer,
 		UseCase:    useCaseContainer,
-		Controller: controllerContainer,
-		Route:      rootRoute,
+		Grpc:       grpcServer,
 	}
 
 	return webContainer

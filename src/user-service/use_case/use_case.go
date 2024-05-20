@@ -280,7 +280,7 @@ func (userUseCase *UserUseCase) DeleteUser(id string) (result *pb.UserResponse, 
 	}
 	return result, err
 }
-func (userUseCase *UserUseCase) ListUser() (result *pb.UserResponseRepeated, err error) {
+func (userUseCase *UserUseCase) ListUsers() (result *pb.UserResponseRepeated, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
