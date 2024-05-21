@@ -3,6 +3,9 @@ package repository
 import (
 	"database/sql"
 	"go-micro-services/src/user-service/delivery/grpc/pb"
+
+	"github.com/guregu/null"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserRepository struct {
@@ -11,6 +14,31 @@ type UserRepository struct {
 func NewUserRepository() *UserRepository {
 	userRepository := &UserRepository{}
 	return userRepository
+}
+func DeserializeUserRows(rows *sql.Rows) []*pb.User {
+	var foundUsers []*pb.User
+	for rows.Next() {
+		foundUser := &pb.User{}
+		var createdAt, updatedAt, deletedAt null.Time
+		scanErr := rows.Scan(
+			&foundUser.Id,
+			&foundUser.Name,
+			&foundUser.Email,
+			&foundUser.Password,
+			&foundUser.Balance,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
+		)
+		foundUser.CreatedAt = timestamppb.New(createdAt.Time)
+		foundUser.UpdatedAt = timestamppb.New(updatedAt.Time)
+		foundUser.DeletedAt = timestamppb.New(deletedAt.Time)
+		if scanErr != nil {
+			panic(scanErr)
+		}
+		foundUsers = append(foundUsers, foundUser)
+	}
+	return foundUsers
 }
 
 func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *pb.User) (result *pb.User, err error) {
@@ -21,9 +49,9 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *pb
 		toCreateUser.Email,
 		toCreateUser.Password,
 		toCreateUser.Balance,
-		toCreateUser.CreatedAt,
-		toCreateUser.UpdatedAt,
-		toCreateUser.DeletedAt,
+		toCreateUser.CreatedAt.AsTime(),
+		toCreateUser.UpdatedAt.AsTime(),
+		toCreateUser.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil
@@ -50,6 +78,7 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *pb.UserRe
 	}
 	defer rows.Close()
 	var ListUsers []*pb.User
+	var createdAt, updatedAt, deletedAt null.Time
 	for rows.Next() {
 		ListUser := &pb.User{}
 		scanErr := rows.Scan(
@@ -58,10 +87,13 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *pb.UserRe
 			&ListUser.Email,
 			&ListUser.Password,
 			&ListUser.Balance,
-			&ListUser.CreatedAt,
-			&ListUser.UpdatedAt,
-			&ListUser.DeletedAt,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
+		ListUser.CreatedAt = timestamppb.New(createdAt.Time)
+		ListUser.UpdatedAt = timestamppb.New(updatedAt.Time)
+		ListUser.DeletedAt = timestamppb.New(deletedAt.Time)
 		if scanErr != nil {
 			result = nil
 			err = scanErr
@@ -75,28 +107,6 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *pb.UserRe
 	}
 	err = nil
 	return result, err
-}
-
-func DeserializeUserRows(rows *sql.Rows) []*pb.User {
-	var foundUsers []*pb.User
-	for rows.Next() {
-		foundUser := &pb.User{}
-		scanErr := rows.Scan(
-			&foundUser.Id,
-			&foundUser.Name,
-			&foundUser.Email,
-			&foundUser.Password,
-			&foundUser.Balance,
-			&foundUser.CreatedAt,
-			&foundUser.UpdatedAt,
-			&foundUser.DeletedAt,
-		)
-		if scanErr != nil {
-			panic(scanErr)
-		}
-		foundUsers = append(foundUsers, foundUser)
-	}
-	return foundUsers
 }
 
 func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (result *pb.User, err error) {
@@ -161,9 +171,9 @@ func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toP
 		toPatchUser.Email,
 		toPatchUser.Password,
 		toPatchUser.Balance,
-		toPatchUser.CreatedAt,
-		toPatchUser.UpdatedAt,
-		toPatchUser.DeletedAt,
+		toPatchUser.CreatedAt.AsTime(),
+		toPatchUser.UpdatedAt.AsTime(),
+		toPatchUser.DeletedAt.AsTime(),
 		id,
 	)
 

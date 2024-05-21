@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	"github.com/guregu/null"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -145,13 +145,13 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 		return result, rollback
 	}
 	if request.Name != nil {
-		foundUser.Name.Value = *request.Name
+		foundUser.Name = *request.Name
 	}
 	if request.Email != nil {
-		foundUser.Email.Value = *request.Email
+		foundUser.Email = *request.Email
 	}
 	if request.Balance != nil {
-		foundUser.Balance.Value = *request.Balance
+		foundUser.Balance = *request.Balance
 	}
 	if request.Password != nil {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*request.Password), bcrypt.DefaultCost)
@@ -165,10 +165,10 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 			return result, rollback
 		}
 
-		foundUser.Password.Value = string(hashedPassword)
+		foundUser.Password = string(hashedPassword)
 	}
 	if request.Balance != nil {
-		foundUser.Balance.Value = *request.Balance
+		foundUser.Balance = *request.Balance
 	}
 	time := time.Now()
 	foundUser.UpdatedAt = timestamppb.New(time)
@@ -205,7 +205,7 @@ func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.
 		return result, rollback
 	}
 
-	hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password.Value), bcrypt.DefaultCost)
+	hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if hashedPasswordErr != nil {
 		err = begin.Rollback()
 		result = &pb.UserResponse{
@@ -221,7 +221,7 @@ func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.
 		Id:        uuid.NewString(),
 		Name:      request.Name,
 		Email:     request.Email,
-		Password:  &wrappers.StringValue{Value: string(hashedPassword)},
+		Password:  string(hashedPassword),
 		Balance:   request.Balance,
 		CreatedAt: timestamppb.New(currentTime.Time),
 		UpdatedAt: timestamppb.New(currentTime.Time),
@@ -317,7 +317,7 @@ func (userUseCase *UserUseCase) ListUsers(ctx context.Context, empty *pb.Empty) 
 	}
 	commit := begin.Commit()
 	result = &pb.UserResponseRepeated{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "User UseCase ListUser is succeed.",
 		Data:    ListUser.Data,
 	}
