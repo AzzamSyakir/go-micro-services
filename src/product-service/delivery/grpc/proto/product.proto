@@ -17,12 +17,13 @@ service ProductService{
 message Product {
   string id = 1;
   string name = 2;
-  string email = 3;
-  string password = 4;
-  int64 balance = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
-  google.protobuf.Timestamp deleted_at = 8;
+  string sku = 3;
+  int64 stock = 4;
+  int64 price = 5;
+  string categoryId =6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  google.protobuf.Timestamp deleted_at = 9;
 }
 
 message ById {
@@ -45,14 +46,14 @@ message ProductResponseRepeated{
 }
 message Update{
   string id=1;
-  optional string name=2;
-  optional string email=3;
-  optional string password=4;
-  optional int64 balance=5;
+  optional string categoryId=2;
+  optional string name=3;
+  optional int64 price=4;
+  optional int64 stock=5;
 }
 message Create{
-  string name=1;
-  int64 balance=2;
-  string email=3;
-  string password=4;
+  string categoryId=2;
+  string name=3;
+  int64 price=4;
+  int64 stock=5;
 }

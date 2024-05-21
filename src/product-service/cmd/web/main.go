@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"go-micro-services/src/product-service/container"
-	"net/http"
+	"log"
+	"net"
 )
 
 func main() {
@@ -16,9 +17,12 @@ func main() {
 		"0.0.0.0",
 		webContainer.Env.App.Port,
 	)
-	listenAndServeErr := http.ListenAndServe(address, webContainer.Route.Router)
-	if listenAndServeErr != nil {
-		panic(listenAndServeErr)
+	netListen, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatalf("failed to listen %v", err)
+	}
+	if err := webContainer.Grpc.Serve(netListen); err != nil {
+		log.Fatalf("failed to serve %v", err.Error())
 	}
 	fmt.Println("Product Services finished.")
 }

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"go-micro-services/src/product-service/entity"
+	"go-micro-services/src/product-service/delivery/grpc/pb"
 	model_response "go-micro-services/src/product-service/model/response"
 )
 
@@ -12,7 +12,7 @@ func NewProductRepository() *ProductRepository {
 	productRepository := &ProductRepository{}
 	return productRepository
 }
-func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreateproduct *entity.Product) (result *entity.Product, err error) {
+func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreateproduct *pb.Product) (result *pb.Product, err error) {
 	_, queryErr := begin.Query(
 		`INSERT INTO "products" (id, sku, name, stock, price, category_id, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
 		toCreateproduct.Id,
@@ -36,10 +36,10 @@ func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreat
 	return result, err
 }
 
-func DeserializeProductRows(rows *sql.Rows) []*entity.Product {
-	var foundProducts []*entity.Product
+func DeserializeProductRows(rows *sql.Rows) []*pb.Product {
+	var foundProducts []*pb.Product
 	for rows.Next() {
-		foundProduct := &entity.Product{}
+		foundProduct := &pb.Product{}
 		scanErr := rows.Scan(
 			&foundProduct.Id,
 			&foundProduct.Sku,
@@ -59,7 +59,7 @@ func DeserializeProductRows(rows *sql.Rows) []*entity.Product {
 	return foundProducts
 }
 
-func (productRepository ProductRepository) GetProductById(tx *sql.Tx, id string) (result *entity.Product, err error) {
+func (productRepository ProductRepository) GetProductById(tx *sql.Tx, id string) (result *pb.Product, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
@@ -85,7 +85,7 @@ func (productRepository ProductRepository) GetProductById(tx *sql.Tx, id string)
 	return result, err
 }
 
-func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id string, toPatchProduct *entity.Product) (result *entity.Product, err error) {
+func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id string, toPatchProduct *pb.Product) (result *pb.Product, err error) {
 	rows, queryErr := begin.Query(
 		`UPDATE "products" SET name=$1,  stock=$2, price=$3, updated_at=$4 WHERE id = $5 ;`,
 		toPatchProduct.Name,
@@ -107,7 +107,7 @@ func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id strin
 	return result, err
 }
 
-func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result *model_response.Response[[]*entity.Product], err error) {
+func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result *model_response.Response[[]*pb.Product], err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -121,9 +121,9 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 
 	}
 	defer rows.Close()
-	var products []*entity.Product
+	var products []*pb.Product
 	for rows.Next() {
-		product := &entity.Product{}
+		product := &pb.Product{}
 		scanErr := rows.Scan(
 			&product.Id,
 			&product.Name,
@@ -143,14 +143,14 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 		products = append(products, product)
 	}
 
-	result = &model_response.Response[[]*entity.Product]{
+	result = &model_response.Response[[]*pb.Product]{
 		Data: products,
 	}
 	err = nil
 	return result, err
 }
 
-func (productRepository *ProductRepository) DeleteOneById(begin *sql.Tx, id string) (result *entity.Product, err error) {
+func (productRepository *ProductRepository) DeleteOneById(begin *sql.Tx, id string) (result *pb.Product, err error) {
 	rows, queryErr := begin.Query(
 		`DELETE FROM "products" WHERE id=$1 RETURNING id, name, sku, stock, price, category_id, created_at, updated_at, deleted_at`,
 		id,
