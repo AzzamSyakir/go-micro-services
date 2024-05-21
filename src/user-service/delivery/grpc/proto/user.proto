@@ -7,8 +7,8 @@ option go_package = "pb/";
 
 
 service UserService{
-  rpc GetOneById(ById) returns (UserResponse);
-  rpc GetOneByEmail(ByEmail) returns (UserResponse);
+  rpc GetUserById(ById) returns (UserResponse);
+  rpc GetUserByEmail(ByEmail) returns (UserResponse);
   rpc UpdateUser(Update) returns (UserResponse);
   rpc CreateUser(Create) returns (UserResponse);
   rpc DeleteUser(ById) returns (UserResponse);

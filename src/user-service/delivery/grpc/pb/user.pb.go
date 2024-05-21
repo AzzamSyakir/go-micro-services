@@ -656,14 +656,14 @@ var file_user_proto_depIdxs = []int32{
 	8,  // 2: go_micro_services.User.deleted_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: go_micro_services.UserResponse.data:type_name -> go_micro_services.User
 	0,  // 4: go_micro_services.UserResponseRepeated.data:type_name -> go_micro_services.User
-	1,  // 5: go_micro_services.UserService.GetOneById:input_type -> go_micro_services.ById
-	2,  // 6: go_micro_services.UserService.GetOneByEmail:input_type -> go_micro_services.ByEmail
+	1,  // 5: go_micro_services.UserService.GetUserById:input_type -> go_micro_services.ById
+	2,  // 6: go_micro_services.UserService.GetUserByEmail:input_type -> go_micro_services.ByEmail
 	6,  // 7: go_micro_services.UserService.UpdateUser:input_type -> go_micro_services.Update
 	7,  // 8: go_micro_services.UserService.CreateUser:input_type -> go_micro_services.Create
 	1,  // 9: go_micro_services.UserService.DeleteUser:input_type -> go_micro_services.ById
 	3,  // 10: go_micro_services.UserService.ListUsers:input_type -> go_micro_services.empty
-	4,  // 11: go_micro_services.UserService.GetOneById:output_type -> go_micro_services.UserResponse
-	4,  // 12: go_micro_services.UserService.GetOneByEmail:output_type -> go_micro_services.UserResponse
+	4,  // 11: go_micro_services.UserService.GetUserById:output_type -> go_micro_services.UserResponse
+	4,  // 12: go_micro_services.UserService.GetUserByEmail:output_type -> go_micro_services.UserResponse
 	4,  // 13: go_micro_services.UserService.UpdateUser:output_type -> go_micro_services.UserResponse
 	4,  // 14: go_micro_services.UserService.CreateUser:output_type -> go_micro_services.UserResponse
 	4,  // 15: go_micro_services.UserService.DeleteUser:output_type -> go_micro_services.UserResponse

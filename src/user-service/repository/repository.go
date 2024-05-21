@@ -109,7 +109,7 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *pb.UserRe
 	return result, err
 }
 
-func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (result *pb.User, err error) {
+func (userRepository *UserRepository) GetUserById(begin *sql.Tx, id string) (result *pb.User, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -136,7 +136,7 @@ func (userRepository *UserRepository) GetOneById(begin *sql.Tx, id string) (resu
 	return result, err
 }
 
-func (userRepository *UserRepository) GetOneByEmail(begin *sql.Tx, email string) (result *pb.User, err error) {
+func (userRepository *UserRepository) GetUserByEmail(begin *sql.Tx, email string) (result *pb.User, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(

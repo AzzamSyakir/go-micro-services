@@ -33,21 +33,21 @@ func NewUserUseCase(
 	}
 }
 
-func (userUseCase *UserUseCase) GetOneById(context context.Context, id *pb.ById) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) GetUserById(context context.Context, id *pb.ById) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUseCase GetOneById is failed, begin fail, " + err.Error(),
+			Message: "UserUseCase GetUserById is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback
 	}
-	GetOneById, GetOneByIdErr := userUseCase.UserRepository.GetOneById(begin, id.Id)
-	if GetOneByIdErr != nil {
+	GetUserById, GetUserByIdErr := userUseCase.UserRepository.GetUserById(begin, id.Id)
+	if GetUserByIdErr != nil {
 		rollback := begin.Rollback()
-		errorMessage := fmt.Sprintf("UserUseCase GetOneById is failed, GetUser failed : %s", GetOneByIdErr)
+		errorMessage := fmt.Sprintf("UserUseCase GetUserById is failed, GetUserById failed : %s", GetUserByIdErr)
 		result = &pb.UserResponse{
 			Code:    http.StatusBadRequest,
 			Message: errorMessage,
@@ -55,7 +55,7 @@ func (userUseCase *UserUseCase) GetOneById(context context.Context, id *pb.ById)
 		}
 		return result, rollback
 	}
-	if GetOneById == nil {
+	if GetUserById == nil {
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, User is not found by id %s", id)
 		result = &pb.UserResponse{
@@ -69,25 +69,25 @@ func (userUseCase *UserUseCase) GetOneById(context context.Context, id *pb.ById)
 	result = &pb.UserResponse{
 		Code:    http.StatusOK,
 		Message: "User UseCase FindOneById is succeed.",
-		Data:    GetOneById,
+		Data:    GetUserById,
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) GetOneByEmail(context context.Context, email *pb.ByEmail) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) GetUserByEmail(context context.Context, email *pb.ByEmail) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
 			Code:    http.StatusInternalServerError,
-			Message: "UserUseCase GetOneByEmail is failed, begin fail, " + err.Error(),
+			Message: "UserUseCase GetUserByEmail is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback
 	}
-	GetOneByEmail, GetOneByEmailErr := userUseCase.UserRepository.GetOneByEmail(begin, email.Email)
-	if GetOneByEmailErr != nil {
+	GetUserByEmail, GetUserByEmailErr := userUseCase.UserRepository.GetUserByEmail(begin, email.Email)
+	if GetUserByEmailErr != nil {
 		rollback := begin.Rollback()
-		errorMessage := fmt.Sprintf("UserUseCase GetOneByEmail is failed, GetUser failed : %s", GetOneByEmailErr)
+		errorMessage := fmt.Sprintf("UserUseCase GetUserByEmail is failed, GetUserById failed : %s", GetUserByEmailErr)
 		result = &pb.UserResponse{
 			Code:    http.StatusBadRequest,
 			Message: errorMessage,
@@ -95,7 +95,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(context context.Context, email *pb
 		}
 		return result, rollback
 	}
-	if GetOneByEmail == nil {
+	if GetUserByEmail == nil {
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("User UseCase FindOneByemail is failed, User is not found by email %s", email)
 		result = &pb.UserResponse{
@@ -109,7 +109,7 @@ func (userUseCase *UserUseCase) GetOneByEmail(context context.Context, email *pb
 	result = &pb.UserResponse{
 		Code:    http.StatusOK,
 		Message: "User UseCase FindOneById is succeed.",
-		Data:    GetOneByEmail,
+		Data:    GetUserByEmail,
 	}
 	return result, commit
 }
@@ -125,7 +125,7 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 		return result, rollback
 	}
 
-	foundUser, err := userUseCase.UserRepository.GetOneById(begin, request.Id)
+	foundUser, err := userUseCase.UserRepository.GetUserById(begin, request.Id)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
