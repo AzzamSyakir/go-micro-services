@@ -90,7 +90,7 @@ func (productUseCase *ProductUseCase) CreateProduct(request *model_request.Creat
 	return result, commit
 }
 
-func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_response.Response[*entity.Product], err error) {
+func (productUseCase *ProductUseCase) GetProductById(id string) (result *model_response.Response[*entity.Product], err error) {
 	begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -102,7 +102,7 @@ func (productUseCase *ProductUseCase) GetOneById(id string) (result *model_respo
 
 		return result, rollback
 	}
-	productFound, err := productUseCase.ProductRepository.GetOneById(begin, id)
+	productFound, err := productUseCase.ProductRepository.GetProductById(begin, id)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Product]{
@@ -144,7 +144,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(id string, request *model_re
 		return result, rollback
 	}
 
-	foundProduct, err := productUseCase.ProductRepository.GetOneById(begin, id)
+	foundProduct, err := productUseCase.ProductRepository.GetProductById(begin, id)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Product]{

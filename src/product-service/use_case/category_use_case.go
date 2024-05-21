@@ -71,7 +71,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(request *model_request.Ca
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_response.Response[*entity.Category], err error) {
+func (categoryUseCase *CategoryUseCase) GetProductById(id string) (result *model_response.Response[*entity.Category], err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -83,7 +83,7 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 
 		return result, rollback
 	}
-	categoryFound, err := categoryUseCase.CategoryRepository.GetOneById(begin, id)
+	categoryFound, err := categoryUseCase.CategoryRepository.GetProductById(begin, id)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Category]{
@@ -107,7 +107,7 @@ func (categoryUseCase *CategoryUseCase) GetOneById(id string) (result *model_res
 	commit := begin.Commit()
 	result = &model_response.Response[*entity.Category]{
 		Code:    http.StatusOK,
-		Message: "CategoryUseCase GetOneById is succeed.",
+		Message: "CategoryUseCase GetProductById is succeed.",
 		Data:    categoryFound,
 	}
 
@@ -126,7 +126,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(id string, request *model
 		}
 		return result, rollback
 	}
-	foundCategory, err := categoryUseCase.CategoryRepository.GetOneById(begin, id)
+	foundCategory, err := categoryUseCase.CategoryRepository.GetProductById(begin, id)
 	if err != nil {
 		begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 		if err != nil {

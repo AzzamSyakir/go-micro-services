@@ -1,0 +1,58 @@
+syntax = "proto3";
+package  go_micro_services;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pb/";
+
+
+service ProductService{
+  rpc GetProductById(ById) returns (ProductResponse);
+  rpc UpdateProduct(Update) returns (ProductResponse);
+  rpc CreateProduct(Create) returns (ProductResponse);
+  rpc DeleteProduct(ById) returns (ProductResponse);
+  rpc ListProducts(empty) returns (ProductResponseRepeated);
+}
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+  int64 balance = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  google.protobuf.Timestamp deleted_at = 8;
+}
+
+message ById {
+  string id=1;
+}
+message ByEmail {
+  string email=1;
+}
+message empty {}
+
+message ProductResponse{
+  int64 code=1;
+  string message=2;
+  Product data=3;
+}
+message ProductResponseRepeated{
+  int64 code=1;
+  string message=2;
+  repeated Product data=3;
+}
+message Update{
+  string id=1;
+  optional string name=2;
+  optional string email=3;
+  optional string password=4;
+  optional int64 balance=5;
+}
+message Create{
+  string name=1;
+  int64 balance=2;
+  string email=3;
+  string password=4;
+}

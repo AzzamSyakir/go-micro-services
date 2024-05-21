@@ -23,7 +23,7 @@ func NewProductController(productUseCase *use_case.ProductUseCase) *ProductContr
 func (ProductController *ProductController) GetProduct(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
-	foundProduct, _ := ProductController.ProductUseCase.GetOneById(id)
+	foundProduct, _ := ProductController.ProductUseCase.GetProductById(id)
 	response.NewResponse(writer, foundProduct)
 }
 func (ProductController *ProductController) UpdateProduct(writer http.ResponseWriter, reader *http.Request) {

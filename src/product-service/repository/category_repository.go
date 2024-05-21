@@ -51,7 +51,7 @@ func DeserializeCategoryRows(rows *sql.Rows) []*entity.Category {
 	return foundCategories
 }
 
-func (categoryRepository CategoryRepository) GetOneById(tx *sql.Tx, id string) (result *entity.Category, err error) {
+func (categoryRepository CategoryRepository) GetProductById(tx *sql.Tx, id string) (result *entity.Category, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(

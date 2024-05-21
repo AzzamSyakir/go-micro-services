@@ -23,7 +23,7 @@ func NewCategoryController(categoryUseCase *use_case.CategoryUseCase) *CategoryC
 func (categoryController *CategoryController) GetCategory(writer http.ResponseWriter, reader *http.Request) {
 	vars := mux.Vars(reader)
 	id := vars["id"]
-	foundCategory, _ := categoryController.CategoryUseCase.GetOneById(id)
+	foundCategory, _ := categoryController.CategoryUseCase.GetProductById(id)
 	response.NewResponse(writer, foundCategory)
 
 }

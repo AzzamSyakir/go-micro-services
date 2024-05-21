@@ -28,4 +28,7 @@ start-test:
 
 generate-proto-user:
 	protoc --proto_path=src/user-service/delivery/grpc/proto src/user-service/delivery/grpc/proto/*.proto --go_out=src/user-service/delivery/grpc --go-grpc_out=src/user-service/delivery/grpc
+
+generate-proto-product:
+	protoc --proto_path=src/product-service/delivery/grpc/proto src/product-service/delivery/grpc/proto/*.proto --go_out=src/product-service/delivery/grpc --go-grpc_out=src/product-service/delivery/grpc
 	 

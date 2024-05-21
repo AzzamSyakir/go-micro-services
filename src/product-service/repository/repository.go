@@ -59,7 +59,7 @@ func DeserializeProductRows(rows *sql.Rows) []*entity.Product {
 	return foundProducts
 }
 
-func (productRepository ProductRepository) GetOneById(tx *sql.Tx, id string) (result *entity.Product, err error) {
+func (productRepository ProductRepository) GetProductById(tx *sql.Tx, id string) (result *entity.Product, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
