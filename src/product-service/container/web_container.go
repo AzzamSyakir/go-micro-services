@@ -3,7 +3,8 @@ package container
 import (
 	"fmt"
 	"go-micro-services/src/product-service/config"
-	"go-micro-services/src/product-service/delivery/grpc/pb"
+	categoryPb "go-micro-services/src/product-service/delivery/grpc/pb/category"
+	productPb "go-micro-services/src/product-service/delivery/grpc/pb/product"
 	"go-micro-services/src/product-service/repository"
 	"go-micro-services/src/product-service/use_case"
 
@@ -38,7 +39,8 @@ func NewWebContainer() *WebContainer {
 
 	useCaseContainer := NewUseCaseContainer(productUseCase, categoryUseCase)
 	grpcServer := grpc.NewServer()
-	pb.RegisterProductServiceServer(grpcServer, productUseCase)
+	productPb.RegisterProductServiceServer(grpcServer, productUseCase)
+	categoryPb.RegisterCategoryServiceServer(grpcServer, categoryUseCase)
 
 	webContainer := &WebContainer{
 		Env:               envConfig,

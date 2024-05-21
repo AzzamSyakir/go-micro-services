@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-micro-services/src/product-service/config"
-	"go-micro-services/src/product-service/delivery/grpc/pb"
+	pb "go-micro-services/src/product-service/delivery/grpc/pb/product"
 	"go-micro-services/src/product-service/repository"
 	"math/rand"
 	"net/http"

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"go-micro-services/src/product-service/entity"
+	pb "go-micro-services/src/product-service/delivery/grpc/pb/category"
 	model_response "go-micro-services/src/product-service/model/response"
 )
 
@@ -12,7 +12,7 @@ func NewCategoryRepository() *CategoryRepository {
 	categoryRepository := &CategoryRepository{}
 	return categoryRepository
 }
-func (CategoryRepository *CategoryRepository) CreateCategory(begin *sql.Tx, toCreateCategory *entity.Category) (result *entity.Category, err error) {
+func (CategoryRepository *CategoryRepository) CreateCategory(begin *sql.Tx, toCreateCategory *pb.Category) (result *pb.Category, err error) {
 	_, queryErr := begin.Query(
 		`INSERT INTO "categories" (id, name, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5);`,
 		toCreateCategory.Id,
@@ -32,10 +32,10 @@ func (CategoryRepository *CategoryRepository) CreateCategory(begin *sql.Tx, toCr
 	return result, err
 }
 
-func DeserializeCategoryRows(rows *sql.Rows) []*entity.Category {
-	var foundCategories []*entity.Category
+func DeserializeCategoryRows(rows *sql.Rows) []*pb.Category {
+	var foundCategories []*pb.Category
 	for rows.Next() {
-		foundCategory := &entity.Category{}
+		foundCategory := &pb.Category{}
 		scanErr := rows.Scan(
 			&foundCategory.Id,
 			&foundCategory.Name,
@@ -51,7 +51,7 @@ func DeserializeCategoryRows(rows *sql.Rows) []*entity.Category {
 	return foundCategories
 }
 
-func (categoryRepository CategoryRepository) GetProductById(tx *sql.Tx, id string) (result *entity.Category, err error) {
+func (categoryRepository CategoryRepository) GetProductById(tx *sql.Tx, id string) (result *pb.Category, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
@@ -77,7 +77,7 @@ func (categoryRepository CategoryRepository) GetProductById(tx *sql.Tx, id strin
 	return result, err
 }
 
-func (categoryRepository *CategoryRepository) PatchOneById(begin *sql.Tx, id string, toPatchCategory *entity.Category) (result *entity.Category, err error) {
+func (categoryRepository *CategoryRepository) PatchOneById(begin *sql.Tx, id string, toPatchCategory *pb.Category) (result *pb.Category, err error) {
 	rows, queryErr := begin.Query(
 		`UPDATE "categories" SET name=$1, updated_at=$2 WHERE id = $3 ;`,
 		toPatchCategory.Name,
@@ -97,7 +97,7 @@ func (categoryRepository *CategoryRepository) PatchOneById(begin *sql.Tx, id str
 	return result, err
 }
 
-func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (result *model_response.Response[[]*entity.Category], err error) {
+func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (result *model_response.Response[[]*pb.Category], err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -111,9 +111,9 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 
 	}
 	defer rows.Close()
-	var categories []*entity.Category
+	var categories []*pb.Category
 	for rows.Next() {
-		category := &entity.Category{}
+		category := &pb.Category{}
 		scanErr := rows.Scan(
 			&category.Id,
 			&category.Name,
@@ -129,14 +129,14 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 		categories = append(categories, category)
 	}
 
-	result = &model_response.Response[[]*entity.Category]{
+	result = &model_response.Response[[]*pb.Category]{
 		Data: categories,
 	}
 	err = nil
 	return result, err
 }
 
-func (CategoryRepository *CategoryRepository) DeleteOneById(begin *sql.Tx, id string) (result *entity.Category, err error) {
+func (CategoryRepository *CategoryRepository) DeleteOneById(begin *sql.Tx, id string) (result *pb.Category, err error) {
 	rows, queryErr := begin.Query(
 		`DELETE FROM "categories" WHERE id=$1 RETURNING id, name, created_at, updated_at, deleted_at`,
 		id,

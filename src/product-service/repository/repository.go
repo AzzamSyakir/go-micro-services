@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"go-micro-services/src/product-service/delivery/grpc/pb"
+	pb "go-micro-services/src/product-service/delivery/grpc/pb/product"
 	model_response "go-micro-services/src/product-service/model/response"
 )
 
