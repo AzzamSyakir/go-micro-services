@@ -5,8 +5,9 @@ import (
 	"go-micro-services/src/product-service/config"
 	pb "go-micro-services/src/product-service/delivery/grpc/pb/category"
 	"go-micro-services/src/product-service/repository"
-	"net/http"
 	"time"
+
+	"google.golang.org/grpc/codes"
 
 	"github.com/google/uuid"
 	"github.com/guregu/null"
@@ -36,7 +37,7 @@ func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id 
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "CategoryUseCase GetCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -47,7 +48,7 @@ func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id 
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase GetCategory is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -57,7 +58,7 @@ func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id 
 	rollback := begin.Rollback()
 	if categoryFound == nil {
 		result = &pb.CategoryResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase GetCategory is failed, category not found by id, " + id.Id,
 			Data:    nil,
 		}
@@ -66,7 +67,7 @@ func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id 
 	}
 	commit := begin.Commit()
 	result = &pb.CategoryResponse{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "CategoryUseCase GetProductById is succeed.",
 		Data:    categoryFound,
 	}
@@ -80,7 +81,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "CategoryUseCase UpdateCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -92,7 +93,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &pb.CategoryResponse{
-				Code:    http.StatusBadRequest,
+				Code:    int64(codes.Canceled),
 				Message: "CategoryUseCase UpdateCategory is failed, query to db fail, " + err.Error(),
 				Data:    nil,
 			}
@@ -102,7 +103,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 	if foundCategory == nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase Update Category is failed, category is not found by id, " + request.Id,
 			Data:    nil,
 		}
@@ -120,7 +121,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &pb.CategoryResponse{
-				Code:    http.StatusCreated,
+				Code:    int64(codes.OK),
 				Message: "CategoryUseCase UpdateCategory is failed, query to db fail, " + err.Error(),
 				Data:    nil,
 			}
@@ -130,7 +131,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 
 	commit := begin.Commit()
 	result = &pb.CategoryResponse{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "CategoryUseCase UpdateCategory is succeed.",
 		Data:    patchedcategory,
 	}
@@ -143,7 +144,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, requ
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "CategoryUseCase AddCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -163,7 +164,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, requ
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase AddCategory is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -172,7 +173,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, requ
 
 	commit := begin.Commit()
 	result = &pb.CategoryResponse{
-		Code:    http.StatusCreated,
+		Code:    int64(codes.Canceled),
 		Message: "CategoryUseCase Register is succeed.",
 		Data:    createdCategory,
 	}
@@ -184,7 +185,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "CategoryUseCase DeleteCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -195,7 +196,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase DeleteCategory is failed, Query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -204,7 +205,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *
 	if deletedcategory == nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase DeleteCategory is failed, category is not deleted by id , " + id.Id,
 			Data:    nil,
 		}
@@ -213,7 +214,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *
 
 	commit := begin.Commit()
 	result = &pb.CategoryResponse{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "CategoryUseCase DeleteCategory is succed.",
 		Data:    deletedcategory,
 	}
@@ -225,7 +226,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *pb.CategoryRes
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponseRepeated{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "CategoryUseCase ListCategory is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -236,7 +237,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *pb.CategoryRes
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponseRepeated{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase ListCategory is failed, Query to db, " + err.Error(),
 			Data:    nil,
 		}
@@ -246,7 +247,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *pb.CategoryRes
 	if listCategories.Data == nil {
 		rollback := begin.Rollback()
 		result = &pb.CategoryResponseRepeated{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase UpdateCategory is failed, Category is empty, ",
 			Data:    nil,
 		}
@@ -254,7 +255,7 @@ func (categoryUseCase *CategoryUseCase) ListCategories() (result *pb.CategoryRes
 	}
 	commit := begin.Commit()
 	result = &pb.CategoryResponseRepeated{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "CategoryUseCase ListCategory is Succed, ",
 		Data:    listCategories.Data,
 	}

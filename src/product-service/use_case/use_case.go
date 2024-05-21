@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/guregu/null"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -39,7 +40,7 @@ func (productUseCase *ProductUseCase) GetProductById(ctx context.Context, id *pb
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "product-service UseCase, DetailProduct, begin failed, " + err.Error(),
 			Data:    nil,
 		}
@@ -50,7 +51,7 @@ func (productUseCase *ProductUseCase) GetProductById(ctx context.Context, id *pb
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "product-service UseCase, DetailProduct is failed, GetProduct failed, " + err.Error(),
 			Data:    nil,
 		}
@@ -59,7 +60,7 @@ func (productUseCase *ProductUseCase) GetProductById(ctx context.Context, id *pb
 	if productFound == nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "product-service UseCase, DetailProduct is failed, product is not found by id" + id.Id,
 			Data:    nil,
 		}
@@ -68,7 +69,7 @@ func (productUseCase *ProductUseCase) GetProductById(ctx context.Context, id *pb
 
 	commit := begin.Commit()
 	result = &pb.ProductResponse{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "product-service UseCase, DetailProduct is succeed.",
 		Data:    productFound,
 	}
@@ -81,7 +82,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "product-service UseCase, UpdateProduct fail begin is failed," + err.Error(),
 			Data:    nil,
 		}
@@ -92,7 +93,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "product-service UseCase Update Product is failed, product is not found by id" + request.Id,
 			Data:    nil,
 		}
@@ -101,7 +102,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request
 	if foundProduct == nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "product-service UseCase Update Product is failed, product is not found by id, " + request.Id,
 			Data:    nil,
 		}
@@ -126,7 +127,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "product-service UseCase, Query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -135,7 +136,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request
 
 	commit := begin.Commit()
 	result = &pb.ProductResponse{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "product-service UseCase Update Product is succes.",
 		Data:    patchedProduct,
 	}
@@ -147,7 +148,7 @@ func (productUseCase *ProductUseCase) CreateProduct(ctx context.Context, request
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "ProductUseCase CreateProduct is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -156,7 +157,7 @@ func (productUseCase *ProductUseCase) CreateProduct(ctx context.Context, request
 	if request.Name == "" || request.Price == 0 || request.Stock == 0 {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "ProductUseCase CreateProduct is failed, Please input data correctly, data cannot be empty",
 			Data:    nil,
 		}
@@ -184,7 +185,7 @@ func (productUseCase *ProductUseCase) CreateProduct(ctx context.Context, request
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "ProductUseCase CreateProduct is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -204,7 +205,7 @@ func (productUseCase *ProductUseCase) DeleteProduct(ctx context.Context, id *pb.
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "product-service UseCase, DeleteProduct is failed, " + err.Error(),
 			Data:    nil,
 		}
@@ -214,7 +215,7 @@ func (productUseCase *ProductUseCase) DeleteProduct(ctx context.Context, id *pb.
 	if deletedproductErr != nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "product-service UseCase, DeleteProduct is failed, " + deletedproductErr.Error(),
 			Data:    nil,
 		}
@@ -223,7 +224,7 @@ func (productUseCase *ProductUseCase) DeleteProduct(ctx context.Context, id *pb.
 	if deletedproduct == nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "product-service UseCase, DeleteProduct is failed, product is not deleted by id, " + id.Id,
 			Data:    nil,
 		}
@@ -231,7 +232,7 @@ func (productUseCase *ProductUseCase) DeleteProduct(ctx context.Context, id *pb.
 	}
 	rollback := begin.Commit()
 	result = &pb.ProductResponse{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "product-service UseCase DeleteProduct is succeed.",
 		Data:    deletedproduct,
 	}
@@ -244,7 +245,7 @@ func (productUseCase *ProductUseCase) ListProducts(context.Context, *pb.Empty) (
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("begin failed :%s", beginErr)
 		result = &pb.ProductResponseRepeated{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -256,7 +257,7 @@ func (productUseCase *ProductUseCase) ListProducts(context.Context, *pb.Empty) (
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("product-service UseCase, ListProduct is failed, Getproduct failed : %s", fetchproductErr)
 		result = &pb.ProductResponseRepeated{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -266,7 +267,7 @@ func (productUseCase *ProductUseCase) ListProducts(context.Context, *pb.Empty) (
 	if fetchproduct.Data == nil {
 		rollback := begin.Rollback()
 		result = &pb.ProductResponseRepeated{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "product-service UseCase, ListProduct is failed, data product is empty ",
 			Data:    nil,
 		}
@@ -274,7 +275,7 @@ func (productUseCase *ProductUseCase) ListProducts(context.Context, *pb.Empty) (
 	}
 	commit := begin.Commit()
 	result = &pb.ProductResponseRepeated{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "product-service UseCase, ListProduct is succeed.",
 		Data:    fetchproduct.Data,
 	}
