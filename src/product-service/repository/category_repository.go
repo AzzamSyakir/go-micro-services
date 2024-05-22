@@ -17,9 +17,9 @@ func (CategoryRepository *CategoryRepository) CreateCategory(begin *sql.Tx, toCr
 		`INSERT INTO "categories" (id, name, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5);`,
 		toCreateCategory.Id,
 		toCreateCategory.Name,
-		toCreateCategory.CreatedAt,
-		toCreateCategory.UpdatedAt,
-		toCreateCategory.DeletedAt,
+		toCreateCategory.CreatedAt.AsTime(),
+		toCreateCategory.UpdatedAt.AsTime(),
+		toCreateCategory.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil

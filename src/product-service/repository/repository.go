@@ -21,9 +21,9 @@ func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreat
 		toCreateproduct.Stock,
 		toCreateproduct.Price,
 		toCreateproduct.CategoryId,
-		toCreateproduct.CreatedAt,
-		toCreateproduct.UpdatedAt,
-		toCreateproduct.DeletedAt,
+		toCreateproduct.CreatedAt.AsTime(),
+		toCreateproduct.UpdatedAt.AsTime(),
+		toCreateproduct.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil
