@@ -91,7 +91,7 @@ func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id strin
 		toPatchProduct.Name,
 		toPatchProduct.Stock,
 		toPatchProduct.Price,
-		toPatchProduct.UpdatedAt,
+		toPatchProduct.UpdatedAt.AsTime(),
 		id,
 	)
 

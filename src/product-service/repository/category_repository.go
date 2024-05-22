@@ -81,7 +81,7 @@ func (categoryRepository *CategoryRepository) PatchOneById(begin *sql.Tx, id str
 	rows, queryErr := begin.Query(
 		`UPDATE "categories" SET name=$1, updated_at=$2 WHERE id = $3 ;`,
 		toPatchCategory.Name,
-		toPatchCategory.UpdatedAt,
+		toPatchCategory.UpdatedAt.AsTime(),
 		id,
 	)
 
