@@ -2,9 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
-	"go-micro-services/src/order-service/entity"
-	model_response "go-micro-services/src/order-service/model/response"
+	"go-micro-services/src/order-service/delivery/grpc/pb"
 )
 
 type OrderRepository struct{}
@@ -13,10 +11,10 @@ func NewOrderRepository() *OrderRepository {
 	orderRepository := &OrderRepository{}
 	return orderRepository
 }
-func DeserializeOrderRows(rows *sql.Rows) []*model_response.OrderResponse {
-	var foundOrders []*model_response.OrderResponse
+func DeserializeOrderRows(rows *sql.Rows) []*pb.Order {
+	var foundOrders []*pb.Order
 	for rows.Next() {
-		foundOrder := &model_response.OrderResponse{}
+		foundOrder := &pb.Order{}
 		scanErr := rows.Scan(
 			&foundOrder.Id,
 			&foundOrder.UserId,
@@ -35,10 +33,10 @@ func DeserializeOrderRows(rows *sql.Rows) []*model_response.OrderResponse {
 	}
 	return foundOrders
 }
-func DeserializeOrderProductRows(rows *sql.Rows) []*entity.OrderProducts {
-	var foundOrders []*entity.OrderProducts
+func DeserializeOrderProductRows(rows *sql.Rows) []*pb.OrderProduct {
+	var foundOrders []*pb.OrderProduct
 	for rows.Next() {
-		foundOrder := &entity.OrderProducts{}
+		foundOrder := &pb.OrderProduct{}
 		scanErr := rows.Scan(
 			&foundOrder.Id,
 			&foundOrder.OrderId,
@@ -57,7 +55,7 @@ func DeserializeOrderProductRows(rows *sql.Rows) []*entity.OrderProducts {
 	return foundOrders
 }
 
-func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *model_response.Response[[]*model_response.OrderResponse], err error) {
+func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *pb.OrderResponseRepeated, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -71,9 +69,9 @@ func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *model
 
 	}
 	defer rows.Close()
-	var orders []*model_response.OrderResponse
+	var orders []*pb.Order
 	for rows.Next() {
-		order := &model_response.OrderResponse{}
+		order := &pb.Order{}
 		scanErr := rows.Scan(
 			&order.Id,
 			&order.UserId,
@@ -93,14 +91,14 @@ func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *model
 		orders = append(orders, order)
 	}
 
-	result = &model_response.Response[[]*model_response.OrderResponse]{
+	result = &pb.OrderResponseRepeated{
 		Data: orders,
 	}
 	err = nil
 	return result, err
 }
 
-func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Order) (result *model_response.Response[*model_response.OrderResponse], err error) {
+func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *pb.Order) (result *pb.OrderResponse, err error) {
 	rows, queryErr := begin.Query(
 		`INSERT INTO "orders"(id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 		orders.Id,
@@ -125,7 +123,7 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 		}
 	}(rows)
 
-	ordersResponse := &model_response.OrderResponse{
+	ordersResponse := &pb.Order{
 		Id:          orders.Id,
 		UserId:      orders.UserId,
 		TotalPrice:  orders.TotalPrice,
@@ -135,14 +133,14 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *entity.Orde
 		CreatedAt:   orders.CreatedAt,
 		UpdatedAt:   orders.UpdatedAt,
 	}
-	result = &model_response.Response[*model_response.OrderResponse]{
+	result = &pb.OrderResponse{
 		Data: ordersResponse,
 	}
 	err = nil
 	return result, err
 }
 
-func (orderRepository OrderRepository) DetailOrder(tx *sql.Tx, id string) (result *model_response.OrderResponse, err error) {
+func (orderRepository OrderRepository) DetailOrder(tx *sql.Tx, id string) (result *pb.Order, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
@@ -168,7 +166,7 @@ func (orderRepository OrderRepository) DetailOrder(tx *sql.Tx, id string) (resul
 	return result, err
 }
 
-func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProducts *entity.OrderProducts) (result *entity.OrderProducts, err error) {
+func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProducts *pb.OrderProduct) (result *pb.OrderProduct, err error) {
 	rows, queryErr := begin.Query(
 		`INSERT INTO "order_products"(id, order_id, product_id, total_price, qty, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		orderProducts.Id,
@@ -181,7 +179,6 @@ func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProduc
 		orderProducts.DeletedAt,
 	)
 	if queryErr != nil {
-		fmt.Println("queryErr : ", queryErr)
 		result = nil
 		err = queryErr
 		return
@@ -199,7 +196,7 @@ func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProduc
 	return result, err
 }
 
-func (orderRepository *OrderRepository) GetOrderProductsByOrderId(tx *sql.Tx, order_id string) (result *model_response.Response[[]*entity.OrderProducts], err error) {
+func (orderRepository *OrderRepository) GetOrderProductsByOrderId(tx *sql.Tx, order_id string) (result *pb.OrderProductResponse, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
@@ -214,9 +211,9 @@ func (orderRepository *OrderRepository) GetOrderProductsByOrderId(tx *sql.Tx, or
 
 	}
 	defer rows.Close()
-	var fetchOrderProducts []*entity.OrderProducts
+	var fetchOrderProducts []*pb.OrderProduct
 	for rows.Next() {
-		fetchOrderProduct := &entity.OrderProducts{}
+		fetchOrderProduct := &pb.OrderProduct{}
 		scanErr := rows.Scan(
 			&fetchOrderProduct.Id,
 			&fetchOrderProduct.OrderId,
@@ -235,7 +232,7 @@ func (orderRepository *OrderRepository) GetOrderProductsByOrderId(tx *sql.Tx, or
 		fetchOrderProducts = append(fetchOrderProducts, fetchOrderProduct)
 	}
 
-	result = &model_response.Response[[]*entity.OrderProducts]{
+	result = &pb.OrderProductResponse{
 		Data: fetchOrderProducts,
 	}
 	err = nil
