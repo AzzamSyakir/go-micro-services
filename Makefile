@@ -31,4 +31,7 @@ generate-proto-user:
 
 generate-proto-product:
 	clear && protoc --proto_path=src/product-service/delivery/grpc/proto src/product-service/delivery/grpc/proto/*.proto --go_out=src/product-service/delivery/grpc --go-grpc_out=src/product-service/delivery/grpc
+
+generate-proto-order:
+	clear && protoc --proto_path=src/order-service/delivery/grpc/proto src/order-service/delivery/grpc/proto/*.proto --go_out=src/order-service/delivery/grpc --go-grpc_out=src/order-service/delivery/grpc
 	 

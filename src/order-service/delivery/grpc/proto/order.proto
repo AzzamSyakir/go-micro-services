@@ -1,0 +1,62 @@
+syntax = "proto3";
+package  go_micro_services;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pb/";
+
+
+service OrderService{
+  rpc GetOrderById(ById) returns (OrderResponse);
+  rpc Order(Create) returns (OrderResponse);
+  rpc ListOrders(empty) returns (OrderResponseRepeated);
+}
+
+message Order {
+  string id = 1;
+  string user_id = 2;
+  string total_price = 3;
+  int64 total_paid = 4;
+  int64 total_return = 5;
+  string receipt_code =6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  google.protobuf.Timestamp deleted_at = 9;
+  repeated OrderProductResponse products=10;
+}
+
+message ById {
+  string id=1;
+}
+message empty {}
+
+message OrderResponse{
+  int64 code=1;
+  string message=2;
+  Order data=3;
+}
+message OrderResponseRepeated{
+  int64 code=1;
+  string message=2;
+  repeated Order data=3;
+}
+message Create{
+  int64 totalPaid=1;
+  repeated OrderProduct products=2;
+}
+message OrderProduct{
+  string product_id=2;
+  int64 qty=3;
+}
+message OrderProductResponse {
+  string id = 1;
+  string order_id = 2;
+  string product_id = 3;
+  int64 qty = 4;
+  int64 price = 5;
+  int64 total_normal_price = 6;
+  int64 total_final_price = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  google.protobuf.Timestamp deleted_at = 10;
+}
