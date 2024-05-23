@@ -2,7 +2,7 @@ package container
 
 import (
 	"fmt"
-	"go-micro-services/src/auth-service/delivery/http/route"
+	"go-micro-services/src/order-service/client"
 	"go-micro-services/src/order-service/config"
 	"go-micro-services/src/order-service/delivery/grpc/pb"
 	"go-micro-services/src/order-service/repository"
@@ -17,7 +17,6 @@ type WebContainer struct {
 	OrderDB    *config.DatabaseConfig
 	Repository *RepositoryContainer
 	UseCase    *UseCaseContainer
-	Route      *route.RootRoute
 	Grpc       *grpc.Server
 }
 
@@ -32,8 +31,19 @@ func NewWebContainer() *WebContainer {
 
 	orderRepository := repository.NewOrderRepository()
 	repositoryContainer := NewRepositoryContainer(orderRepository)
-
-	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository, envConfig)
+	userUrl := fmt.Sprintf(
+		"%s:%s",
+		"0.0.0.0",
+		envConfig.App.UserHost,
+	)
+	productUrl := fmt.Sprintf(
+		"%s:%s",
+		"0.0.0.0",
+		envConfig.App.ProductHost,
+	)
+	initUserClient := client.InitUserServiceClient(userUrl)
+	initProductClient := client.InitProductServiceClient(productUrl)
+	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository, envConfig, &initUserClient, &initProductClient)
 
 	useCaseContainer := NewUseCaseContainer(orderUseCase)
 	grpcServer := grpc.NewServer()
@@ -44,6 +54,7 @@ func NewWebContainer() *WebContainer {
 		OrderDB:    orderDBConfig,
 		Repository: repositoryContainer,
 		UseCase:    useCaseContainer,
+		Grpc:       grpcServer,
 	}
 
 	return webContainer

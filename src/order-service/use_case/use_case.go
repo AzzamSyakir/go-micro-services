@@ -1,19 +1,13 @@
 package use_case
 
 import (
-	"bytes"
 	"context"
-	"database/sql"
-	"encoding/json"
 	"fmt"
+	"go-micro-services/src/order-service/client"
 	"go-micro-services/src/order-service/config"
 	"go-micro-services/src/order-service/delivery/grpc/pb"
-	"go-micro-services/src/order-service/entity"
-	model_request "go-micro-services/src/order-service/model/request/controller"
-	model_response "go-micro-services/src/order-service/model/response"
 	"go-micro-services/src/order-service/repository"
 	"math/rand"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -28,11 +22,15 @@ type OrderUseCase struct {
 	DatabaseConfig  *config.DatabaseConfig
 	OrderRepository *repository.OrderRepository
 	Env             *config.EnvConfig
+	userClient      *client.UserServiceClient
+	productClient   *client.ProductServiceClient
 }
 
-func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *repository.OrderRepository, envConfig *config.EnvConfig) *OrderUseCase {
+func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *repository.OrderRepository, envConfig *config.EnvConfig, initUserClient *client.UserServiceClient, initProductClient *client.ProductServiceClient) *OrderUseCase {
 	OrderUseCase := &OrderUseCase{
 		UnimplementedOrderServiceServer: pb.UnimplementedOrderServiceServer{},
+		userClient:                      initUserClient,
+		productClient:                   initProductClient,
 		DatabaseConfig:                  databaseConfig,
 		OrderRepository:                 orderRepository,
 		Env:                             envConfig,
@@ -162,18 +160,18 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 	var totalOrderPrice int
 	for i, products := range request.Products {
 		productId := products.ProductId
-		product := orderUseCase.GetProduct(productId)
-		if product.Data == nil {
+		product, err := orderUseCase.productClient.GetProductById(productId)
+		if err != nil {
 			rollback := begin.Rollback()
 			result = &pb.OrderResponse{
 				Code:    int64(codes.Canceled),
-				Message: "Order-Service orderUseCase Order is failed, product  not found.",
+				Message: "Order-Service orderUseCase Order is failed, getProduct failed, " + err.Error(),
 				Data:    nil,
 			}
-
 			return result, rollback
 		}
-		if products.Qty > product.Data.Stock.Int64 {
+
+		if products.Qty > product.Data.Stock {
 			rollback := begin.Rollback()
 			result = &pb.OrderResponse{
 				Code:    int64(codes.Canceled),
@@ -182,26 +180,26 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 			}
 			return result, rollback
 		}
-		totalProductPrice := products.Qty * product.Data.Price.Int64
+		totalProductPrice := products.Qty * product.Data.Price
 		request.Products[i].TotalPrice = totalProductPrice
 		totalOrderPrice += int(totalProductPrice)
-		finalStock := product.Data.Stock.Int64 - products.Qty
-		orderUseCase.UpdateStock(productId, finalStock)
+		finalStock := product.Data.Stock - products.Qty
+		orderUseCase.productClient.UpdateProduct(productId, finalStock)
 	}
 	//  User
-	user := orderUseCase.GetUser(request.UserId)
-	if user.Data == nil {
+	user, err := orderUseCase.userClient.GetUserById(request.UserId)
+	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.OrderResponse{
 			Code:    int64(codes.Canceled),
-			Message: "Order-Service orderUseCase Order is failed, user not found.",
+			Message: "Order-Service orderUseCase Order is failed, GetUser fail, " + err.Error(),
 			Data:    nil,
 		}
 
 		return result, rollback
 	}
-	finalBalance := user.Data.Balance.Int64 - int64(totalOrderPrice)
-	orderUseCase.UpdateBalance(request.UserId, finalBalance)
+	finalBalance := user.Data.Balance - int64(totalOrderPrice)
+	orderUseCase.userClient.UpdateUser(request.UserId, finalBalance)
 	//    orders
 	if request.TotalPaid < int64(totalOrderPrice) {
 		rollback := begin.Rollback()
@@ -214,7 +212,7 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 		return result, rollback
 	}
 	totalReturn := request.TotalPaid - int64(totalOrderPrice)
-	firstLetter := strings.ToUpper(string(user.Data.Name.String[0]))
+	firstLetter := strings.ToUpper(string(user.Data.Name[0]))
 	rand.Seed(time.Now().UnixNano())
 	randomDigits := rand.Intn(900) + 100
 	receiptCode := fmt.Sprintf("%s%d", firstLetter, randomDigits)
@@ -244,14 +242,16 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 	//    orderProducts
 	var productsInfo []*pb.OrderProduct
 	for _, orderProducts := range request.Products {
-		productId := orderProducts.ProductId
-		Qty := orderProducts.Qty
+		requestOrderProducts := &pb.OrderProductRequest{
+			ProductId:  orderProducts.ProductId,
+			Qty:        orderProducts.Qty,
+			TotalPrice: int64(totalOrderPrice),
+		}
 
-		orderProduct := orderUseCase.OrderProducts(begin, request, productId, Qty, order.Data.Id, totalOrderPrice)
+		orderProduct, _ := orderUseCase.OrderProducts(requestOrderProducts)
 		productsInfoLoop := orderProduct.Data
 		productsInfo = append(productsInfo, productsInfoLoop...)
 	}
-
 	commit := begin.Commit()
 
 	result = &pb.OrderResponse{
@@ -264,13 +264,24 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 	return result, commit
 }
 
-func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_request.OrderRequest, productId string, Qty int64, orderId string, totalOrderPrice int) (result *pb.OrderProductResponse) {
+func (orderUseCase *OrderUseCase) OrderProducts(request *pb.OrderProductRequest) (result *pb.OrderProductResponse, err error) {
+	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &pb.OrderProductResponse{
+			Code:    int64(codes.Internal),
+			Message: "Order-Service orderUseCase OrderProducts is failed, begin fail, " + err.Error(),
+			Data:    nil,
+		}
+
+		return result, rollback
+	}
 	orderProductsData := &pb.OrderProduct{
 		Id:         uuid.NewString(),
-		OrderId:    orderId,
-		ProductId:  productId,
-		TotalPrice: int64(totalOrderPrice),
-		Qty:        Qty,
+		OrderId:    request.OrderId,
+		ProductId:  request.ProductId,
+		TotalPrice: request.TotalPrice,
+		Qty:        request.Qty,
 		CreatedAt:  timestamppb.New(time.Now()),
 		UpdatedAt:  timestamppb.New(time.Now()),
 		DeletedAt:  timestamppb.New(time.Time{}),
@@ -285,156 +296,9 @@ func (orderUseCase *OrderUseCase) OrderProducts(begin *sql.Tx, request *model_re
 		}
 	}
 	productsInfo = append(productsInfo, orderProduct)
+	commit := begin.Commit()
 	result = &pb.OrderProductResponse{
 		Data: productsInfo,
 	}
-	return result
-}
-
-func (orderUseCase *OrderUseCase) GetUser(userId string) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.UserHost, orderUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "users", userId)
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-	if newRequestErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    int64(codes.Canceled),
-			Message: "OrderUseCase failed, GetUser is failed," + newRequestErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    int64(codes.Canceled),
-			Message: "OrderUseCase failed, GetUser is failed," + doErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-	bodyResponseUser := &model_response.Response[*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    int64(codes.Canceled),
-			Message: "orderUseCase fail, GetUser is failed," + decodeErr.Error(),
-			Data:    nil,
-		}
-	}
-	return bodyResponseUser
-}
-
-func (orderUseCase OrderUseCase) UpdateBalance(userId string, balance int64) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.UserHost, orderUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "update-balance", userId)
-	payload := map[string]string{"balance": strconv.FormatInt(balance, 10)}
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    int64(codes.Canceled),
-			Message: "OrderUseCase failed, UpdateBalance user is failed," + newRequestErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    int64(codes.Canceled),
-			Message: "OrderUseCase failed, UpdateBalance user is failed," + doErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-	bodyResponseUser := &model_response.Response[*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    int64(codes.Canceled),
-			Message: "orderUseCase fail, UpdateBalance user is failed," + decodeErr.Error(),
-			Data:    nil,
-		}
-	}
-	return bodyResponseUser
-}
-
-func (orderUseCase *OrderUseCase) GetProduct(productId string) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.ProductHost, orderUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
-	newRequest, newRequestErr := http.NewRequest(http.MethodGet, url, nil)
-	if newRequestErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    int64(codes.Canceled),
-			Message: "orderUseCase fail, GetProduct is failed, " + newRequestErr.Error(),
-			Data:    nil,
-		}
-	}
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    int64(codes.Canceled),
-			Message: "OrderUseCase failed, GetProduct is failed : " + doErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-	bodyResponseProduct := &model_response.Response[*entity.Product]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    int64(codes.Canceled),
-			Message: "OrderUseCase fail, GetProduct is failed : " + decodeErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-	return bodyResponseProduct
-}
-
-func (orderUseCase OrderUseCase) UpdateStock(productId string, stock int64) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", orderUseCase.Env.App.ProductHost, orderUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "products", productId)
-	payload := map[string]string{"stock": strconv.FormatInt(stock, 10)}
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    int64(codes.Canceled),
-			Message: "OrderUseCase failed, UpdateStock product is failed," + newRequestErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    int64(codes.Canceled),
-			Message: "OrderUseCase failed, UpdateStock product is failed," + doErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-	bodyResponseProduct := &model_response.Response[*entity.Product]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    int64(codes.Canceled),
-			Message: "orderUseCase fail, UpdateStock product is failed," + decodeErr.Error(),
-			Data:    nil,
-		}
-	}
-	result = nil
-	return result
+	return result, commit
 }
