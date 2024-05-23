@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	pb "go-micro-services/src/product-service/delivery/grpc/pb/product"
 	model_response "go-micro-services/src/product-service/model/response"
+	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ProductRepository struct{}
@@ -40,6 +43,7 @@ func DeserializeProductRows(rows *sql.Rows) []*pb.Product {
 	var foundProducts []*pb.Product
 	for rows.Next() {
 		foundProduct := &pb.Product{}
+		var createdAt, updatedAt, deletedAt *time.Time
 		scanErr := rows.Scan(
 			&foundProduct.Id,
 			&foundProduct.Sku,
@@ -47,10 +51,13 @@ func DeserializeProductRows(rows *sql.Rows) []*pb.Product {
 			&foundProduct.Stock,
 			&foundProduct.Price,
 			&foundProduct.CategoryId,
-			&foundProduct.CreatedAt,
-			&foundProduct.UpdatedAt,
-			&foundProduct.DeletedAt,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
+		foundProduct.CreatedAt = timestamppb.New(*createdAt)
+		foundProduct.UpdatedAt = timestamppb.New(*updatedAt)
+		foundProduct.DeletedAt = timestamppb.New(*deletedAt)
 		if scanErr != nil {
 			panic(scanErr)
 		}
