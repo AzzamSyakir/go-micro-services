@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"go-micro-services/src/order-service/delivery/grpc/pb"
+	pb "go-micro-services/src/order-service/delivery/grpc/pb/order"
 )
 
 type OrderRepository struct{}
@@ -107,9 +107,9 @@ func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *pb.Order) (
 		orders.TotalPaid,
 		orders.TotalReturn,
 		orders.ReceiptCode,
-		orders.CreatedAt,
-		orders.UpdatedAt,
-		orders.DeletedAt,
+		orders.CreatedAt.AsTime(),
+		orders.UpdatedAt.AsTime(),
+		orders.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil
@@ -174,9 +174,9 @@ func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProduc
 		orderProducts.ProductId,
 		orderProducts.TotalPrice,
 		orderProducts.Qty,
-		orderProducts.CreatedAt,
-		orderProducts.UpdatedAt,
-		orderProducts.DeletedAt,
+		orderProducts.CreatedAt.AsTime(),
+		orderProducts.UpdatedAt.AsTime(),
+		orderProducts.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil

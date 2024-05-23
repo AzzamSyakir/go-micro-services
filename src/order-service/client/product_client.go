@@ -32,7 +32,12 @@ func (c *ProductServiceClient) GetProductById(productId string) (*pb.ProductResp
 		Id: productId,
 	}
 
-	return c.Client.GetProductById(context.Background(), req)
+	resp, err := c.Client.GetProductById(context.Background(), req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get product by ID: %w", err)
+	}
+
+	return resp, nil
 }
 
 func (c *ProductServiceClient) UpdateProduct(productId string, stock int64) (*pb.ProductResponse, error) {
@@ -41,5 +46,10 @@ func (c *ProductServiceClient) UpdateProduct(productId string, stock int64) (*pb
 		Stock: &stock,
 	}
 
-	return c.Client.UpdateProduct(context.Background(), req)
+	resp, err := c.Client.UpdateProduct(context.Background(), req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update product: %w", err)
+	}
+
+	return resp, nil
 }

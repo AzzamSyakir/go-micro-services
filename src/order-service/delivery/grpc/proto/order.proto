@@ -3,16 +3,15 @@ syntax = "proto3";
 package go_micro_services;
 
 import "google/protobuf/timestamp.proto";
-
 option go_package = "pb/order";
 
 service OrderService {
     rpc GetOrderById(ById) returns (OrderResponse);
-    rpc Order(Create) returns (OrderResponse);
+    rpc Order(OrderRequest) returns (OrderResponse);
     rpc ListOrders(empty) returns (OrderResponseRepeated);
     rpc OrderProducts(OrderProductRequest) returns (OrderProductResponse);
 }
-
+// message order represent order tabel
 message Order {
     string id = 1;
     string user_id = 2;
@@ -42,18 +41,7 @@ message OrderResponseRepeated{
   string message=2;
   repeated Order data=3;
 }
-message Create{
-  int64 totalPaid=1;
-  string userId=2;
-  repeated OrderProductRequest products=3;
-}
-message OrderProductRequest{
-  string productId=1;
-  optional string orderId=2;
-  int64 qty=3;
-  optional int64 totalPrice=4;
-
-}
+// message orderProduct represent order tabel
 message OrderProduct {
   string id = 1;
   string orderId = 2;
@@ -65,9 +53,22 @@ message OrderProduct {
   google.protobuf.Timestamp updated_at = 8;
   google.protobuf.Timestamp deleted_at = 9;
 }
+
 message OrderProductResponse {
   string userId=1;
   int64 code=2;
   string message=3;
   repeated OrderProduct data=4;
+}
+// order request 
+message OrderRequest{
+  int64 totalPaid=1;
+  string userId=2;
+  repeated OrderProductRequest products=3;
+}
+message OrderProductRequest{
+  string productId =1;
+  int64 qty=2;
+  optional string orderId=3;
+  optional int64 totalPrice=4;
 }

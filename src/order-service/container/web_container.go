@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go-micro-services/src/order-service/client"
 	"go-micro-services/src/order-service/config"
-	"go-micro-services/src/order-service/delivery/grpc/pb"
+	pb "go-micro-services/src/order-service/delivery/grpc/pb/order"
 	"go-micro-services/src/order-service/repository"
 	"go-micro-services/src/order-service/use_case"
 
@@ -33,13 +33,13 @@ func NewWebContainer() *WebContainer {
 	repositoryContainer := NewRepositoryContainer(orderRepository)
 	userUrl := fmt.Sprintf(
 		"%s:%s",
-		"0.0.0.0",
 		envConfig.App.UserHost,
+		envConfig.App.UserPort,
 	)
 	productUrl := fmt.Sprintf(
 		"%s:%s",
-		"0.0.0.0",
 		envConfig.App.ProductHost,
+		envConfig.App.ProductPort,
 	)
 	initUserClient := client.InitUserServiceClient(userUrl)
 	initProductClient := client.InitProductServiceClient(productUrl)

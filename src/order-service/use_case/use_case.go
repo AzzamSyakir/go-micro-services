@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"go-micro-services/src/order-service/client"
 	"go-micro-services/src/order-service/config"
-	"go-micro-services/src/order-service/delivery/grpc/pb"
+	pb "go-micro-services/src/order-service/delivery/grpc/pb/order"
 	"go-micro-services/src/order-service/repository"
 	"math/rand"
 	"strconv"
@@ -144,7 +144,7 @@ func (orderUseCase *OrderUseCase) ListOrders(context.Context, *pb.Empty) (result
 	return result, commit
 }
 
-func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create) (result *pb.OrderResponse, err error) {
+func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.OrderRequest) (result *pb.OrderResponse, err error) {
 	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -157,21 +157,29 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 		return result, rollback
 	}
 	//   Products
-	var totalOrderPrice int
+	var totalOrderPrice int64
 	for i, products := range request.Products {
 		productId := products.ProductId
-		product, err := orderUseCase.productClient.GetProductById(productId)
+		getProduct, err := orderUseCase.productClient.GetProductById(productId)
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &pb.OrderResponse{
 				Code:    int64(codes.Canceled),
-				Message: "Order-Service orderUseCase Order is failed, getProduct failed, " + err.Error(),
+				Message: "Order-Service orderUseCase Order is failed, getProduct fail, " + err.Error(),
 				Data:    nil,
 			}
 			return result, rollback
 		}
-
-		if products.Qty > product.Data.Stock {
+		if getProduct.Data == nil {
+			rollback := begin.Rollback()
+			result = &pb.OrderResponse{
+				Code:    int64(codes.Canceled),
+				Message: "Order-Service orderUseCase Order is failed, " + getProduct.Message,
+				Data:    nil,
+			}
+			return result, rollback
+		}
+		if products.Qty > getProduct.Data.Stock {
 			rollback := begin.Rollback()
 			result = &pb.OrderResponse{
 				Code:    int64(codes.Canceled),
@@ -180,25 +188,34 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 			}
 			return result, rollback
 		}
-		totalProductPrice := products.Qty * product.Data.Price
-		request.Products[i].TotalPrice = totalProductPrice
-		totalOrderPrice += int(totalProductPrice)
-		finalStock := product.Data.Stock - products.Qty
+		totalProductPrice := products.Qty * getProduct.Data.Price
+		request.Products[i].TotalPrice = &totalProductPrice
+		totalOrderPrice += totalProductPrice
+		finalStock := getProduct.Data.Stock - products.Qty
 		orderUseCase.productClient.UpdateProduct(productId, finalStock)
 	}
 	//  User
-	user, err := orderUseCase.userClient.GetUserById(request.UserId)
+	getUser, err := orderUseCase.userClient.GetUserById(request.UserId)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.OrderResponse{
 			Code:    int64(codes.Canceled),
-			Message: "Order-Service orderUseCase Order is failed, GetUser fail, " + err.Error(),
+			Message: "Order-Service orderUseCase Order is failed, " + err.Error(),
 			Data:    nil,
 		}
 
 		return result, rollback
 	}
-	finalBalance := user.Data.Balance - int64(totalOrderPrice)
+	if getUser.Data == nil {
+		rollback := begin.Rollback()
+		result = &pb.OrderResponse{
+			Code:    int64(codes.Canceled),
+			Message: "Order-Service orderUseCase Order is failed, GetUser fail, " + getUser.Message,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	finalBalance := getUser.Data.Balance - int64(totalOrderPrice)
 	orderUseCase.userClient.UpdateUser(request.UserId, finalBalance)
 	//    orders
 	if request.TotalPaid < int64(totalOrderPrice) {
@@ -212,7 +229,7 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 		return result, rollback
 	}
 	totalReturn := request.TotalPaid - int64(totalOrderPrice)
-	firstLetter := strings.ToUpper(string(user.Data.Name[0]))
+	firstLetter := strings.ToUpper(string(getUser.Data.Name[0]))
 	rand.Seed(time.Now().UnixNano())
 	randomDigits := rand.Intn(900) + 100
 	receiptCode := fmt.Sprintf("%s%d", firstLetter, randomDigits)
@@ -245,10 +262,11 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 		requestOrderProducts := &pb.OrderProductRequest{
 			ProductId:  orderProducts.ProductId,
 			Qty:        orderProducts.Qty,
-			TotalPrice: int64(totalOrderPrice),
+			OrderId:    &order.Data.Id,
+			TotalPrice: &totalOrderPrice,
 		}
 
-		orderProduct, _ := orderUseCase.OrderProducts(requestOrderProducts)
+		orderProduct, _ := orderUseCase.OrderProducts(context.Background(), requestOrderProducts)
 		productsInfoLoop := orderProduct.Data
 		productsInfo = append(productsInfo, productsInfoLoop...)
 	}
@@ -264,7 +282,7 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.Create)
 	return result, commit
 }
 
-func (orderUseCase *OrderUseCase) OrderProducts(request *pb.OrderProductRequest) (result *pb.OrderProductResponse, err error) {
+func (orderUseCase *OrderUseCase) OrderProducts(ctx context.Context, request *pb.OrderProductRequest) (result *pb.OrderProductResponse, err error) {
 	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -278,9 +296,9 @@ func (orderUseCase *OrderUseCase) OrderProducts(request *pb.OrderProductRequest)
 	}
 	orderProductsData := &pb.OrderProduct{
 		Id:         uuid.NewString(),
-		OrderId:    request.OrderId,
+		OrderId:    *request.OrderId,
 		ProductId:  request.ProductId,
-		TotalPrice: request.TotalPrice,
+		TotalPrice: *request.TotalPrice,
 		Qty:        request.Qty,
 		CreatedAt:  timestamppb.New(time.Now()),
 		UpdatedAt:  timestamppb.New(time.Now()),
