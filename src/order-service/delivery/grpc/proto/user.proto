@@ -1,0 +1,39 @@
+syntax = "proto3";
+package  go_micro_services;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pb/user";
+
+
+service UserService{
+  rpc GetUserById(ByIdUser) returns (UserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+  int64 balance = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  google.protobuf.Timestamp deleted_at = 8;
+}
+
+message ByIdUser {
+  string id=1;
+}
+message UserResponse{
+  int64 code=1;
+  string message=2;
+  User data=3;
+}
+message UpdateUserRequest{
+  string id=1;
+  optional string name=2;
+  optional string email=3;
+  optional string password=4;
+  optional int64 balance=5;
+}
