@@ -10,6 +10,7 @@ service OrderService {
     rpc GetOrderById(ById) returns (OrderResponse);
     rpc Order(Create) returns (OrderResponse);
     rpc ListOrders(empty) returns (OrderResponseRepeated);
+    rpc OrderProducts(OrderProductRequest) returns (OrderProductResponse);
 }
 
 message Order {
@@ -47,11 +48,10 @@ message Create{
   repeated OrderProductRequest products=3;
 }
 message OrderProductRequest{
-  string id =1;
-  string orderId=2;
-  string productId=3;
-  int64 qty=4;
-  int64 totalPrice=5;
+  string productId=1;
+  optional string orderId=2;
+  int64 qty=3;
+  optional int64 totalPrice=4;
 
 }
 message OrderProduct {
