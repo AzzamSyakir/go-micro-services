@@ -168,7 +168,7 @@ func (orderRepository OrderRepository) DetailOrder(tx *sql.Tx, id string) (resul
 
 func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProducts *pb.OrderProduct) (result *pb.OrderProduct, err error) {
 	rows, queryErr := begin.Query(
-		`INSERT INTO "order_products"(id, order_id, product_id, total_price, qty, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		`INSERT INTO "order_products"(id, order_id, product_id, total_price, qty, created_at, updated_at) values ($1, $2, $3, $4, $5, $6, $7)`,
 		orderProducts.Id,
 		orderProducts.OrderId,
 		orderProducts.ProductId,
@@ -176,7 +176,6 @@ func (orderRepository *OrderRepository) OrderProducts(begin *sql.Tx, orderProduc
 		orderProducts.Qty,
 		orderProducts.CreatedAt.AsTime(),
 		orderProducts.UpdatedAt.AsTime(),
-		orderProducts.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil

@@ -10,7 +10,6 @@ service OrderService {
     rpc GetOrderById(ById) returns (OrderResponse);
     rpc Order(OrderRequest) returns (OrderResponse);
     rpc ListOrders(empty) returns (OrderResponseRepeated);
-    rpc OrderProducts(OrderProductRequest) returns (OrderProductResponse);
 }
 // message order represent order tabel
 message Order {

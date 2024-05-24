@@ -259,37 +259,28 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.OrderRe
 	//    orderProducts
 	var productsInfo []*pb.OrderProduct
 	for _, orderProducts := range request.Products {
-		requestOrderProducts := &pb.OrderProductRequest{
+		orderProductsData := &pb.OrderProduct{
+			Id:         uuid.NewString(),
+			OrderId:    order.Data.Id,
 			ProductId:  orderProducts.ProductId,
+			TotalPrice: totalOrderPrice,
 			Qty:        orderProducts.Qty,
-			OrderId:    &orderData.Id,
-			TotalPrice: &totalOrderPrice,
+			CreatedAt:  timestamppb.New(time.Now()),
+			UpdatedAt:  timestamppb.New(time.Now()),
 		}
-		fmt.Println("orderId", orderData.Id)
-		orderProduct, err := orderUseCase.OrderProducts(context.Background(), requestOrderProducts)
+		orderProduct, err := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &pb.OrderResponse{
 				Code:    int64(codes.Canceled),
-				Message: "Order-Service orderUseCase Order is failed, " + orderProduct.Message,
+				Message: "Order-Service orderUseCase Order is failed, " + err.Error(),
 				Data:    nil,
 			}
 			return result, rollback
 		}
-		if orderProduct.Data == nil {
-			rollback := begin.Rollback()
-			result = &pb.OrderResponse{
-				Code:    int64(codes.Canceled),
-				Message: "Order-Service orderUseCase Order is failed, " + orderProduct.Message,
-				Data:    nil,
-			}
-			return result, rollback
-		}
-		productsInfoLoop := orderProduct.Data
-		productsInfo = append(productsInfo, productsInfoLoop...)
+		productsInfo = append(productsInfo, orderProduct)
 	}
 	commit := begin.Commit()
-
 	result = &pb.OrderResponse{
 		Code:    int64(codes.OK),
 		Message: "orderUseCase success, order is success",
@@ -297,46 +288,5 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.OrderRe
 	}
 	result.Data.Products = productsInfo
 
-	return result, commit
-}
-
-func (orderUseCase *OrderUseCase) OrderProducts(ctx context.Context, request *pb.OrderProductRequest) (result *pb.OrderProductResponse, err error) {
-	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
-	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderProductResponse{
-			Code:    int64(codes.Internal),
-			Message: "Order-Service orderUseCase OrderProducts is failed, begin fail, " + err.Error(),
-			Data:    nil,
-		}
-
-		return result, rollback
-	}
-	orderProductsData := &pb.OrderProduct{
-		Id:         uuid.NewString(),
-		OrderId:    *request.OrderId,
-		ProductId:  request.ProductId,
-		TotalPrice: *request.TotalPrice,
-		Qty:        request.Qty,
-		CreatedAt:  timestamppb.New(time.Now()),
-		UpdatedAt:  timestamppb.New(time.Now()),
-		DeletedAt:  timestamppb.New(time.Time{}),
-	}
-	var productsInfo []*pb.OrderProduct
-	orderProduct, err := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
-	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderProductResponse{
-			Code:    int64(codes.Canceled),
-			Message: "orderUseCase fail, order is failed, " + err.Error(),
-			Data:    nil,
-		}
-		return result, rollback
-	}
-	productsInfo = append(productsInfo, orderProduct)
-	commit := begin.Commit()
-	result = &pb.OrderProductResponse{
-		Data: productsInfo,
-	}
 	return result, commit
 }
