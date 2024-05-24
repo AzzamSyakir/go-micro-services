@@ -4,11 +4,11 @@ package  go_micro_services;
 import "google/protobuf/timestamp.proto";
 import "order.proto";
 
-option go_package = "pb/user";
+option go_package = "pb/";
 
 
 service UserService{
-  rpc GetUserById(go_micro_services.ById) returns (UserResponse);
+  rpc GetUserById(ById) returns (UserResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
 }
 

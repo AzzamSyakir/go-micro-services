@@ -2,13 +2,13 @@ syntax = "proto3";
 
 package go_micro_services;
 
-import "google/protobuf/timestamp.proto";
 import "order.proto";
+import "google/protobuf/timestamp.proto";
 
-option go_package = "pb/product";
+option go_package = "pb/";
 
 service ProductService {
-    rpc GetProductById(go_micro_services.ById) returns (ProductResponse);
+    rpc GetProductById(ById) returns (ProductResponse);
     rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
 }
 

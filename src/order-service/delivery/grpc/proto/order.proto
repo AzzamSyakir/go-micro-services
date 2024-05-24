@@ -3,7 +3,8 @@ syntax = "proto3";
 package go_micro_services;
 
 import "google/protobuf/timestamp.proto";
-option go_package = "pb/order";
+
+option go_package = "pb/";
 
 service OrderService {
     rpc GetOrderById(ById) returns (OrderResponse);

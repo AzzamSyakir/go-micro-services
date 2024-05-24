@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	pb "go-micro-services/src/order-service/delivery/grpc/pb/product"
+	"go-micro-services/src/order-service/delivery/grpc/pb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -28,7 +28,7 @@ func InitProductServiceClient(url string) ProductServiceClient {
 	return c
 }
 func (c *ProductServiceClient) GetProductById(productId string) (*pb.ProductResponse, error) {
-	req := &pb.ByIdProduct{
+	req := &pb.ById{
 		Id: productId,
 	}
 

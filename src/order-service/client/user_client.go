@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
-	pb "go-micro-services/src/order-service/delivery/grpc/pb/user"
+	"go-micro-services/src/order-service/delivery/grpc/pb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -27,7 +27,7 @@ func InitUserServiceClient(url string) UserServiceClient {
 	return c
 }
 func (c *UserServiceClient) GetUserById(productId string) (*pb.UserResponse, error) {
-	req := &pb.ByIdUser{
+	req := &pb.ById{
 		Id: productId,
 	}
 

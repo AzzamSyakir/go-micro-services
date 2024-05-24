@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"go-micro-services/src/order-service/client"
 	"go-micro-services/src/order-service/config"
-	pb "go-micro-services/src/order-service/delivery/grpc/pb/order"
+	"go-micro-services/src/order-service/delivery/grpc/pb"
 	"go-micro-services/src/order-service/repository"
 	"math/rand"
 	"strconv"
@@ -262,11 +262,29 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.OrderRe
 		requestOrderProducts := &pb.OrderProductRequest{
 			ProductId:  orderProducts.ProductId,
 			Qty:        orderProducts.Qty,
-			OrderId:    &order.Data.Id,
+			OrderId:    &orderData.Id,
 			TotalPrice: &totalOrderPrice,
 		}
-
-		orderProduct, _ := orderUseCase.OrderProducts(context.Background(), requestOrderProducts)
+		fmt.Println("orderId", orderData.Id)
+		orderProduct, err := orderUseCase.OrderProducts(context.Background(), requestOrderProducts)
+		if err != nil {
+			rollback := begin.Rollback()
+			result = &pb.OrderResponse{
+				Code:    int64(codes.Canceled),
+				Message: "Order-Service orderUseCase Order is failed, " + orderProduct.Message,
+				Data:    nil,
+			}
+			return result, rollback
+		}
+		if orderProduct.Data == nil {
+			rollback := begin.Rollback()
+			result = &pb.OrderResponse{
+				Code:    int64(codes.Canceled),
+				Message: "Order-Service orderUseCase Order is failed, " + orderProduct.Message,
+				Data:    nil,
+			}
+			return result, rollback
+		}
 		productsInfoLoop := orderProduct.Data
 		productsInfo = append(productsInfo, productsInfoLoop...)
 	}
@@ -305,13 +323,15 @@ func (orderUseCase *OrderUseCase) OrderProducts(ctx context.Context, request *pb
 		DeletedAt:  timestamppb.New(time.Time{}),
 	}
 	var productsInfo []*pb.OrderProduct
-	orderProduct, orderProductsErr := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
-	if orderProductsErr != nil {
+	orderProduct, err := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
+	if err != nil {
+		rollback := begin.Rollback()
 		result = &pb.OrderProductResponse{
 			Code:    int64(codes.Canceled),
-			Message: "orderUseCase fail, order is failed, " + orderProductsErr.Error(),
+			Message: "orderUseCase fail, order is failed, " + err.Error(),
 			Data:    nil,
 		}
+		return result, rollback
 	}
 	productsInfo = append(productsInfo, orderProduct)
 	commit := begin.Commit()

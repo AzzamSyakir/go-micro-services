@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	pb "go-micro-services/src/order-service/delivery/grpc/pb/order"
+	"go-micro-services/src/order-service/delivery/grpc/pb"
 )
 
 type OrderRepository struct{}

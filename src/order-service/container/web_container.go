@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go-micro-services/src/order-service/client"
 	"go-micro-services/src/order-service/config"
-	pb "go-micro-services/src/order-service/delivery/grpc/pb/order"
+	"go-micro-services/src/order-service/delivery/grpc/pb"
 	"go-micro-services/src/order-service/repository"
 	"go-micro-services/src/order-service/use_case"
 
