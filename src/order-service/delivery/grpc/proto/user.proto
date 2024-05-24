@@ -2,12 +2,13 @@ syntax = "proto3";
 package  go_micro_services;
 
 import "google/protobuf/timestamp.proto";
+import "order.proto";
 
 option go_package = "pb/user";
 
 
 service UserService{
-  rpc GetUserById(ByIdUser) returns (UserResponse);
+  rpc GetUserById(go_micro_services.ById) returns (UserResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
 }
 
@@ -22,14 +23,12 @@ message User {
   google.protobuf.Timestamp deleted_at = 8;
 }
 
-message ByIdUser {
-  string id=1;
-}
 message UserResponse{
   int64 code=1;
   string message=2;
   User data=3;
 }
+
 message UpdateUserRequest{
   string id=1;
   optional string name=2;

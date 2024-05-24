@@ -3,16 +3,15 @@ syntax = "proto3";
 package go_micro_services;
 
 import "google/protobuf/timestamp.proto";
+import "order.proto";
 
 option go_package = "pb/product";
 
 service ProductService {
-    rpc GetProductById(ByIdProduct) returns (ProductResponse);
+    rpc GetProductById(go_micro_services.ById) returns (ProductResponse);
     rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
 }
-message ByIdProduct {
-  string id = 1;
-}
+
 message Product {
   string id = 1;
   string name = 2;
@@ -24,11 +23,13 @@ message Product {
   google.protobuf.Timestamp updated_at = 8;
   google.protobuf.Timestamp deleted_at = 9;
 }
+
 message ProductResponse{
   int64 code=1;
   string message=2;
   Product data=3;
 }
+
 message UpdateProductRequest{
   string id=1;
   optional string categoryId=2;
