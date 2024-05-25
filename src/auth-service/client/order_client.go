@@ -34,7 +34,25 @@ func (c *OrderServiceClient) GetOrderById(productId string) (*pb.OrderResponse, 
 
 	resp, err := c.Client.GetOrderById(context.Background(), req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get product by ID: %w", err)
+		return nil, fmt.Errorf("failed to get order by id: %w", err)
+	}
+
+	return resp, nil
+}
+func (c *OrderServiceClient) Order(req *pb.CreateOrderRequest) (*pb.OrderResponse, error) {
+
+	resp, err := c.Client.Order(context.Background(), req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to order: %w", err)
+	}
+
+	return resp, nil
+}
+func (c *OrderServiceClient) ListOrders() (*pb.OrderResponseRepeated, error) {
+
+	resp, err := c.Client.ListOrders(context.Background(), &pb.Empty{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get list orders: %w", err)
 	}
 
 	return resp, nil
