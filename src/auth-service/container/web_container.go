@@ -2,6 +2,7 @@ package container
 
 import (
 	"fmt"
+	"go-micro-services/src/auth-service/client"
 	"go-micro-services/src/auth-service/config"
 	httpdelivery "go-micro-services/src/auth-service/delivery/http"
 	"go-micro-services/src/auth-service/delivery/http/middleware"
@@ -34,8 +35,29 @@ func NewWebContainer() *WebContainer {
 	authRepository := repository.NewAuthRepository()
 	repositoryContainer := NewRepositoryContainer(authRepository)
 
+	userUrl := fmt.Sprintf(
+		"%s:%s",
+		envConfig.App.UserHost,
+		envConfig.App.UserPort,
+	)
+	productUrl := fmt.Sprintf(
+		"%s:%s",
+		envConfig.App.ProductHost,
+		envConfig.App.ProductPort,
+	)
+	orderUrl := fmt.Sprintf(
+		"%s:%s",
+		envConfig.App.OrderHost,
+		envConfig.App.OrderPort,
+	)
+
+	initUserClient := client.InitUserServiceClient(userUrl)
+	initProductClient := client.InitProductServiceClient(productUrl)
+
+	initOrderClient := client.InitOrderServiceClient(orderUrl)
+	initCategoryClient := client.InitCategoryServiceClient(productUrl)
 	authUseCase := use_case.NewAuthUseCase(authDBConfig, authRepository, envConfig)
-	exposeUseCase := use_case.NewExposeUseCase(authDBConfig, authRepository, envConfig)
+	exposeUseCase := use_case.NewExposeUseCase(authDBConfig, authRepository, envConfig, &initUserClient, &initProductClient, &initOrderClient, &initCategoryClient)
 
 	useCaseContainer := NewUseCaseContainer(authUseCase, exposeUseCase)
 

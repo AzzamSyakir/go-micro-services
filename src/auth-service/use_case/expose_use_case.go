@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"go-micro-services/src/auth-service/client"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
@@ -16,14 +17,26 @@ type ExposeUseCase struct {
 	DatabaseConfig *config.DatabaseConfig
 	AuthRepository *repository.AuthRepository
 	Env            *config.EnvConfig
+	userClient     *client.UserServiceClient
+	productClient  *client.ProductServiceClient
+	OrderClient    *client.OrderServiceClient
+	CategoryClient *client.CategoryServiceClient
 }
 
 func NewExposeUseCase(
 	databaseConfig *config.DatabaseConfig,
 	authRepository *repository.AuthRepository,
 	env *config.EnvConfig,
+	initUserClient *client.UserServiceClient,
+	initProductClient *client.ProductServiceClient,
+	initOrderClient *client.OrderServiceClient,
+	initCategoryClient *client.CategoryServiceClient,
 ) *ExposeUseCase {
 	userUseCase := &ExposeUseCase{
+		userClient:     initUserClient,
+		productClient:  initProductClient,
+		OrderClient:    initOrderClient,
+		CategoryClient: initCategoryClient,
 		DatabaseConfig: databaseConfig,
 		AuthRepository: authRepository,
 		Env:            env,
