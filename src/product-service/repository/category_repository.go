@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	pb "go-micro-services/src/product-service/delivery/grpc/pb/category"
-	model_response "go-micro-services/src/product-service/model/response"
 )
 
 type CategoryRepository struct{}
@@ -97,7 +96,7 @@ func (categoryRepository *CategoryRepository) PatchOneById(begin *sql.Tx, id str
 	return result, err
 }
 
-func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (result *model_response.Response[[]*pb.Category], err error) {
+func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (result *pb.CategoryResponseRepeated, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -129,7 +128,7 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 		categories = append(categories, category)
 	}
 
-	result = &model_response.Response[[]*pb.Category]{
+	result = &pb.CategoryResponseRepeated{
 		Data: categories,
 	}
 	err = nil

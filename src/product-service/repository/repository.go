@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	pb "go-micro-services/src/product-service/delivery/grpc/pb/product"
-	model_response "go-micro-services/src/product-service/model/response"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -114,7 +113,7 @@ func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id strin
 	return result, err
 }
 
-func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result *model_response.Response[[]*pb.Product], err error) {
+func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result *pb.ProductResponseRepeated, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -150,7 +149,7 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 		products = append(products, product)
 	}
 
-	result = &model_response.Response[[]*pb.Product]{
+	result = &pb.ProductResponseRepeated{
 		Data: products,
 	}
 	err = nil
