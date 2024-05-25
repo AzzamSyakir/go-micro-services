@@ -1,0 +1,8 @@
+syntax="proto3";
+package  go_micro_services;
+option go_package = "pb/";
+
+message ById {
+  string id = 1;
+}
+message empty {}
