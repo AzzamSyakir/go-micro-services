@@ -94,7 +94,7 @@ func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRe
 			Data:    nil,
 			Message: createUser.Message,
 		}
-		return result
+		return
 	}
 	if createUser.Data == nil {
 		result = &model_response.Response[*entity.User]{
@@ -102,7 +102,7 @@ func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRe
 			Data:    nil,
 			Message: createUser.Message,
 		}
-		return result
+		return
 	}
 	user := entity.User{
 		Name:     null.NewString(createUser.Data.Name, true),
@@ -118,36 +118,33 @@ func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRe
 	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.UserHost, exposeUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "users", id)
-	newRequest, newRequestErr := http.NewRequest("DELETE", url, nil)
-
-	if newRequestErr != nil {
+	DeleteUser, err := exposeUseCase.userClient.DeleteUser(id)
+	if err != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: DeleteUser.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if DeleteUser.Data == nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: DeleteUser.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	bodyResponseUser := &model_response.Response[*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	user := entity.User{
+		Name:     null.NewString(DeleteUser.Data.Name, true),
+		Email:    null.NewString(DeleteUser.Data.Email, true),
+		Password: null.NewString(DeleteUser.Data.Password, true),
+		Balance:  null.NewInt(DeleteUser.Data.Balance, true),
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{
+		Code:    http.StatusOK,
+		Message: DeleteUser.Message,
+		Data:    &user,
 	}
 	return bodyResponseUser
 }
