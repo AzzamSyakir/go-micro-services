@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go-micro-services/src/auth-service/client"
 	"go-micro-services/src/auth-service/config"
+	"go-micro-services/src/auth-service/delivery/grpc/pb"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	model_response "go-micro-services/src/auth-service/model/response"
@@ -80,41 +81,39 @@ func (exposeUseCase *ExposeUseCase) ListUsers() (result *model_response.Response
 	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRequest) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.UserHost, exposeUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s", address, "users")
-
-	jsonPayload, err := json.Marshal(request)
+	req := &pb.CreateUserRequest{
+		Name:     request.Name.String,
+		Email:    request.Email.String,
+		Password: request.Password.String,
+		Balance:  request.Balance.Int64,
+	}
+	createUser, err := exposeUseCase.userClient.CreateUser(req)
 	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
 			Data:    nil,
+			Message: createUser.Message,
 		}
 		return result
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if createUser.Data == nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
 			Data:    nil,
+			Message: createUser.Message,
 		}
 		return result
 	}
-	bodyResponseUser := &model_response.Response[*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	user := entity.User{
+		Name:     null.NewString(createUser.Data.Name, true),
+		Email:    null.NewString(createUser.Data.Email, true),
+		Password: null.NewString(createUser.Data.Password, true),
+		Balance:  null.NewInt(createUser.Data.Balance, true),
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{
+		Code:    http.StatusOK,
+		Message: createUser.Message,
+		Data:    &user,
 	}
 	return bodyResponseUser
 }
