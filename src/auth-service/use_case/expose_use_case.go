@@ -11,6 +11,8 @@ import (
 	model_response "go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/repository"
 	"net/http"
+
+	"github.com/guregu/null"
 )
 
 type ExposeUseCase struct {
@@ -46,36 +48,34 @@ func NewExposeUseCase(
 
 // users
 func (exposeUseCase *ExposeUseCase) ListUsers() (result *model_response.Response[[]*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.UserHost, exposeUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s", address, "users")
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-
-	if newRequestErr != nil {
+	ListUser, err := exposeUseCase.userClient.ListUsers()
+	if err != nil {
 		result = &model_response.Response[[]*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: err.Error(),
 			Data:    nil,
 		}
 		return result
 	}
+	var users []*entity.User
+	for _, user := range ListUser.Data {
+		userData := &entity.User{
+			Id:        null.NewString(user.Id, true),
+			Name:      null.NewString(user.Name, true),
+			Email:     null.NewString(user.Id, true),
+			Password:  null.NewString(user.Password, true),
+			Balance:   null.NewInt(user.Balance, true),
+			CreatedAt: null.NewTime(user.CreatedAt.AsTime(), true),
+			UpdatedAt: null.NewTime(user.UpdatedAt.AsTime(), true),
+			DeletedAt: null.NewTime(user.DeletedAt.AsTime(), true),
+		}
 
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[[]*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
-			Data:    nil,
-		}
-		return result
+		users = append(users, userData)
 	}
-	bodyResponseUser := &model_response.Response[[]*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[[]*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	bodyResponseUser := &model_response.Response[[]*entity.User]{
+		Code:    http.StatusOK,
+		Message: ListUser.Message,
+		Data:    users,
 	}
 	return bodyResponseUser
 }

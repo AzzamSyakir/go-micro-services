@@ -56,7 +56,7 @@ func NewWebContainer() *WebContainer {
 
 	initOrderClient := client.InitOrderServiceClient(orderUrl)
 	initCategoryClient := client.InitCategoryServiceClient(productUrl)
-	authUseCase := use_case.NewAuthUseCase(authDBConfig, authRepository, envConfig)
+	authUseCase := use_case.NewAuthUseCase(authDBConfig, authRepository, envConfig, &initUserClient)
 	exposeUseCase := use_case.NewExposeUseCase(authDBConfig, authRepository, envConfig, &initUserClient, &initProductClient, &initOrderClient, &initCategoryClient)
 
 	useCaseContainer := NewUseCaseContainer(authUseCase, exposeUseCase)
