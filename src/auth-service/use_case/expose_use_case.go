@@ -105,10 +105,12 @@ func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRe
 		return
 	}
 	user := entity.User{
-		Name:     null.NewString(createUser.Data.Name, true),
-		Email:    null.NewString(createUser.Data.Email, true),
-		Password: null.NewString(createUser.Data.Password, true),
-		Balance:  null.NewInt(createUser.Data.Balance, true),
+		Name:      null.NewString(createUser.Data.Name, true),
+		Email:     null.NewString(createUser.Data.Email, true),
+		Password:  null.NewString(createUser.Data.Password, true),
+		Balance:   null.NewInt(createUser.Data.Balance, true),
+		CreatedAt: null.NewTime(createUser.Data.CreatedAt.AsTime(), true),
+		UpdatedAt: null.NewTime(createUser.Data.UpdatedAt.AsTime(), true),
 	}
 	bodyResponseUser := &model_response.Response[*entity.User]{
 		Code:    http.StatusOK,
@@ -136,10 +138,12 @@ func (exposeUseCase *ExposeUseCase) DeleteUser(id string) (result *model_respons
 		return
 	}
 	user := entity.User{
-		Name:     null.NewString(DeleteUser.Data.Name, true),
-		Email:    null.NewString(DeleteUser.Data.Email, true),
-		Password: null.NewString(DeleteUser.Data.Password, true),
-		Balance:  null.NewInt(DeleteUser.Data.Balance, true),
+		Name:      null.NewString(DeleteUser.Data.Name, true),
+		Email:     null.NewString(DeleteUser.Data.Email, true),
+		Password:  null.NewString(DeleteUser.Data.Password, true),
+		Balance:   null.NewInt(DeleteUser.Data.Balance, true),
+		CreatedAt: null.NewTime(DeleteUser.Data.CreatedAt.AsTime(), true),
+		UpdatedAt: null.NewTime(DeleteUser.Data.UpdatedAt.AsTime(), true),
 	}
 	bodyResponseUser := &model_response.Response[*entity.User]{
 		Code:    http.StatusOK,
