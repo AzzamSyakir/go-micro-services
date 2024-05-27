@@ -45,10 +45,12 @@ func (c *UserServiceClient) GetUserByEmail(email string) (*pb.UserResponse, erro
 
 	return c.Client.GetUserByEmail(context.Background(), req)
 }
-func (c *UserServiceClient) UpdateUser(userId string, balance int64) (*pb.UserResponse, error) {
+func (c *UserServiceClient) UpdateUser(request *pb.UpdateUserRequest) (*pb.UserResponse, error) {
 	req := &pb.UpdateUserRequest{
-		Id:      userId,
-		Balance: &balance,
+		Id:      request.Id,
+		Name:    request.Name,
+		Email:   request.Email,
+		Balance: request.Balance,
 	}
 
 	resp, err := c.Client.UpdateUser(context.Background(), req)

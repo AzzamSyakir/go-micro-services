@@ -171,7 +171,6 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 	}
 	time := time.Now()
 	foundUser.UpdatedAt = timestamppb.New(time)
-
 	patchedUser, err := userUseCase.UserRepository.PatchOneById(begin, request.Id, foundUser)
 	if err != nil {
 		rollback := begin.Rollback()

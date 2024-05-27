@@ -105,6 +105,7 @@ func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRe
 		return
 	}
 	user := entity.User{
+		Id:        null.NewString(createUser.Data.Id, true),
 		Name:      null.NewString(createUser.Data.Name, true),
 		Email:     null.NewString(createUser.Data.Email, true),
 		Password:  null.NewString(createUser.Data.Password, true),
@@ -138,6 +139,7 @@ func (exposeUseCase *ExposeUseCase) DeleteUser(id string) (result *model_respons
 		return
 	}
 	user := entity.User{
+		Id:        null.NewString(DeleteUser.Data.Id, true),
 		Name:      null.NewString(DeleteUser.Data.Name, true),
 		Email:     null.NewString(DeleteUser.Data.Email, true),
 		Password:  null.NewString(DeleteUser.Data.Password, true),
@@ -152,79 +154,53 @@ func (exposeUseCase *ExposeUseCase) DeleteUser(id string) (result *model_respons
 	}
 	return bodyResponseUser
 }
-func (exposeUseCase *ExposeUseCase) UpdateBalance(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.UserHost, exposeUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "update-balance", id)
-	jsonPayload, err := json.Marshal(request)
-	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-	bodyResponseUser := &model_response.Response[*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
-	}
-	return bodyResponseUser
-}
 func (exposeUseCase *ExposeUseCase) UpdateUser(id string, request *model_request.UserPatchOneByIdRequest) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.UserHost, exposeUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "users", id)
-	jsonPayload, err := json.Marshal(request)
+	req := &pb.UpdateUserRequest{}
+	if id != "" {
+		req.Id = id
+	}
+	if request.Name.Valid {
+		req.Name = &request.Name.String
+	}
+	if request.Email.Valid {
+		req.Email = &request.Email.String
+	}
+	if request.Password.Valid {
+		req.Password = &request.Password.String
+	}
+	if request.Balance.Valid {
+		req.Balance = &request.Balance.Int64
+	}
+	UpdateUser, err := exposeUseCase.userClient.UpdateUser(req)
 	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: UpdateUser.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if UpdateUser.Data == nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: UpdateUser.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	bodyResponseUser := &model_response.Response[*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	user := entity.User{
+		Id:        null.NewString(UpdateUser.Data.Id, true),
+		Name:      null.NewString(UpdateUser.Data.Name, true),
+		Email:     null.NewString(UpdateUser.Data.Email, true),
+		Password:  null.NewString(UpdateUser.Data.Password, true),
+		Balance:   null.NewInt(UpdateUser.Data.Balance, true),
+		CreatedAt: null.NewTime(UpdateUser.Data.CreatedAt.AsTime(), true),
+		UpdatedAt: null.NewTime(UpdateUser.Data.UpdatedAt.AsTime(), true),
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{
+		Code:    http.StatusOK,
+		Message: UpdateUser.Message,
+		Data:    &user,
 	}
 	return bodyResponseUser
 }
