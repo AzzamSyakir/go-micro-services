@@ -205,37 +205,36 @@ func (exposeUseCase *ExposeUseCase) UpdateUser(id string, request *model_request
 	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) DetailUser(id string) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.UserHost, exposeUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "users", id)
-
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-
-	if newRequestErr != nil {
+	UpdateUser, err := exposeUseCase.userClient.GetUserById(id)
+	if err != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: UpdateUser.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if UpdateUser.Data == nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: UpdateUser.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	bodyResponseUser := &model_response.Response[*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	user := entity.User{
+		Id:        null.NewString(UpdateUser.Data.Id, true),
+		Name:      null.NewString(UpdateUser.Data.Name, true),
+		Email:     null.NewString(UpdateUser.Data.Email, true),
+		Password:  null.NewString(UpdateUser.Data.Password, true),
+		Balance:   null.NewInt(UpdateUser.Data.Balance, true),
+		CreatedAt: null.NewTime(UpdateUser.Data.CreatedAt.AsTime(), true),
+		UpdatedAt: null.NewTime(UpdateUser.Data.UpdatedAt.AsTime(), true),
+	}
+	bodyResponseUser := &model_response.Response[*entity.User]{
+		Code:    http.StatusOK,
+		Message: UpdateUser.Message,
+		Data:    &user,
 	}
 	return bodyResponseUser
 }

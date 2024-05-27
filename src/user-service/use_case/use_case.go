@@ -56,7 +56,7 @@ func (userUseCase *UserUseCase) GetUserById(context context.Context, id *pb.ById
 	}
 	if GetUserById == nil {
 		rollback := begin.Rollback()
-		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, User is not found by id %s", id)
+		errorMessage := fmt.Sprintf("User UseCase GetOneById is failed, User is not found by id %s", id)
 		result = &pb.UserResponse{
 			Code:    int64(codes.Canceled),
 			Message: errorMessage,
@@ -67,7 +67,7 @@ func (userUseCase *UserUseCase) GetUserById(context context.Context, id *pb.ById
 	commit := begin.Commit()
 	result = &pb.UserResponse{
 		Code:    int64(codes.OK),
-		Message: "User UseCase FindOneById is succeed.",
+		Message: "User UseCase GetOneById is succeed.",
 		Data:    GetUserById,
 	}
 	return result, commit
@@ -107,7 +107,7 @@ func (userUseCase *UserUseCase) GetUserByEmail(context context.Context, email *p
 	commit := begin.Commit()
 	result = &pb.UserResponse{
 		Code:    int64(codes.OK),
-		Message: "User UseCase FindOneById is succeed.",
+		Message: "User UseCase GetOneById is succeed.",
 		Data:    GetUserByEmail,
 	}
 	return result, commit

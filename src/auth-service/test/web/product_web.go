@@ -28,14 +28,14 @@ func NewProductWeb(test *testing.T) *ProductWeb {
 }
 
 func (productWeb *ProductWeb) Start() {
-	productWeb.Test.Run("ProductWeb_GetProduct_Succeed", productWeb.FindOneById)
+	productWeb.Test.Run("ProductWeb_GetProduct_Succeed", productWeb.GetOneById)
 	productWeb.Test.Run("ProductWeb_DeleteProduct_Succeed", productWeb.DeleteOneById)
 	productWeb.Test.Run("ProductWeb_UpdateProduct_Succeed", productWeb.PatchOneById)
 	productWeb.Test.Run("ProductWeb_CreateProduct_Succeed", productWeb.CreateProduct)
 	productWeb.Test.Run("ProductWeb_ListProduct_Succeed", productWeb.ListProduct)
 }
 
-func (productWeb *ProductWeb) FindOneById(t *testing.T) {
+func (productWeb *ProductWeb) GetOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()

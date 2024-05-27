@@ -28,12 +28,12 @@ func NewOrderWeb(test *testing.T) *OrderWeb {
 }
 
 func (orderWeb *OrderWeb) Start() {
-	orderWeb.Test.Run("OrderWeb_GetOrder_Succeed", orderWeb.FindOneById)
+	orderWeb.Test.Run("OrderWeb_GetOrder_Succeed", orderWeb.GetOneById)
 	orderWeb.Test.Run("OrderWeb_Order_Succeed", orderWeb.Order)
 	orderWeb.Test.Run("OrderWeb_ListOrder_Succeed", orderWeb.ListOrder)
 }
 
-func (orderWeb *OrderWeb) FindOneById(t *testing.T) {
+func (orderWeb *OrderWeb) GetOneById(t *testing.T) {
 	t.Parallel()
 
 	testWeb := GetTestWeb()
