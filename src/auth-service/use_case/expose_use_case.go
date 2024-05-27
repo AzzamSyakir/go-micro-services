@@ -470,38 +470,33 @@ func (exposeUseCase *ExposeUseCase) DetailProduct(id string) (result *model_resp
 // category
 
 func (exposeUseCase *ExposeUseCase) ListCategories() (result *model_response.Response[[]*entity.Category]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s", address, "categories")
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-
-	if newRequestErr != nil {
+	ListCategory, err := exposeUseCase.CategoryClient.ListCategorys()
+	if err != nil {
 		result = &model_response.Response[[]*entity.Category]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: err.Error(),
 			Data:    nil,
 		}
 		return result
 	}
+	var categorys []*entity.Category
+	for _, category := range ListCategory.Data {
+		categoryData := &entity.Category{
+			Id:        null.NewString(category.Id, true),
+			Name:      null.NewString(category.Name, true),
+			CreatedAt: null.NewTime(category.CreatedAt.AsTime(), true),
+			UpdatedAt: null.NewTime(category.UpdatedAt.AsTime(), true),
+			DeletedAt: null.NewTime(category.DeletedAt.AsTime(), true),
+		}
 
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[[]*entity.Category]{
-			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
-			Data:    nil,
-		}
-		return result
+		categorys = append(categorys, categoryData)
 	}
-	Category := &model_response.Response[[]*entity.Category]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(Category)
-	if decodeErr != nil {
-		result = &model_response.Response[[]*entity.Category]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	bodyResponseCategory := &model_response.Response[[]*entity.Category]{
+		Code:    http.StatusOK,
+		Message: ListCategory.Message,
+		Data:    categorys,
 	}
-	return Category
+	return bodyResponseCategory
 }
 func (exposeUseCase *ExposeUseCase) CreateCategory(request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)

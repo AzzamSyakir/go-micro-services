@@ -71,7 +71,7 @@ func (c *CategoryServiceClient) DeleteCategory(categoryId string) (*pb.CategoryR
 
 	return resp, nil
 }
-func (c *CategoryServiceClient) ListCategorys(productId string, name string) (*pb.CategoryResponseRepeated, error) {
+func (c *CategoryServiceClient) ListCategorys() (*pb.CategoryResponseRepeated, error) {
 
 	resp, err := c.Client.ListCategorys(context.Background(), &pb.Empty{})
 	if err != nil {
