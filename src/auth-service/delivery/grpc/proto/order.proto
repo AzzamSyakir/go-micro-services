@@ -14,56 +14,58 @@ service OrderService {
 }
 // message order represent order tabel
 message Order {
-    string id = 1;
-    string user_id = 2;
-    int64 total_price = 3;
-    int64 total_paid = 4;
-    int64 total_return = 5;
-    string receipt_code = 6;
-    google.protobuf.Timestamp created_at = 7;
-    google.protobuf.Timestamp updated_at = 8;
-    google.protobuf.Timestamp deleted_at = 9;
-    repeated OrderProduct products = 10;
-}
-message OrderResponse{
-  int64 code=1;
-  string message=2;
-  Order data=3;
+  string id = 1 [json_name = "id"];
+  string userId = 2 [json_name = "user_id"];
+  int64 totalPrice = 3 [json_name = "total_price"];
+  int64 totalPaid = 4 [json_name = "total_paid"];
+  int64 totalReturn = 5 [json_name = "total_return"];
+  string receiptCode = 6 [json_name = "receipt_code"];
+  google.protobuf.Timestamp createdAt = 7 [json_name = "created_at"];
+  google.protobuf.Timestamp updatedAt = 8 [json_name = "updated_at"];
+  google.protobuf.Timestamp deletedAt = 9 [json_name = "deleted_at"];
+  repeated OrderProduct products = 10 [json_name = "products"];
 }
 
-message OrderResponseRepeated{
-  int64 code=1;
-  string message=2;
-  repeated Order data=3;
+message OrderResponse {
+  int64 code = 1 [json_name = "code"];
+  string message = 2 [json_name = "message"];
+  Order data = 3 [json_name = "data"];
 }
-// message orderProduct represent order tabel
+
+message OrderResponseRepeated {
+  int64 code = 1 [json_name = "code"];
+  string message = 2 [json_name = "message"];
+  repeated Order data = 3 [json_name = "data"];
+}
+
 message OrderProduct {
-  string id = 1;
-  string orderId = 2;
-  string productId = 3;
-  int64 qty = 4;
-  int64 price = 5;
-  int64 totalPrice = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
-  google.protobuf.Timestamp deleted_at = 9;
+  string id = 1 [json_name = "id"];
+  string orderId = 2 [json_name = "order_id"];
+  string productId = 3 [json_name = "product_id"];
+  int64 qty = 4 [json_name = "qty"];
+  int64 price = 5 [json_name = "price"];
+  int64 totalPrice = 6 [json_name = "total_price"];
+  google.protobuf.Timestamp createdAt = 7 [json_name = "created_at"];
+  google.protobuf.Timestamp updatedAt = 8 [json_name = "updated_at"];
+  google.protobuf.Timestamp deletedAt = 9 [json_name = "deleted_at"];
 }
 
 message OrderProductResponse {
-  string userId=1;
-  int64 code=2;
-  string message=3;
-  repeated OrderProduct data=4;
+  string userId = 1 [json_name = "user_id"];
+  int64 code = 2 [json_name = "code"];
+  string message = 3 [json_name = "message"];
+  repeated OrderProduct data = 4 [json_name = "data"];
 }
-// order request 
-message CreateOrderRequest{
-  int64 totalPaid=1;
-  string userId=2;
-  repeated OrderProductRequest products=3;
+
+message CreateOrderRequest {
+  int64 totalPaid = 1 [json_name = "total_paid"];
+  string userId = 2 [json_name = "user_id"];
+  repeated OrderProductRequest products = 3 [json_name = "products"];
 }
-message OrderProductRequest{
-  string productId =1;
-  int64 qty=2;
-  optional string orderId=3;
-  optional int64 totalPrice=4;
+
+message OrderProductRequest {
+  string productId = 1 [json_name = "product_id"];
+  int64 qty = 2 [json_name = "qty"];
+  optional string orderId = 3 [json_name = "order_id"];
+  optional int64 totalPrice = 4 [json_name = "total_price"];
 }
