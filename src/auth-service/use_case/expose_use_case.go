@@ -603,36 +603,33 @@ func (exposeUseCase *ExposeUseCase) UpdateCategory(id string, request *model_req
 	return bodyResponseCategory
 }
 func (exposeUseCase *ExposeUseCase) DetailCategory(id string) (result *model_response.Response[*entity.Category]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "categories", id)
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-
-	if newRequestErr != nil {
+	GetCategory, err := exposeUseCase.CategoryClient.GetCategoryById(id)
+	if err != nil {
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: GetCategory.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if GetCategory.Data == nil {
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: GetCategory.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	bodyResponseCategory := &model_response.Response[*entity.Category]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseCategory)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	product := entity.Category{
+		Id:        null.NewString(GetCategory.Data.Id, true),
+		Name:      null.NewString(GetCategory.Data.Name, true),
+		CreatedAt: null.NewTime(GetCategory.Data.CreatedAt.AsTime(), true),
+		UpdatedAt: null.NewTime(GetCategory.Data.UpdatedAt.AsTime(), true),
+	}
+	bodyResponseCategory := &model_response.Response[*entity.Category]{
+		Code:    http.StatusOK,
+		Message: GetCategory.Message,
+		Data:    &product,
 	}
 	return bodyResponseCategory
 }
