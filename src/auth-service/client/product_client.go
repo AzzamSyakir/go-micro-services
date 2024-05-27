@@ -40,11 +40,7 @@ func (c *ProductServiceClient) GetProductById(productId string) (*pb.ProductResp
 	return resp, nil
 }
 
-func (c *ProductServiceClient) UpdateProduct(productId string, stock int64) (*pb.ProductResponse, error) {
-	req := &pb.UpdateProductRequest{
-		Id:    productId,
-		Stock: &stock,
-	}
+func (c *ProductServiceClient) UpdateProduct(req *pb.UpdateProductRequest) (*pb.ProductResponse, error) {
 
 	resp, err := c.Client.UpdateProduct(context.Background(), req)
 	if err != nil {

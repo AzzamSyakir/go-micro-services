@@ -383,40 +383,52 @@ func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_resp
 	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "products", id)
-	jsonPayload, err := json.Marshal(request)
+	req := &pb.UpdateProductRequest{}
+	if id != "" {
+		req.Id = id
+	}
+	if request.Name.Valid {
+		req.Name = &request.Name.String
+	}
+	if request.CategoryId.Valid {
+		req.CategoryId = &request.CategoryId.String
+	}
+	if request.Price.Valid {
+		req.Price = &request.Price.Int64
+	}
+	if request.Stock.Valid {
+		req.Stock = &request.Stock.Int64
+	}
+	UpdateProduct, err := exposeUseCase.productClient.UpdateProduct(req)
 	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: UpdateProduct.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if UpdateProduct.Data == nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: UpdateProduct.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	bodyResponseProduct := &model_response.Response[*entity.Product]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	product := entity.Product{
+		Id:         null.NewString(UpdateProduct.Data.Id, true),
+		Name:       null.NewString(UpdateProduct.Data.Name, true),
+		CategoryId: null.NewString(UpdateProduct.Data.CategoryId, true),
+		Price:      null.NewInt(UpdateProduct.Data.Price, true),
+		Stock:      null.NewInt(UpdateProduct.Data.Stock, true),
+		CreatedAt:  null.NewTime(UpdateProduct.Data.CreatedAt.AsTime(), true),
+		UpdatedAt:  null.NewTime(UpdateProduct.Data.UpdatedAt.AsTime(), true),
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{
+		Code:    http.StatusOK,
+		Message: UpdateProduct.Message,
+		Data:    &product,
 	}
 	return bodyResponseProduct
 }
