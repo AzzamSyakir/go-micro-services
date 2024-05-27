@@ -40,12 +40,7 @@ func (c *CategoryServiceClient) GetCategoryById(productId string) (*pb.CategoryR
 	return resp, nil
 }
 
-func (c *CategoryServiceClient) UpdateCategory(productId string, name string) (*pb.CategoryResponse, error) {
-	req := &pb.UpdateCategoryRequest{
-		Id:   productId,
-		Name: &name,
-	}
-
+func (c *CategoryServiceClient) UpdateCategory(req *pb.UpdateCategoryRequest) (*pb.CategoryResponse, error) {
 	resp, err := c.Client.UpdateCategory(context.Background(), req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update category: %w", err)

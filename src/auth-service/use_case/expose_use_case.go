@@ -564,40 +564,41 @@ func (exposeUseCase *ExposeUseCase) DeleteCategory(id string) (result *model_res
 	return bodyResponseCategory
 }
 func (exposeUseCase *ExposeUseCase) UpdateCategory(id string, request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "categories", id)
-	jsonPayload, err := json.Marshal(request)
+	req := &pb.UpdateCategoryRequest{}
+	if id != "" {
+		req.Id = id
+	}
+	if request.Name.Valid {
+		req.Name = &request.Name.String
+	}
+	UpdateCategory, err := exposeUseCase.CategoryClient.UpdateCategory(req)
 	if err != nil {
-		panic(err)
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: UpdateCategory.Message,
+			Data:    nil,
+		}
+		return
 	}
-	newRequest, newRequestErr := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonPayload))
+	if UpdateCategory.Data == nil {
+		result = &model_response.Response[*entity.Category]{
+			Code:    http.StatusBadRequest,
+			Message: UpdateCategory.Message,
+			Data:    nil,
+		}
+		return
+	}
+	product := entity.Category{
+		Id:   null.NewString(UpdateCategory.Data.Id, true),
+		Name: null.NewString(UpdateCategory.Data.Name, true),
 
-	if newRequestErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
-			Data:    nil,
-		}
-		return result
+		CreatedAt: null.NewTime(UpdateCategory.Data.CreatedAt.AsTime(), true),
+		UpdatedAt: null.NewTime(UpdateCategory.Data.UpdatedAt.AsTime(), true),
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
-			Data:    nil,
-		}
-		return result
-	}
-	bodyResponseCategory := &model_response.Response[*entity.Category]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseCategory)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	bodyResponseCategory := &model_response.Response[*entity.Category]{
+		Code:    http.StatusOK,
+		Message: UpdateCategory.Message,
+		Data:    &product,
 	}
 	return bodyResponseCategory
 }
