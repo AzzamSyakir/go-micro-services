@@ -55,8 +55,8 @@ func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id 
 
 		return result, rollback
 	}
-	rollback := begin.Rollback()
 	if categoryFound == nil {
+		rollback := begin.Rollback()
 		result = &pb.CategoryResponse{
 			Code:    int64(codes.Canceled),
 			Message: "CategoryUseCase GetCategory is failed, category not found by id, " + id.Id,
@@ -221,7 +221,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) ListCategories() (result *pb.CategoryResponseRepeated, err error) {
+func (categoryUseCase *CategoryUseCase) ListCategorys(context.Context, *pb.EmptyCategory) (result *pb.CategoryResponseRepeated, err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()

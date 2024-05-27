@@ -3,6 +3,9 @@ package repository
 import (
 	"database/sql"
 	pb "go-micro-services/src/product-service/delivery/grpc/pb/category"
+	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type CategoryRepository struct{}
@@ -35,16 +38,20 @@ func DeserializeCategoryRows(rows *sql.Rows) []*pb.Category {
 	var foundCategories []*pb.Category
 	for rows.Next() {
 		foundCategory := &pb.Category{}
+		var createdAt, updatedAt, deletedAt time.Time
 		scanErr := rows.Scan(
 			&foundCategory.Id,
 			&foundCategory.Name,
-			&foundCategory.CreatedAt,
-			&foundCategory.UpdatedAt,
-			&foundCategory.DeletedAt,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
 		if scanErr != nil {
 			panic(scanErr)
 		}
+		foundCategory.CreatedAt = timestamppb.New(createdAt)
+		foundCategory.UpdatedAt = timestamppb.New(updatedAt)
+		foundCategory.DeletedAt = timestamppb.New(deletedAt)
 		foundCategories = append(foundCategories, foundCategory)
 	}
 	return foundCategories
@@ -113,18 +120,21 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 	var categories []*pb.Category
 	for rows.Next() {
 		category := &pb.Category{}
+		var createdAt, updatedAt, deletedAt time.Time
 		scanErr := rows.Scan(
 			&category.Id,
 			&category.Name,
-			&category.CreatedAt,
-			&category.UpdatedAt,
-			&category.DeletedAt,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
 		if scanErr != nil {
-			result = nil
-			err = scanErr
-			return result, err
+			panic(scanErr)
 		}
+		category.CreatedAt = timestamppb.New(createdAt)
+		category.UpdatedAt = timestamppb.New(updatedAt)
+		category.DeletedAt = timestamppb.New(deletedAt)
+
 		categories = append(categories, category)
 	}
 
