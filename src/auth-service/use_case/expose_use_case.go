@@ -533,36 +533,33 @@ func (exposeUseCase *ExposeUseCase) CreateCategory(request *model_request.Catego
 	return bodyResponseCategory
 }
 func (exposeUseCase *ExposeUseCase) DeleteCategory(id string) (result *model_response.Response[*entity.Category]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "categories", id)
-	newRequest, newRequestErr := http.NewRequest("DELETE", url, nil)
-
-	if newRequestErr != nil {
+	DeleteCategory, err := exposeUseCase.CategoryClient.DeleteCategory(id)
+	if err != nil {
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: DeleteCategory.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if DeleteCategory.Data == nil {
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: DeleteCategory.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	bodyResponseCategory := &model_response.Response[*entity.Category]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseCategory)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	category := entity.Category{
+		Id:        null.NewString(DeleteCategory.Data.Id, true),
+		Name:      null.NewString(DeleteCategory.Data.Name, true),
+		CreatedAt: null.NewTime(DeleteCategory.Data.CreatedAt.AsTime(), true),
+		UpdatedAt: null.NewTime(DeleteCategory.Data.UpdatedAt.AsTime(), true),
+	}
+	bodyResponseCategory := &model_response.Response[*entity.Category]{
+		Code:    http.StatusOK,
+		Message: DeleteCategory.Message,
+		Data:    &category,
 	}
 	return bodyResponseCategory
 }
