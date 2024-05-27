@@ -433,37 +433,36 @@ func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_requ
 	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) DetailProduct(id string) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "products", id)
-
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-
-	if newRequestErr != nil {
+	GetProduct, err := exposeUseCase.productClient.GetProductById(id)
+	if err != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: GetProduct.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if GetProduct.Data == nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: GetProduct.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	bodyResponseProduct := &model_response.Response[*entity.Product]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	product := entity.Product{
+		Id:         null.NewString(GetProduct.Data.Id, true),
+		Name:       null.NewString(GetProduct.Data.Name, true),
+		CategoryId: null.NewString(GetProduct.Data.CategoryId, true),
+		Price:      null.NewInt(GetProduct.Data.Price, true),
+		Stock:      null.NewInt(GetProduct.Data.Stock, true),
+		CreatedAt:  null.NewTime(GetProduct.Data.CreatedAt.AsTime(), true),
+		UpdatedAt:  null.NewTime(GetProduct.Data.UpdatedAt.AsTime(), true),
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{
+		Code:    http.StatusOK,
+		Message: GetProduct.Message,
+		Data:    &product,
 	}
 	return bodyResponseProduct
 }
