@@ -54,7 +54,16 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
 			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Login fail, GetUser failed, " + foundUser.Message,
+			Message: foundUser.Message,
+			Data:    nil,
+		}
+		return result, rollback
+	}
+	if foundUser.Data == nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: foundUser.Message,
 			Data:    nil,
 		}
 		return result, rollback
