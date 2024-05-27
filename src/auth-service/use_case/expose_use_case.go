@@ -63,7 +63,7 @@ func (exposeUseCase *ExposeUseCase) ListUsers() (result *model_response.Response
 		userData := &entity.User{
 			Id:        null.NewString(user.Id, true),
 			Name:      null.NewString(user.Name, true),
-			Email:     null.NewString(user.Id, true),
+			Email:     null.NewString(user.Email, true),
 			Password:  null.NewString(user.Password, true),
 			Balance:   null.NewInt(user.Balance, true),
 			CreatedAt: null.NewTime(user.CreatedAt.AsTime(), true),
@@ -276,36 +276,35 @@ func (exposeUseCase *ExposeUseCase) GetOneByEmail(email string) (result *model_r
 // product
 
 func (exposeUseCase *ExposeUseCase) ListProducts() (result *model_response.Response[[]*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s", address, "products")
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-
-	if newRequestErr != nil {
+	ListProduct, err := exposeUseCase.productClient.ListProducts()
+	if err != nil {
 		result = &model_response.Response[[]*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: err.Error(),
 			Data:    nil,
 		}
 		return result
 	}
+	var products []*entity.Product
+	for _, product := range ListProduct.Data {
+		productData := &entity.Product{
+			Id:         null.NewString(product.Id, true),
+			Sku:        null.NewString(product.Sku, true),
+			Name:       null.NewString(product.Name, true),
+			Stock:      null.NewInt(product.Stock, true),
+			Price:      null.NewInt(product.Price, true),
+			CategoryId: null.NewString(product.CategoryId, true),
+			CreatedAt:  null.NewTime(product.CreatedAt.AsTime(), true),
+			UpdatedAt:  null.NewTime(product.UpdatedAt.AsTime(), true),
+			DeletedAt:  null.NewTime(product.DeletedAt.AsTime(), true),
+		}
 
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[[]*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
-			Data:    nil,
-		}
-		return result
+		products = append(products, productData)
 	}
-	bodyResponseProduct := &model_response.Response[[]*entity.Product]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
-	if decodeErr != nil {
-		result = &model_response.Response[[]*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	bodyResponseProduct := &model_response.Response[[]*entity.Product]{
+		Code:    http.StatusOK,
+		Message: ListProduct.Message,
+		Data:    products,
 	}
 	return bodyResponseProduct
 }

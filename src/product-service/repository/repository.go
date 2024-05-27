@@ -130,6 +130,7 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 	var products []*pb.Product
 	for rows.Next() {
 		product := &pb.Product{}
+		var createdAt, updatedAt, deletedAt time.Time
 		scanErr := rows.Scan(
 			&product.Id,
 			&product.Name,
@@ -137,10 +138,13 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 			&product.Stock,
 			&product.Price,
 			&product.CategoryId,
-			&product.CreatedAt,
-			&product.UpdatedAt,
-			&product.DeletedAt,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
+		product.CreatedAt = timestamppb.New(createdAt)
+		product.UpdatedAt = timestamppb.New(updatedAt)
+		product.DeletedAt = timestamppb.New(deletedAt)
 		if scanErr != nil {
 			result = nil
 			err = scanErr
