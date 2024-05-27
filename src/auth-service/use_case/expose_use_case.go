@@ -349,7 +349,7 @@ func (exposeUseCase *ExposeUseCase) CreateProduct(request *model_request.CreateP
 	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_response.Response[*entity.Product]) {
-	DeleteProduct, err := exposeUseCase.userClient.Del(id)
+	DeleteProduct, err := exposeUseCase.productClient.DeleteProduct(id)
 	if err != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
@@ -366,7 +366,7 @@ func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_resp
 		}
 		return
 	}
-	user := entity.Product{
+	product := entity.Product{
 		Id:         null.NewString(DeleteProduct.Data.Id, true),
 		Name:       null.NewString(DeleteProduct.Data.Name, true),
 		CategoryId: null.NewString(DeleteProduct.Data.CategoryId, true),
@@ -378,9 +378,9 @@ func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_resp
 	bodyResponseProduct := &model_response.Response[*entity.Product]{
 		Code:    http.StatusOK,
 		Message: DeleteProduct.Message,
-		Data:    &user,
+		Data:    &product,
 	}
-	return bodyResponseUser
+	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
