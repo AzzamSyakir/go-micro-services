@@ -309,76 +309,78 @@ func (exposeUseCase *ExposeUseCase) ListProducts() (result *model_response.Respo
 	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) CreateProduct(request *model_request.CreateProduct) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s", address, "products")
-	jsonPayload, err := json.Marshal(request)
+	req := &pb.CreateProductRequest{
+		Name:       request.Name.String,
+		CategoryId: request.CategoryId.String,
+		Price:      request.Price.Int64,
+		Stock:      request.Stock.Int64,
+	}
+	createProduct, err := exposeUseCase.productClient.CreateProduct(req)
 	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
 			Data:    nil,
+			Message: createProduct.Message,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if createProduct.Data == nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
 			Data:    nil,
+			Message: createProduct.Message,
 		}
-		return result
+		return
 	}
-	bodyResponseProduct := &model_response.Response[*entity.Product]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	user := entity.Product{
+		Id:         null.NewString(createProduct.Data.Id, true),
+		Name:       null.NewString(createProduct.Data.Name, true),
+		CategoryId: null.NewString(createProduct.Data.CategoryId, true),
+		Price:      null.NewInt(createProduct.Data.Price, true),
+		Stock:      null.NewInt(createProduct.Data.Stock, true),
+		CreatedAt:  null.NewTime(createProduct.Data.CreatedAt.AsTime(), true),
+		UpdatedAt:  null.NewTime(createProduct.Data.UpdatedAt.AsTime(), true),
+	}
+	bodyResponseProduct := &model_response.Response[*entity.Product]{
+		Code:    http.StatusOK,
+		Message: createProduct.Message,
+		Data:    &user,
 	}
 	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_response.Response[*entity.Product]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "products", id)
-	newRequest, newRequestErr := http.NewRequest("DELETE", url, nil)
-
-	if newRequestErr != nil {
+	DeleteProduct, err := exposeUseCase.userClient.Del(id)
+	if err != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: DeleteProduct.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if DeleteProduct.Data == nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: DeleteProduct.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	bodyResponseProduct := &model_response.Response[*entity.Product]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseProduct)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Product]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	user := entity.Product{
+		Id:         null.NewString(DeleteProduct.Data.Id, true),
+		Name:       null.NewString(DeleteProduct.Data.Name, true),
+		CategoryId: null.NewString(DeleteProduct.Data.CategoryId, true),
+		Price:      null.NewInt(DeleteProduct.Data.Price, true),
+		Stock:      null.NewInt(DeleteProduct.Data.Stock, true),
+		CreatedAt:  null.NewTime(DeleteProduct.Data.CreatedAt.AsTime(), true),
+		UpdatedAt:  null.NewTime(DeleteProduct.Data.UpdatedAt.AsTime(), true),
 	}
-	return bodyResponseProduct
+	bodyResponseProduct := &model_response.Response[*entity.Product]{
+		Code:    http.StatusOK,
+		Message: DeleteProduct.Message,
+		Data:    &user,
+	}
+	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_request.ProductPatchOneByIdRequest) (result *model_response.Response[*entity.Product]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
