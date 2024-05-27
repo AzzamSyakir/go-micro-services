@@ -20,8 +20,8 @@ type ExposeUseCase struct {
 	DatabaseConfig *config.DatabaseConfig
 	AuthRepository *repository.AuthRepository
 	Env            *config.EnvConfig
-	userClient     *client.UserServiceClient
-	productClient  *client.ProductServiceClient
+	UserClient     *client.UserServiceClient
+	ProductClient  *client.ProductServiceClient
 	OrderClient    *client.OrderServiceClient
 	CategoryClient *client.CategoryServiceClient
 }
@@ -36,8 +36,8 @@ func NewExposeUseCase(
 	initCategoryClient *client.CategoryServiceClient,
 ) *ExposeUseCase {
 	userUseCase := &ExposeUseCase{
-		userClient:     initUserClient,
-		productClient:  initProductClient,
+		UserClient:     initUserClient,
+		ProductClient:  initProductClient,
 		OrderClient:    initOrderClient,
 		CategoryClient: initCategoryClient,
 		DatabaseConfig: databaseConfig,
@@ -49,7 +49,7 @@ func NewExposeUseCase(
 
 // users
 func (exposeUseCase *ExposeUseCase) ListUsers() (result *model_response.Response[[]*entity.User]) {
-	ListUser, err := exposeUseCase.userClient.ListUsers()
+	ListUser, err := exposeUseCase.UserClient.ListUsers()
 	if err != nil {
 		result = &model_response.Response[[]*entity.User]{
 			Code:    http.StatusBadRequest,
@@ -87,7 +87,7 @@ func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRe
 		Password: request.Password.String,
 		Balance:  request.Balance.Int64,
 	}
-	createUser, err := exposeUseCase.userClient.CreateUser(req)
+	createUser, err := exposeUseCase.UserClient.CreateUser(req)
 	if err != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
@@ -121,7 +121,7 @@ func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRe
 	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) DeleteUser(id string) (result *model_response.Response[*entity.User]) {
-	DeleteUser, err := exposeUseCase.userClient.DeleteUser(id)
+	DeleteUser, err := exposeUseCase.UserClient.DeleteUser(id)
 	if err != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
@@ -171,7 +171,7 @@ func (exposeUseCase *ExposeUseCase) UpdateUser(id string, request *model_request
 	if request.Balance.Valid {
 		req.Balance = &request.Balance.Int64
 	}
-	UpdateUser, err := exposeUseCase.userClient.UpdateUser(req)
+	UpdateUser, err := exposeUseCase.UserClient.UpdateUser(req)
 	if err != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
@@ -205,7 +205,7 @@ func (exposeUseCase *ExposeUseCase) UpdateUser(id string, request *model_request
 	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) DetailUser(id string) (result *model_response.Response[*entity.User]) {
-	GetUser, err := exposeUseCase.userClient.GetUserById(id)
+	GetUser, err := exposeUseCase.UserClient.GetUserById(id)
 	if err != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
@@ -239,7 +239,7 @@ func (exposeUseCase *ExposeUseCase) DetailUser(id string) (result *model_respons
 	return bodyResponseUser
 }
 func (exposeUseCase *ExposeUseCase) GetOneByEmail(email string) (result *model_response.Response[*entity.User]) {
-	GetUser, err := exposeUseCase.userClient.GetUserByEmail(email)
+	GetUser, err := exposeUseCase.UserClient.GetUserByEmail(email)
 	if err != nil {
 		result = &model_response.Response[*entity.User]{
 			Code:    http.StatusBadRequest,
@@ -276,7 +276,7 @@ func (exposeUseCase *ExposeUseCase) GetOneByEmail(email string) (result *model_r
 // product
 
 func (exposeUseCase *ExposeUseCase) ListProducts() (result *model_response.Response[[]*entity.Product]) {
-	ListProduct, err := exposeUseCase.productClient.ListProducts()
+	ListProduct, err := exposeUseCase.ProductClient.ListProducts()
 	if err != nil {
 		result = &model_response.Response[[]*entity.Product]{
 			Code:    http.StatusBadRequest,
@@ -315,7 +315,7 @@ func (exposeUseCase *ExposeUseCase) CreateProduct(request *model_request.CreateP
 		Price:      request.Price.Int64,
 		Stock:      request.Stock.Int64,
 	}
-	createProduct, err := exposeUseCase.productClient.CreateProduct(req)
+	createProduct, err := exposeUseCase.ProductClient.CreateProduct(req)
 	if err != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
@@ -349,7 +349,7 @@ func (exposeUseCase *ExposeUseCase) CreateProduct(request *model_request.CreateP
 	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_response.Response[*entity.Product]) {
-	DeleteProduct, err := exposeUseCase.productClient.DeleteProduct(id)
+	DeleteProduct, err := exposeUseCase.ProductClient.DeleteProduct(id)
 	if err != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
@@ -399,7 +399,7 @@ func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_requ
 	if request.Stock.Valid {
 		req.Stock = &request.Stock.Int64
 	}
-	UpdateProduct, err := exposeUseCase.productClient.UpdateProduct(req)
+	UpdateProduct, err := exposeUseCase.ProductClient.UpdateProduct(req)
 	if err != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
@@ -433,7 +433,7 @@ func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_requ
 	return bodyResponseProduct
 }
 func (exposeUseCase *ExposeUseCase) DetailProduct(id string) (result *model_response.Response[*entity.Product]) {
-	GetProduct, err := exposeUseCase.productClient.GetProductById(id)
+	GetProduct, err := exposeUseCase.ProductClient.GetProductById(id)
 	if err != nil {
 		result = &model_response.Response[*entity.Product]{
 			Code:    http.StatusBadRequest,
@@ -499,40 +499,36 @@ func (exposeUseCase *ExposeUseCase) ListCategories() (result *model_response.Res
 	return bodyResponseCategory
 }
 func (exposeUseCase *ExposeUseCase) CreateCategory(request *model_request.CategoryRequest) (result *model_response.Response[*entity.Category]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.ProductHost, exposeUseCase.Env.App.ProductPort)
-	url := fmt.Sprintf("%s/%s", address, "categories")
-	jsonPayload, err := json.Marshal(request)
+	req := &pb.CreateCategoryRequest{
+		Name: request.Name.String,
+	}
+	createCategory, err := exposeUseCase.CategoryClient.CreateCategory(req)
 	if err != nil {
-		panic(err)
-	}
-	newRequest, newRequestErr := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
-
-	if newRequestErr != nil {
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
 			Data:    nil,
+			Message: createCategory.Message,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if createCategory.Data == nil {
 		result = &model_response.Response[*entity.Category]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
 			Data:    nil,
+			Message: createCategory.Message,
 		}
-		return result
+		return
 	}
-	bodyResponseCategory := &model_response.Response[*entity.Category]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseCategory)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.Category]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+	user := entity.Category{
+		Id:        null.NewString(createCategory.Data.Id, true),
+		Name:      null.NewString(createCategory.Data.Name, true),
+		CreatedAt: null.NewTime(createCategory.Data.CreatedAt.AsTime(), true),
+		UpdatedAt: null.NewTime(createCategory.Data.UpdatedAt.AsTime(), true),
+	}
+	bodyResponseCategory := &model_response.Response[*entity.Category]{
+		Code:    http.StatusOK,
+		Message: createCategory.Message,
+		Data:    &user,
 	}
 	return bodyResponseCategory
 }
