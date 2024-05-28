@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"go-micro-services/src/auth-service/delivery/grpc/pb"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	model_response "go-micro-services/src/auth-service/model/response"
@@ -77,13 +78,13 @@ func (orderWeb *OrderWeb) Order(t *testing.T) {
 
 	orderMock := testWeb.AllSeeder.Order.OrderMock.Data[0]
 	bodyRequest := &model_request.OrderRequest{}
-	var productRequest []model_request.OrderProducts
+	var productRequest []*pb.OrderProductRequest
 	for _, productMock := range testWeb.AllSeeder.Product.ProductMock.Data {
 		productID := productMock.Id.String
 		qty := 1
-		productRequest = append(productRequest, model_request.OrderProducts{
-			ProductId: null.NewString(productID, true),
-			Qty:       null.NewInt(int64(qty), true),
+		productRequest = append(productRequest, &pb.OrderProductRequest{
+			ProductId: productID,
+			Qty:       int64(qty),
 		})
 	}
 	bodyRequest.Products = productRequest
