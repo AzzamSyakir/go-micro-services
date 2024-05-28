@@ -1,8 +1,6 @@
 package use_case
 
 import (
-	"encoding/json"
-	"fmt"
 	"go-micro-services/src/auth-service/client"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/delivery/grpc/pb"
@@ -756,36 +754,51 @@ func (exposeUseCase *ExposeUseCase) DetailOrder(id string) (result *model_respon
 	return bodyResponseOrder
 }
 func (exposeUseCase *ExposeUseCase) ListOrders() (result *model_response.Response[[]*model_response.OrderResponse]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.OrderHost, exposeUseCase.Env.App.OrderPort)
-	url := fmt.Sprintf("%s/%s", address, "orders")
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-
-	if newRequestErr != nil {
+	ListOrder, err := exposeUseCase.OrderClient.ListOrders()
+	if err != nil {
 		result = &model_response.Response[[]*model_response.OrderResponse]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: err.Error(),
 			Data:    nil,
 		}
 		return result
 	}
+	var listOrderResponse []*model_response.OrderResponse
+	var products []*entity.OrderProducts
 
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[[]*model_response.OrderResponse]{
-			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
-			Data:    nil,
+	for _, order := range ListOrder.Data {
+		for _, product := range order.Products {
+			dataProduct := &entity.OrderProducts{
+				Id:         null.NewString(product.Id, true),
+				OrderId:    null.NewString(product.OrderId, true),
+				ProductId:  null.NewString(product.ProductId, true),
+				TotalPrice: null.NewInt(product.TotalPrice, true),
+				Qty:        null.NewInt(product.Qty, true),
+				CreatedAt:  null.NewTime(product.CreatedAt.AsTime(), true),
+				UpdatedAt:  null.NewTime(product.UpdatedAt.AsTime(), true),
+				DeletedAt:  null.NewTime(product.DeletedAt.AsTime(), true),
+			}
+			products = append(products, dataProduct)
+			orderData := &model_response.OrderResponse{
+				Id:          null.NewString(order.Id, true),
+				UserId:      null.NewString(order.UserId, true),
+				ReceiptCode: null.NewString(order.ReceiptCode, true),
+				TotalPrice:  null.NewInt(order.TotalPrice, true),
+				TotalPaid:   null.NewInt(order.TotalPaid, true),
+				TotalReturn: null.NewInt(order.TotalReturn, true),
+				CreatedAt:   null.NewTime(order.CreatedAt.AsTime(), true),
+				UpdatedAt:   null.NewTime(order.UpdatedAt.AsTime(), true),
+				Products:    products,
+			}
+
+			listOrderResponse = append(listOrderResponse, orderData)
 		}
-		return result
 	}
-	foundOrders := &model_response.Response[[]*model_response.OrderResponse]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(foundOrders)
-	if decodeErr != nil {
-		result = &model_response.Response[[]*model_response.OrderResponse]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
-		}
+
+	bodyResponseOrder := &model_response.Response[[]*model_response.OrderResponse]{
+		Code:    http.StatusOK,
+		Message: ListOrder.Message,
+		Data:    listOrderResponse,
 	}
-	return foundOrders
+	return bodyResponseOrder
 }
