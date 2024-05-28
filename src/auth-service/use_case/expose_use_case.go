@@ -687,7 +687,7 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 		}
 		products = append(products, dataProduct)
 	}
-	orderData := &model_response.OrderResponse{
+	orderResponse := &model_response.OrderResponse{
 		Id:          null.NewString(order.Data.Id, true),
 		UserId:      null.NewString(order.Data.UserId, true),
 		ReceiptCode: null.NewString(order.Data.ReceiptCode, true),
@@ -701,42 +701,59 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 	bodyResponseOrder := &model_response.Response[*model_response.OrderResponse]{
 		Code:    http.StatusOK,
 		Message: order.Message,
-		Data:    orderData,
+		Data:    orderResponse,
 	}
 	return bodyResponseOrder
 }
 func (exposeUseCase *ExposeUseCase) DetailOrder(id string) (result *model_response.Response[*model_response.OrderResponse]) {
-	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.OrderHost, exposeUseCase.Env.App.OrderPort)
-	url := fmt.Sprintf("%s/%s/%s", address, "orders", id)
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-	if newRequestErr != nil {
+	GetOrder, err := exposeUseCase.OrderClient.GetOrderById(id)
+	if err != nil {
 		result = &model_response.Response[*model_response.OrderResponse]{
 			Code:    http.StatusBadRequest,
-			Message: newRequestErr.Error(),
+			Message: GetOrder.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
+	if GetOrder.Data == nil {
 		result = &model_response.Response[*model_response.OrderResponse]{
 			Code:    http.StatusBadRequest,
-			Message: doErr.Error(),
+			Message: GetOrder.Message,
 			Data:    nil,
 		}
-		return result
+		return
 	}
-	foundOrder := &model_response.Response[*model_response.OrderResponse]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(foundOrder)
-	if decodeErr != nil {
-		result = &model_response.Response[*model_response.OrderResponse]{
-			Code:    http.StatusBadRequest,
-			Message: decodeErr.Error(),
-			Data:    nil,
+	var products []*entity.OrderProducts
+	for _, product := range GetOrder.Data.Products {
+		dataProduct := &entity.OrderProducts{
+			Id:         null.NewString(product.Id, true),
+			OrderId:    null.NewString(product.OrderId, true),
+			ProductId:  null.NewString(product.ProductId, true),
+			TotalPrice: null.NewInt(product.TotalPrice, true),
+			Qty:        null.NewInt(product.Qty, true),
+			CreatedAt:  null.NewTime(product.CreatedAt.AsTime(), true),
+			UpdatedAt:  null.NewTime(product.UpdatedAt.AsTime(), true),
+			DeletedAt:  null.NewTime(product.DeletedAt.AsTime(), true),
 		}
+		products = append(products, dataProduct)
 	}
-	return foundOrder
+	GetOrderResponse := &model_response.OrderResponse{
+		Id:          null.NewString(GetOrder.Data.Id, true),
+		UserId:      null.NewString(GetOrder.Data.UserId, true),
+		ReceiptCode: null.NewString(GetOrder.Data.ReceiptCode, true),
+		TotalPrice:  null.NewInt(GetOrder.Data.TotalPrice, true),
+		TotalPaid:   null.NewInt(GetOrder.Data.TotalPaid, true),
+		TotalReturn: null.NewInt(GetOrder.Data.TotalReturn, true),
+		CreatedAt:   null.NewTime(GetOrder.Data.CreatedAt.AsTime(), true),
+		UpdatedAt:   null.NewTime(GetOrder.Data.UpdatedAt.AsTime(), true),
+		Products:    products,
+	}
+	bodyResponseOrder := &model_response.Response[*model_response.OrderResponse]{
+		Code:    http.StatusOK,
+		Message: GetOrder.Message,
+		Data:    GetOrderResponse,
+	}
+	return bodyResponseOrder
 }
 func (exposeUseCase *ExposeUseCase) ListOrders() (result *model_response.Response[[]*model_response.OrderResponse]) {
 	address := fmt.Sprintf("http://%s:%s", exposeUseCase.Env.App.OrderHost, exposeUseCase.Env.App.OrderPort)

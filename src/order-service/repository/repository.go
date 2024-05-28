@@ -3,6 +3,9 @@ package repository
 import (
 	"database/sql"
 	"go-micro-services/src/order-service/delivery/grpc/pb"
+	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type OrderRepository struct{}
@@ -15,6 +18,7 @@ func DeserializeOrderRows(rows *sql.Rows) []*pb.Order {
 	var foundOrders []*pb.Order
 	for rows.Next() {
 		foundOrder := &pb.Order{}
+		var createdAt, updatedAt, deletedAt time.Time
 		scanErr := rows.Scan(
 			&foundOrder.Id,
 			&foundOrder.UserId,
@@ -22,10 +26,13 @@ func DeserializeOrderRows(rows *sql.Rows) []*pb.Order {
 			&foundOrder.TotalPaid,
 			&foundOrder.TotalReturn,
 			&foundOrder.ReceiptCode,
-			&foundOrder.CreatedAt,
-			&foundOrder.UpdatedAt,
-			&foundOrder.DeletedAt,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
+		foundOrder.CreatedAt = timestamppb.New(createdAt)
+		foundOrder.UpdatedAt = timestamppb.New(updatedAt)
+		foundOrder.DeletedAt = timestamppb.New(deletedAt)
 		if scanErr != nil {
 			panic(scanErr)
 		}
@@ -34,25 +41,29 @@ func DeserializeOrderRows(rows *sql.Rows) []*pb.Order {
 	return foundOrders
 }
 func DeserializeOrderProductRows(rows *sql.Rows) []*pb.OrderProduct {
-	var foundOrders []*pb.OrderProduct
+	var foundOrderProducts []*pb.OrderProduct
 	for rows.Next() {
-		foundOrder := &pb.OrderProduct{}
+		foundOrderProduct := &pb.OrderProduct{}
+		var createdAt, updatedAt, deletedAt time.Time
 		scanErr := rows.Scan(
-			&foundOrder.Id,
-			&foundOrder.OrderId,
-			&foundOrder.ProductId,
-			&foundOrder.TotalPrice,
-			&foundOrder.Qty,
-			&foundOrder.CreatedAt,
-			&foundOrder.UpdatedAt,
-			&foundOrder.DeletedAt,
+			&foundOrderProduct.Id,
+			&foundOrderProduct.OrderId,
+			&foundOrderProduct.ProductId,
+			&foundOrderProduct.TotalPrice,
+			&foundOrderProduct.Qty,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
+		foundOrderProduct.CreatedAt = timestamppb.New(createdAt)
+		foundOrderProduct.UpdatedAt = timestamppb.New(updatedAt)
+		foundOrderProduct.DeletedAt = timestamppb.New(deletedAt)
 		if scanErr != nil {
 			panic(scanErr)
 		}
-		foundOrders = append(foundOrders, foundOrder)
+		foundOrderProducts = append(foundOrderProducts, foundOrderProduct)
 	}
-	return foundOrders
+	return foundOrderProducts
 }
 
 func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *pb.OrderResponseRepeated, err error) {
@@ -199,7 +210,7 @@ func (orderRepository *OrderRepository) GetOrderProductsByOrderId(tx *sql.Tx, or
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
-		`SELECT id, order_id, product_id,  total_price, qty,  created_at, updated_at, deleted_at FROM "order_products" WHERE order_id=$1;`,
+		`SELECT id, order_id, product_id,  total_price, qty,  created_at, updated_at FROM "order_products" WHERE order_id=$1;`,
 		order_id,
 	)
 
@@ -213,16 +224,18 @@ func (orderRepository *OrderRepository) GetOrderProductsByOrderId(tx *sql.Tx, or
 	var fetchOrderProducts []*pb.OrderProduct
 	for rows.Next() {
 		fetchOrderProduct := &pb.OrderProduct{}
+		var createdAt, updatedAt time.Time
 		scanErr := rows.Scan(
 			&fetchOrderProduct.Id,
 			&fetchOrderProduct.OrderId,
 			&fetchOrderProduct.ProductId,
 			&fetchOrderProduct.TotalPrice,
 			&fetchOrderProduct.Qty,
-			&fetchOrderProduct.CreatedAt,
-			&fetchOrderProduct.UpdatedAt,
-			&fetchOrderProduct.DeletedAt,
+			&createdAt,
+			&updatedAt,
 		)
+		fetchOrderProduct.CreatedAt = timestamppb.New(createdAt)
+		fetchOrderProduct.UpdatedAt = timestamppb.New(updatedAt)
 		if scanErr != nil {
 			result = nil
 			err = scanErr
