@@ -19,11 +19,11 @@ This project uses the ``micro-services`` architecture as explained above, this `
 ## Features
 - docker container per services
 - db per services 
-- communication between services
+- communication between services with grpc
 - user services 
 - product services 
 - order services
-- api gateway services 
+- auth services 
 
 
 ## Installation
