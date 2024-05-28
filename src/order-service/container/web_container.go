@@ -2,14 +2,14 @@ package container
 
 import (
 	"fmt"
+	"go-micro-services/src/order-service/client"
 	"go-micro-services/src/order-service/config"
-	httpdelivery "go-micro-services/src/order-service/delivery/http"
-	"go-micro-services/src/order-service/delivery/http/route"
+	"go-micro-services/src/order-service/delivery/grpc/pb"
 	"go-micro-services/src/order-service/repository"
 	"go-micro-services/src/order-service/use_case"
 
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
 type WebContainer struct {
@@ -17,8 +17,7 @@ type WebContainer struct {
 	OrderDB    *config.DatabaseConfig
 	Repository *RepositoryContainer
 	UseCase    *UseCaseContainer
-	Controller *ControllerContainer
-	Route      *route.RootRoute
+	Grpc       *grpc.Server
 }
 
 func NewWebContainer() *WebContainer {
@@ -32,32 +31,30 @@ func NewWebContainer() *WebContainer {
 
 	orderRepository := repository.NewOrderRepository()
 	repositoryContainer := NewRepositoryContainer(orderRepository)
-
-	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository, envConfig)
+	userUrl := fmt.Sprintf(
+		"%s:%s",
+		envConfig.App.UserHost,
+		envConfig.App.UserPort,
+	)
+	productUrl := fmt.Sprintf(
+		"%s:%s",
+		envConfig.App.ProductHost,
+		envConfig.App.ProductPort,
+	)
+	initUserClient := client.InitUserServiceClient(userUrl)
+	initProductClient := client.InitProductServiceClient(productUrl)
+	orderUseCase := use_case.NewOrderUseCase(orderDBConfig, orderRepository, envConfig, &initUserClient, &initProductClient)
 
 	useCaseContainer := NewUseCaseContainer(orderUseCase)
-
-	orderController := httpdelivery.NewOrderController(orderUseCase)
-
-	controllerContainer := NewControllerContainer(orderController)
-
-	router := mux.NewRouter()
-	orderRoute := route.NewOrderRoute(router, orderController)
-
-	rootRoute := route.NewRootRoute(
-		router,
-		orderRoute,
-	)
-
-	rootRoute.Register()
+	grpcServer := grpc.NewServer()
+	pb.RegisterOrderServiceServer(grpcServer, orderUseCase)
 
 	webContainer := &WebContainer{
 		Env:        envConfig,
 		OrderDB:    orderDBConfig,
 		Repository: repositoryContainer,
 		UseCase:    useCaseContainer,
-		Controller: controllerContainer,
-		Route:      rootRoute,
+		Grpc:       grpcServer,
 	}
 
 	return webContainer

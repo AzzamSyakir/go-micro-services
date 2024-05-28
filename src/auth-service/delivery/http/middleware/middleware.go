@@ -36,8 +36,9 @@ func (authMiddleware *AuthMiddleware) Middleware(next http.Handler) http.Handler
 			return
 		}
 
-		tx, err := authMiddleware.DatabaseConfig.AuthDB.Connection.Begin()
+		begin, err := authMiddleware.DatabaseConfig.AuthDB.Connection.Begin()
 		if err != nil {
+			begin.Rollback()
 			result := &response.Response[interface{}]{
 				Code:    http.StatusInternalServerError,
 				Message: "transaction error",
@@ -46,8 +47,9 @@ func (authMiddleware *AuthMiddleware) Middleware(next http.Handler) http.Handler
 			return
 		}
 
-		session, err := authMiddleware.SessionRepository.FindOneByAccToken(tx, token)
+		session, err := authMiddleware.SessionRepository.FindOneByAccToken(begin, token)
 		if err != nil {
+			begin.Rollback()
 			result := &response.Response[interface{}]{
 				Code:    http.StatusUnauthorized,
 				Message: "Unauthorized: token not found",
@@ -56,6 +58,7 @@ func (authMiddleware *AuthMiddleware) Middleware(next http.Handler) http.Handler
 			return
 		}
 		if session == nil {
+			begin.Rollback()
 			result := &response.Response[interface{}]{
 				Code:    http.StatusUnauthorized,
 				Message: "Unauthorized: Invalid Token",
@@ -64,6 +67,7 @@ func (authMiddleware *AuthMiddleware) Middleware(next http.Handler) http.Handler
 			return
 		}
 		if session.AccessTokenExpiredAt == null.NewTime(time.Now(), true) {
+			begin.Rollback()
 			result := &response.Response[interface{}]{
 				Code:    http.StatusUnauthorized,
 				Message: "Unauthorized: Token expired",
@@ -71,6 +75,7 @@ func (authMiddleware *AuthMiddleware) Middleware(next http.Handler) http.Handler
 			response.NewResponse(w, result)
 			return
 		}
+		begin.Commit()
 		next.ServeHTTP(w, r)
 	})
 }

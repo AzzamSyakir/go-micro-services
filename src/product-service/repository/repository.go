@@ -2,8 +2,10 @@ package repository
 
 import (
 	"database/sql"
-	"go-micro-services/src/product-service/delivery/grpc/pb"
-	model_response "go-micro-services/src/product-service/model/response"
+	pb "go-micro-services/src/product-service/delivery/grpc/pb/product"
+	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ProductRepository struct{}
@@ -21,9 +23,9 @@ func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreat
 		toCreateproduct.Stock,
 		toCreateproduct.Price,
 		toCreateproduct.CategoryId,
-		toCreateproduct.CreatedAt,
-		toCreateproduct.UpdatedAt,
-		toCreateproduct.DeletedAt,
+		toCreateproduct.CreatedAt.AsTime(),
+		toCreateproduct.UpdatedAt.AsTime(),
+		toCreateproduct.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil
@@ -40,6 +42,7 @@ func DeserializeProductRows(rows *sql.Rows) []*pb.Product {
 	var foundProducts []*pb.Product
 	for rows.Next() {
 		foundProduct := &pb.Product{}
+		var createdAt, updatedAt, deletedAt *time.Time
 		scanErr := rows.Scan(
 			&foundProduct.Id,
 			&foundProduct.Sku,
@@ -47,10 +50,13 @@ func DeserializeProductRows(rows *sql.Rows) []*pb.Product {
 			&foundProduct.Stock,
 			&foundProduct.Price,
 			&foundProduct.CategoryId,
-			&foundProduct.CreatedAt,
-			&foundProduct.UpdatedAt,
-			&foundProduct.DeletedAt,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
+		foundProduct.CreatedAt = timestamppb.New(*createdAt)
+		foundProduct.UpdatedAt = timestamppb.New(*updatedAt)
+		foundProduct.DeletedAt = timestamppb.New(*deletedAt)
 		if scanErr != nil {
 			panic(scanErr)
 		}
@@ -91,7 +97,7 @@ func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id strin
 		toPatchProduct.Name,
 		toPatchProduct.Stock,
 		toPatchProduct.Price,
-		toPatchProduct.UpdatedAt,
+		toPatchProduct.UpdatedAt.AsTime(),
 		id,
 	)
 
@@ -107,7 +113,7 @@ func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id strin
 	return result, err
 }
 
-func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result *model_response.Response[[]*pb.Product], err error) {
+func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result *pb.ProductResponseRepeated, err error) {
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
@@ -124,6 +130,7 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 	var products []*pb.Product
 	for rows.Next() {
 		product := &pb.Product{}
+		var createdAt, updatedAt, deletedAt time.Time
 		scanErr := rows.Scan(
 			&product.Id,
 			&product.Name,
@@ -131,10 +138,13 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 			&product.Stock,
 			&product.Price,
 			&product.CategoryId,
-			&product.CreatedAt,
-			&product.UpdatedAt,
-			&product.DeletedAt,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
 		)
+		product.CreatedAt = timestamppb.New(createdAt)
+		product.UpdatedAt = timestamppb.New(updatedAt)
+		product.DeletedAt = timestamppb.New(deletedAt)
 		if scanErr != nil {
 			result = nil
 			err = scanErr
@@ -143,7 +153,7 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 		products = append(products, product)
 	}
 
-	result = &model_response.Response[[]*pb.Product]{
+	result = &pb.ProductResponseRepeated{
 		Data: products,
 	}
 	err = nil

@@ -1,8 +1,7 @@
 package use_case
 
 import (
-	"encoding/json"
-	"fmt"
+	"go-micro-services/src/auth-service/client"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
@@ -20,14 +19,17 @@ type AuthUseCase struct {
 	DatabaseConfig *config.DatabaseConfig
 	AuthRepository *repository.AuthRepository
 	Env            *config.EnvConfig
+	userClient     *client.UserServiceClient
 }
 
 func NewAuthUseCase(
 	databaseConfig *config.DatabaseConfig,
 	authRepository *repository.AuthRepository,
 	env *config.EnvConfig,
+	initUserClient *client.UserServiceClient,
 ) *AuthUseCase {
 	authUseCase := &AuthUseCase{
+		userClient:     initUserClient,
 		DatabaseConfig: databaseConfig,
 		AuthRepository: authRepository,
 		Env:            env,
@@ -47,18 +49,27 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		return result, rollback
 	}
 
-	foundUser := authUseCase.FindUserByEmail(request.Email.String)
+	foundUser, err := authUseCase.userClient.GetUserByEmail(request.Email.String)
+	if err != nil {
+		rollback := begin.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: foundUser.Message,
+			Data:    nil,
+		}
+		return result, rollback
+	}
 	if foundUser.Data == nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
 			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Login fail, GetUser failed, " + foundUser.Message,
+			Message: foundUser.Message,
 			Data:    nil,
 		}
 		return result, rollback
 	}
 
-	comparePasswordErr := bcrypt.CompareHashAndPassword([]byte(foundUser.Data.Password.String), []byte(request.Password.String))
+	comparePasswordErr := bcrypt.CompareHashAndPassword([]byte(foundUser.Data.Password), []byte(request.Password.String))
 	if comparePasswordErr != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
@@ -75,7 +86,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 	accessTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Minute*10), true)
 	refreshTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Hour*24*2), true)
 
-	foundSession, err := authUseCase.AuthRepository.GetOneByUserId(begin, foundUser.Data.Id.String)
+	foundSession, err := authUseCase.AuthRepository.GetOneByUserId(begin, foundUser.Data.Id)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
@@ -115,7 +126,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 
 	newSession := &entity.Session{
 		Id:                    null.NewString(uuid.NewString(), true),
-		UserId:                foundUser.Data.Id,
+		UserId:                null.NewString(foundUser.Data.Id, true),
 		AccessToken:           accessToken,
 		RefreshToken:          refreshToken,
 		AccessTokenExpiredAt:  accessTokenExpiredAt,
@@ -267,42 +278,4 @@ func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *
 	}
 	return result, commit
 
-}
-
-func (authUseCase *AuthUseCase) FindUserByEmail(email string) (result *model_response.Response[*entity.User]) {
-	address := fmt.Sprintf("http://%s:%s", authUseCase.Env.App.UserHost, authUseCase.Env.App.UserPort)
-	url := fmt.Sprintf("%s/%s/%s/%s", address, "users", "email", email)
-	newRequest, newRequestErr := http.NewRequest("GET", url, nil)
-	if newRequestErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase failed, GetUser by email user is failed," + newRequestErr.Error(),
-			Data:    nil,
-			Errors:  true,
-		}
-		return result
-	}
-
-	responseRequest, doErr := http.DefaultClient.Do(newRequest)
-	if doErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase failed, GetUser by email user is failed," + doErr.Error(),
-			Data:    nil,
-			Errors:  true,
-		}
-		return result
-	}
-	bodyResponseUser := &model_response.Response[*entity.User]{}
-	decodeErr := json.NewDecoder(responseRequest.Body).Decode(bodyResponseUser)
-	if decodeErr != nil {
-		result = &model_response.Response[*entity.User]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase fail, GetUser by email user is failed," + decodeErr.Error(),
-			Data:    nil,
-			Errors:  true,
-		}
-		return result
-	}
-	return bodyResponseUser
 }

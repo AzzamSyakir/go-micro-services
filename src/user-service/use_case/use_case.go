@@ -6,7 +6,6 @@ import (
 	"go-micro-services/src/user-service/config"
 	"go-micro-services/src/user-service/delivery/grpc/pb"
 	"go-micro-services/src/user-service/repository"
-	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -38,7 +37,7 @@ func (userUseCase *UserUseCase) GetUserById(context context.Context, id *pb.ById
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "UserUseCase GetUserById is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -49,7 +48,7 @@ func (userUseCase *UserUseCase) GetUserById(context context.Context, id *pb.ById
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase GetUserById is failed, GetUserById failed : %s", GetUserByIdErr)
 		result = &pb.UserResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -57,9 +56,9 @@ func (userUseCase *UserUseCase) GetUserById(context context.Context, id *pb.ById
 	}
 	if GetUserById == nil {
 		rollback := begin.Rollback()
-		errorMessage := fmt.Sprintf("User UseCase FindOneById is failed, User is not found by id %s", id)
+		errorMessage := fmt.Sprintf("User UseCase GetOneById is failed, User is not found by id %s", id)
 		result = &pb.UserResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -67,8 +66,8 @@ func (userUseCase *UserUseCase) GetUserById(context context.Context, id *pb.ById
 	}
 	commit := begin.Commit()
 	result = &pb.UserResponse{
-		Code:    http.StatusOK,
-		Message: "User UseCase FindOneById is succeed.",
+		Code:    int64(codes.OK),
+		Message: "User UseCase GetOneById is succeed.",
 		Data:    GetUserById,
 	}
 	return result, commit
@@ -78,7 +77,7 @@ func (userUseCase *UserUseCase) GetUserByEmail(context context.Context, email *p
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "UserUseCase GetUserByEmail is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -89,7 +88,7 @@ func (userUseCase *UserUseCase) GetUserByEmail(context context.Context, email *p
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase GetUserByEmail is failed, GetUserById failed : %s", GetUserByEmailErr)
 		result = &pb.UserResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -99,7 +98,7 @@ func (userUseCase *UserUseCase) GetUserByEmail(context context.Context, email *p
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("User UseCase FindOneByemail is failed, User is not found by email %s", email)
 		result = &pb.UserResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -107,8 +106,8 @@ func (userUseCase *UserUseCase) GetUserByEmail(context context.Context, email *p
 	}
 	commit := begin.Commit()
 	result = &pb.UserResponse{
-		Code:    http.StatusOK,
-		Message: "User UseCase FindOneById is succeed.",
+		Code:    int64(codes.OK),
+		Message: "User UseCase GetOneById is succeed.",
 		Data:    GetUserByEmail,
 	}
 	return result, commit
@@ -118,7 +117,7 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "UserUseCase UpdateUser is failed, begin fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -129,7 +128,7 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "UserUseCase UpdateUser is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -138,7 +137,7 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 	if foundUser == nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "UserUserCase UpdateUser is failed, User is not found by id " + request.Id,
 			Data:    nil,
 		}
@@ -158,7 +157,7 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 		if err != nil {
 			rollback := begin.Rollback()
 			result = &pb.UserResponse{
-				Code:    http.StatusBadRequest,
+				Code:    int64(codes.Canceled),
 				Message: "UserUseCase UpdateUser is failed, password hashing is failed, " + err.Error(),
 				Data:    nil,
 			}
@@ -172,12 +171,11 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 	}
 	time := time.Now()
 	foundUser.UpdatedAt = timestamppb.New(time)
-
 	patchedUser, err := userUseCase.UserRepository.PatchOneById(begin, request.Id, foundUser)
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "UserUseCase UpdateUser is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -186,7 +184,7 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 
 	commit := begin.Commit()
 	result = &pb.UserResponse{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "UserUserCase UpdateUser is succeed.",
 		Data:    patchedUser,
 	}
@@ -198,7 +196,7 @@ func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "UserUseCase Register is failed, begin fail," + err.Error(),
 			Data:    nil,
 		}
@@ -209,7 +207,7 @@ func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.
 	if hashedPasswordErr != nil {
 		err = begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "UserUseCase Register is failed, password hashing is failed.",
 			Data:    nil,
 		}
@@ -232,7 +230,7 @@ func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.
 	if err != nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "UserUseCase Register is failed, query to db fail, " + err.Error(),
 			Data:    nil,
 		}
@@ -241,7 +239,7 @@ func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.
 
 	commit := begin.Commit()
 	result = &pb.UserResponse{
-		Code:    http.StatusCreated,
+		Code:    int64(codes.OK),
 		Message: "UserUseCase Register is succeed.",
 		Data:    createdUser,
 	}
@@ -257,7 +255,7 @@ func (userUseCase *UserUseCase) DeleteUser(context context.Context, id *pb.ById)
 	if deletedUserErr != nil {
 		err = begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: "UserUserCase DeleteUser is failed, " + deletedUserErr.Error(),
 			Data:    nil,
 		}
@@ -266,7 +264,7 @@ func (userUseCase *UserUseCase) DeleteUser(context context.Context, id *pb.ById)
 	if deletedUser == nil {
 		err = begin.Rollback()
 		result = &pb.UserResponse{
-			Code:    http.StatusBadRequest,
+			Code:    int64(codes.Canceled),
 			Message: "UserUserCase DeleteUser is failed, user is not deleted by id, " + id.Id,
 			Data:    nil,
 		}
@@ -275,7 +273,7 @@ func (userUseCase *UserUseCase) DeleteUser(context context.Context, id *pb.ById)
 
 	err = begin.Commit()
 	result = &pb.UserResponse{
-		Code:    http.StatusOK,
+		Code:    int64(codes.OK),
 		Message: "UserUserCase DeleteUser is succeed.",
 		Data:    deletedUser,
 	}
@@ -287,7 +285,7 @@ func (userUseCase *UserUseCase) ListUsers(ctx context.Context, empty *pb.Empty) 
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("begin failed :%s", err)
 		result = &pb.UserResponseRepeated{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -299,7 +297,7 @@ func (userUseCase *UserUseCase) ListUsers(ctx context.Context, empty *pb.Empty) 
 		rollback := begin.Rollback()
 		errorMessage := fmt.Sprintf("UserUseCase ListUser is failed, query failed : %s", err)
 		result = &pb.UserResponseRepeated{
-			Code:    http.StatusInternalServerError,
+			Code:    int64(codes.Internal),
 			Message: errorMessage,
 			Data:    nil,
 		}
@@ -309,7 +307,7 @@ func (userUseCase *UserUseCase) ListUsers(ctx context.Context, empty *pb.Empty) 
 	if ListUser.Data == nil {
 		rollback := begin.Rollback()
 		result = &pb.UserResponseRepeated{
-			Code:    http.StatusNotFound,
+			Code:    int64(codes.Canceled),
 			Message: "User UseCase ListUser is failed, data User is empty ",
 			Data:    nil,
 		}
