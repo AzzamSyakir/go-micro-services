@@ -7,5 +7,4 @@ create table IF NOT EXISTS users
     Balance int not null ,
     created_at timestamptz not null ,
     updated_at timestamptz not null ,
-    deleted_at timestamptz
 );

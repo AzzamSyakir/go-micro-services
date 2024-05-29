@@ -16,7 +16,7 @@ func NewProductRepository() *ProductRepository {
 }
 func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreateproduct *pb.Product) (result *pb.Product, err error) {
 	_, queryErr := begin.Query(
-		`INSERT INTO "products" (id, sku, name, stock, price, category_id, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+		`INSERT INTO "products" (id, sku, name, stock, price, category_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
 		toCreateproduct.Id,
 		toCreateproduct.Sku,
 		toCreateproduct.Name,
@@ -25,7 +25,6 @@ func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreat
 		toCreateproduct.CategoryId,
 		toCreateproduct.CreatedAt.AsTime(),
 		toCreateproduct.UpdatedAt.AsTime(),
-		toCreateproduct.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil
@@ -42,7 +41,7 @@ func DeserializeProductRows(rows *sql.Rows) []*pb.Product {
 	var foundProducts []*pb.Product
 	for rows.Next() {
 		foundProduct := &pb.Product{}
-		var createdAt, updatedAt, deletedAt *time.Time
+		var createdAt, updatedAt *time.Time
 		scanErr := rows.Scan(
 			&foundProduct.Id,
 			&foundProduct.Sku,
@@ -52,11 +51,9 @@ func DeserializeProductRows(rows *sql.Rows) []*pb.Product {
 			&foundProduct.CategoryId,
 			&createdAt,
 			&updatedAt,
-			&deletedAt,
 		)
 		foundProduct.CreatedAt = timestamppb.New(*createdAt)
 		foundProduct.UpdatedAt = timestamppb.New(*updatedAt)
-		foundProduct.DeletedAt = timestamppb.New(*deletedAt)
 		if scanErr != nil {
 			panic(scanErr)
 		}
@@ -130,7 +127,7 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 	var products []*pb.Product
 	for rows.Next() {
 		product := &pb.Product{}
-		var createdAt, updatedAt, deletedAt time.Time
+		var createdAt, updatedAt time.Time
 		scanErr := rows.Scan(
 			&product.Id,
 			&product.Name,
@@ -140,11 +137,9 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 			&product.CategoryId,
 			&createdAt,
 			&updatedAt,
-			&deletedAt,
 		)
 		product.CreatedAt = timestamppb.New(createdAt)
 		product.UpdatedAt = timestamppb.New(updatedAt)
-		product.DeletedAt = timestamppb.New(deletedAt)
 		if scanErr != nil {
 			result = nil
 			err = scanErr
@@ -162,7 +157,7 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 
 func (productRepository *ProductRepository) DeleteOneById(begin *sql.Tx, id string) (result *pb.Product, err error) {
 	rows, queryErr := begin.Query(
-		`DELETE FROM "products" WHERE id=$1 RETURNING id, name, sku, stock, price, category_id, created_at, updated_at, deleted_at`,
+		`DELETE FROM "products" WHERE id=$1 RETURNING id, name, sku, stock, price, category_id, created_at, updated_at`,
 		id,
 	)
 	if queryErr != nil {

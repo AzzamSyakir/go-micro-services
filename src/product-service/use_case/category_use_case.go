@@ -157,7 +157,6 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, requ
 		Name:      request.Name,
 		CreatedAt: timestamppb.New(currentTime.Time),
 		UpdatedAt: timestamppb.New(currentTime.Time),
-		DeletedAt: timestamppb.New(time.Time{}),
 	}
 
 	createdCategory, err := categoryUseCase.CategoryRepository.CreateCategory(begin, newCategory)

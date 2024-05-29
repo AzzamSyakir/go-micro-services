@@ -21,10 +21,10 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	UserService_GetUserById_FullMethodName    = "/go_micro_services.UserService/GetUserById"
 	UserService_GetUserByEmail_FullMethodName = "/go_micro_services.UserService/GetUserByEmail"
-	UserService_UpdateUser_FullMethodName    = "/go_micro_services.UserService/UpdateUser"
-	UserService_CreateUser_FullMethodName    = "/go_micro_services.UserService/CreateUser"
-	UserService_DeleteUser_FullMethodName    = "/go_micro_services.UserService/DeleteUser"
-	UserService_ListUsers_FullMethodName     = "/go_micro_services.UserService/ListUsers"
+	UserService_UpdateUser_FullMethodName     = "/go_micro_services.UserService/UpdateUser"
+	UserService_CreateUser_FullMethodName     = "/go_micro_services.UserService/CreateUser"
+	UserService_DeleteUser_FullMethodName     = "/go_micro_services.UserService/DeleteUser"
+	UserService_ListUsers_FullMethodName      = "/go_micro_services.UserService/ListUsers"
 )
 
 // UserServiceClient is the client API for UserService service.

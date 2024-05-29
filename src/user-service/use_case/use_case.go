@@ -223,7 +223,6 @@ func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.
 		Balance:   request.Balance,
 		CreatedAt: timestamppb.New(currentTime.Time),
 		UpdatedAt: timestamppb.New(currentTime.Time),
-		DeletedAt: &timestamppb.Timestamp{},
 	}
 
 	createdUser, err := userUseCase.UserRepository.CreateUser(begin, newUser)

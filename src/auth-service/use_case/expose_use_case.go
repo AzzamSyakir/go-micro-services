@@ -65,7 +65,6 @@ func (exposeUseCase *ExposeUseCase) ListUsers() (result *model_response.Response
 			Balance:   null.NewInt(user.Balance, true),
 			CreatedAt: null.NewTime(user.CreatedAt.AsTime(), true),
 			UpdatedAt: null.NewTime(user.UpdatedAt.AsTime(), true),
-			DeletedAt: null.NewTime(user.DeletedAt.AsTime(), true),
 		}
 
 		users = append(users, userData)
@@ -111,7 +110,7 @@ func (exposeUseCase *ExposeUseCase) CreateUser(request *model_request.RegisterRe
 		UpdatedAt: null.NewTime(createUser.Data.UpdatedAt.AsTime(), true),
 	}
 	bodyResponseUser := &model_response.Response[*entity.User]{
-		Code:    http.StatusOK,
+		Code:    http.StatusCreated,
 		Message: createUser.Message,
 		Data:    &user,
 	}
@@ -293,7 +292,6 @@ func (exposeUseCase *ExposeUseCase) ListProducts() (result *model_response.Respo
 			CategoryId: null.NewString(product.CategoryId, true),
 			CreatedAt:  null.NewTime(product.CreatedAt.AsTime(), true),
 			UpdatedAt:  null.NewTime(product.UpdatedAt.AsTime(), true),
-			DeletedAt:  null.NewTime(product.DeletedAt.AsTime(), true),
 		}
 
 		products = append(products, productData)
@@ -339,7 +337,7 @@ func (exposeUseCase *ExposeUseCase) CreateProduct(request *model_request.CreateP
 		UpdatedAt:  null.NewTime(createProduct.Data.UpdatedAt.AsTime(), true),
 	}
 	bodyResponseProduct := &model_response.Response[*entity.Product]{
-		Code:    http.StatusOK,
+		Code:    http.StatusCreated,
 		Message: createProduct.Message,
 		Data:    &user,
 	}
@@ -483,7 +481,6 @@ func (exposeUseCase *ExposeUseCase) ListCategories() (result *model_response.Res
 			Name:      null.NewString(category.Name, true),
 			CreatedAt: null.NewTime(category.CreatedAt.AsTime(), true),
 			UpdatedAt: null.NewTime(category.UpdatedAt.AsTime(), true),
-			DeletedAt: null.NewTime(category.DeletedAt.AsTime(), true),
 		}
 
 		categorys = append(categorys, categoryData)
@@ -523,7 +520,7 @@ func (exposeUseCase *ExposeUseCase) CreateCategory(request *model_request.Catego
 		UpdatedAt: null.NewTime(createCategory.Data.UpdatedAt.AsTime(), true),
 	}
 	bodyResponseCategory := &model_response.Response[*entity.Category]{
-		Code:    http.StatusOK,
+		Code:    http.StatusCreated,
 		Message: createCategory.Message,
 		Data:    &user,
 	}
@@ -681,7 +678,6 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 			Qty:        null.NewInt(product.Qty, true),
 			CreatedAt:  null.NewTime(product.CreatedAt.AsTime(), true),
 			UpdatedAt:  null.NewTime(product.UpdatedAt.AsTime(), true),
-			DeletedAt:  null.NewTime(product.DeletedAt.AsTime(), true),
 		}
 		products = append(products, dataProduct)
 	}
@@ -697,7 +693,7 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 		Products:    products,
 	}
 	bodyResponseOrder := &model_response.Response[*model_response.OrderResponse]{
-		Code:    http.StatusOK,
+		Code:    http.StatusCreated,
 		Message: order.Message,
 		Data:    orderResponse,
 	}
@@ -731,7 +727,6 @@ func (exposeUseCase *ExposeUseCase) DetailOrder(id string) (result *model_respon
 			Qty:        null.NewInt(product.Qty, true),
 			CreatedAt:  null.NewTime(product.CreatedAt.AsTime(), true),
 			UpdatedAt:  null.NewTime(product.UpdatedAt.AsTime(), true),
-			DeletedAt:  null.NewTime(product.DeletedAt.AsTime(), true),
 		}
 		products = append(products, dataProduct)
 	}
@@ -776,7 +771,6 @@ func (exposeUseCase *ExposeUseCase) ListOrders() (result *model_response.Respons
 				Qty:        null.NewInt(product.Qty, true),
 				CreatedAt:  null.NewTime(product.CreatedAt.AsTime(), true),
 				UpdatedAt:  null.NewTime(product.UpdatedAt.AsTime(), true),
-				DeletedAt:  null.NewTime(product.DeletedAt.AsTime(), true),
 			}
 			products = append(products, dataProduct)
 			orderData := &model_response.OrderResponse{

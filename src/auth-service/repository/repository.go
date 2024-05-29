@@ -27,7 +27,6 @@ func DeserializeSessionRows(rows *sql.Rows) []*entity.Session {
 			&foundSession.RefreshTokenExpiredAt,
 			&foundSession.CreatedAt,
 			&foundSession.UpdatedAt,
-			&foundSession.DeletedAt,
 		)
 		if scanErr != nil {
 			panic(scanErr)
@@ -38,7 +37,7 @@ func DeserializeSessionRows(rows *sql.Rows) []*entity.Session {
 }
 func (sessionRepository *AuthRepository) CreateSession(begin *sql.Tx, toCreateSession *entity.Session) (result *entity.Session, err error) {
 	_, queryErr := begin.Query(
-		`INSERT INTO sessions (id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+		`INSERT INTO sessions (id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
 		toCreateSession.Id,
 		toCreateSession.UserId,
 		toCreateSession.AccessToken,
@@ -47,7 +46,6 @@ func (sessionRepository *AuthRepository) CreateSession(begin *sql.Tx, toCreateSe
 		toCreateSession.RefreshTokenExpiredAt,
 		toCreateSession.CreatedAt,
 		toCreateSession.UpdatedAt,
-		toCreateSession.DeletedAt,
 	)
 	if queryErr != nil {
 		result = nil
@@ -131,7 +129,7 @@ func (sessionRepository *AuthRepository) FindOneByRefToken(begin *sql.Tx, refres
 
 func (sessionRepository *AuthRepository) PatchOneById(begin *sql.Tx, id string, toPatchSession *entity.Session) (result *entity.Session, err error) {
 	_, queryErr := begin.Query(
-		`UPDATE sessions SET id=$1, user_id=$2, access_token=$3, refresh_token=$4, access_token_expired_at=$5, refresh_token_expired_at=$6, created_at=$7, updated_at=$8, deleted_at=$9 WHERE id=$10 ;`,
+		`UPDATE sessions SET id=$1, user_id=$2, access_token=$3, refresh_token=$4, access_token_expired_at=$5, refresh_token_expired_at=$6, created_at=$7, updated_at=$8, WHERE id=$9;`,
 		toPatchSession.Id,
 		toPatchSession.UserId,
 		toPatchSession.AccessToken,
@@ -140,7 +138,6 @@ func (sessionRepository *AuthRepository) PatchOneById(begin *sql.Tx, id string, 
 		toPatchSession.RefreshTokenExpiredAt,
 		toPatchSession.CreatedAt,
 		toPatchSession.UpdatedAt,
-		toPatchSession.DeletedAt,
 		id,
 	)
 	if queryErr != nil {

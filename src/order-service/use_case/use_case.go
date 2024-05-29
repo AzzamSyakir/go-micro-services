@@ -242,7 +242,6 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.OrderRe
 		TotalReturn: totalReturn,
 		CreatedAt:   timestamppb.New(time.Now()),
 		UpdatedAt:   timestamppb.New(time.Now()),
-		DeletedAt:   timestamppb.New(time.Time{}),
 	}
 
 	order, err := orderUseCase.OrderRepository.Order(begin, orderData)

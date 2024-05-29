@@ -8,5 +8,4 @@ create table IF NOT EXISTS sessions
     refresh_token_expired_at timestamptz not null,
     created_at timestamptz not null,
     updated_at timestamptz not null,
-    deleted_at timestamptz
 );

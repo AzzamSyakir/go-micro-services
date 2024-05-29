@@ -17,6 +17,5 @@ create table IF NOT EXISTS products
     category_id uuid not null ,
     created_at timestamptz not null ,
     updated_at timestamptz not null ,
-    deleted_at timestamptz,
     foreign key(category_id) references categories(id)
 );

@@ -19,7 +19,7 @@ func DeserializeUserRows(rows *sql.Rows) []*pb.User {
 	var foundUsers []*pb.User
 	for rows.Next() {
 		foundUser := &pb.User{}
-		var createdAt, updatedAt, deletedAt null.Time
+		var createdAt, updatedAt null.Time
 		scanErr := rows.Scan(
 			&foundUser.Id,
 			&foundUser.Name,
@@ -28,11 +28,9 @@ func DeserializeUserRows(rows *sql.Rows) []*pb.User {
 			&foundUser.Balance,
 			&createdAt,
 			&updatedAt,
-			&deletedAt,
 		)
 		foundUser.CreatedAt = timestamppb.New(createdAt.Time)
 		foundUser.UpdatedAt = timestamppb.New(updatedAt.Time)
-		foundUser.DeletedAt = timestamppb.New(deletedAt.Time)
 		if scanErr != nil {
 			panic(scanErr)
 		}
@@ -43,7 +41,7 @@ func DeserializeUserRows(rows *sql.Rows) []*pb.User {
 
 func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *pb.User) (result *pb.User, err error) {
 	_, queryErr := begin.Query(
-		`INSERT INTO "users" (id, name, email, password, balance, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
+		`INSERT INTO "users" (id, name, email, password, balance, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7);`,
 		toCreateUser.Id,
 		toCreateUser.Name,
 		toCreateUser.Email,
@@ -51,7 +49,6 @@ func (userRepository *UserRepository) CreateUser(begin *sql.Tx, toCreateUser *pb
 		toCreateUser.Balance,
 		toCreateUser.CreatedAt.AsTime(),
 		toCreateUser.UpdatedAt.AsTime(),
-		toCreateUser.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil
@@ -68,7 +65,7 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *pb.UserRe
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, email, password, balance, created_at, updated_at, deleted_at FROM "users" `,
+		`SELECT id, name, email, password, balance, created_at, updated_at FROM "users" `,
 	)
 
 	if queryErr != nil {
@@ -78,7 +75,7 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *pb.UserRe
 	}
 	defer rows.Close()
 	var ListUsers []*pb.User
-	var createdAt, updatedAt, deletedAt null.Time
+	var createdAt, updatedAt null.Time
 	for rows.Next() {
 		ListUser := &pb.User{}
 		scanErr := rows.Scan(
@@ -89,11 +86,9 @@ func (userRepository *UserRepository) ListUser(begin *sql.Tx) (result *pb.UserRe
 			&ListUser.Balance,
 			&createdAt,
 			&updatedAt,
-			&deletedAt,
 		)
 		ListUser.CreatedAt = timestamppb.New(createdAt.Time)
 		ListUser.UpdatedAt = timestamppb.New(updatedAt.Time)
-		ListUser.DeletedAt = timestamppb.New(deletedAt.Time)
 		if scanErr != nil {
 			result = nil
 			err = scanErr
@@ -165,7 +160,7 @@ func (userRepository *UserRepository) GetUserByEmail(begin *sql.Tx, email string
 
 func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *pb.User) (result *pb.User, err error) {
 	rows, queryErr := begin.Query(
-		`UPDATE "users" SET id=$1, name=$2, email=$3, password=$4, balance=$5, created_at=$6, updated_at=$7, deleted_at=$8 WHERE id = $9 ;`,
+		`UPDATE "users" SET id=$1, name=$2, email=$3, password=$4, balance=$5, created_at=$6, updated_at=$7, WHERE id = $8 ;`,
 		toPatchUser.Id,
 		toPatchUser.Name,
 		toPatchUser.Email,
@@ -173,7 +168,6 @@ func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toP
 		toPatchUser.Balance,
 		toPatchUser.CreatedAt.AsTime(),
 		toPatchUser.UpdatedAt.AsTime(),
-		toPatchUser.DeletedAt.AsTime(),
 		id,
 	)
 
@@ -191,7 +185,7 @@ func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toP
 
 func (userRepository *UserRepository) DeleteUser(begin *sql.Tx, id string) (result *pb.User, err error) {
 	rows, queryErr := begin.Query(
-		`DELETE FROM "users" WHERE id=$1 RETURNING id, name,  email, password, balance, created_at, updated_at, deleted_at`,
+		`DELETE FROM "users" WHERE id=$1 RETURNING id, name,  email, password, balance, created_at, updated_at`,
 		id,
 	)
 	if queryErr != nil {

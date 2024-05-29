@@ -178,7 +178,6 @@ func (productUseCase *ProductUseCase) CreateProduct(ctx context.Context, request
 		CategoryId: request.CategoryId,
 		CreatedAt:  timestamppb.New(currentTime.Time),
 		UpdatedAt:  timestamppb.New(currentTime.Time),
-		DeletedAt:  timestamppb.New(currentTime.Time),
 	}
 
 	createdProduct, err := productUseCase.ProductRepository.CreateProduct(begin, newproduct)

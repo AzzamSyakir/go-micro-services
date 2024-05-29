@@ -36,7 +36,6 @@ func NewOrderProductMock(
 				Qty:        null.NewInt(200000, true),
 				CreatedAt:  null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
 				UpdatedAt:  null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
-				DeletedAt:  null.NewTime(time.Time{}, false),
 			},
 			{
 				Id:         null.NewString(uuid.NewString(), true),
@@ -46,7 +45,6 @@ func NewOrderProductMock(
 				Qty:        null.NewInt(200000, true),
 				CreatedAt:  null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
 				UpdatedAt:  null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
-				DeletedAt:  null.NewTime(time.Time{}, false),
 			},
 		},
 	}

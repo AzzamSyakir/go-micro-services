@@ -133,7 +133,6 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		RefreshTokenExpiredAt: refreshTokenExpiredAt,
 		CreatedAt:             currentTime,
 		UpdatedAt:             currentTime,
-		DeletedAt:             null.NewTime(time.Time{}, false),
 	}
 
 	createdSession, err := authUseCase.AuthRepository.CreateSession(begin, newSession)
