@@ -26,15 +26,5 @@ start-db:
 start-test:
 	clear && go test -v -count=1 ./src/auth-service/test
 
-generate-proto-user:
-	clear && protoc --proto_path=src/user-service/delivery/grpc/proto src/user-service/delivery/grpc/proto/*.proto --go_out=src/user-service/delivery/grpc --go-grpc_out=src/user-service/delivery/grpc
-
-generate-proto-product:
-	clear && protoc --proto_path=src/product-service/delivery/grpc/proto src/product-service/delivery/grpc/proto/*.proto --go_out=src/product-service/delivery/grpc --go-grpc_out=src/product-service/delivery/grpc
-
-generate-proto-order:
-	clear && protoc --proto_path=src/order-service/delivery/grpc/proto src/order-service/delivery/grpc/proto/*.proto --go_out=src/order-service/delivery/grpc/ --go-grpc_out=src/order-service/delivery/grpc/
-
-generate-proto-auth:
-	clear && protoc --proto_path=src/auth-service/delivery/grpc/proto src/auth-service/delivery/grpc/proto/*.proto --go_out=src/auth-service/delivery/grpc/ --go-grpc_out=src/auth-service/delivery/grpc/
- 
+generate-proto:
+	clear && protoc --proto_path=grpc/proto grpc/proto/*.proto --go_out=grpc --go-grpc_out=grpc

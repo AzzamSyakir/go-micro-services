@@ -109,7 +109,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 			rollback := begin.Rollback()
 			result = &model_response.Response[*entity.Session]{
 				Code:    http.StatusBadRequest,
-				Message: "AuthUseCase Login failed, query to db fail, " + err.Error(),
+				Message: "AuthUseCase Login failed, query updateSession  fail, " + err.Error(),
 				Data:    nil,
 			}
 			return result, rollback
@@ -140,7 +140,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
 			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Login failed, query to db fail, " + err.Error(),
+			Message: "AuthUseCase Login failed, query createSession fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback

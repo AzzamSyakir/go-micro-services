@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"go-micro-services/src/auth-service/entity"
 )
 
@@ -60,7 +59,7 @@ func (sessionRepository *AuthRepository) CreateSession(begin *sql.Tx, toCreateSe
 
 func (sessionRepository *AuthRepository) FindOneByAccToken(begin *sql.Tx, accessToken string) (result *entity.Session, err error) {
 	rows, queryErr := begin.Query(
-		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at FROM sessions WHERE access_token=$1 LIMIT 1;`,
+		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at FROM sessions WHERE access_token=$1 LIMIT 1;`,
 		accessToken,
 	)
 	if queryErr != nil {
@@ -83,7 +82,7 @@ func (sessionRepository *AuthRepository) FindOneByAccToken(begin *sql.Tx, access
 
 func (sessionRepository *AuthRepository) GetOneByUserId(begin *sql.Tx, userId string) (result *entity.Session, err error) {
 	rows, queryErr := begin.Query(
-		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at FROM sessions WHERE user_id=$1 LIMIT 1;`,
+		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at FROM sessions WHERE user_id=$1 LIMIT 1;`,
 		userId,
 	)
 	if queryErr != nil {
@@ -106,7 +105,7 @@ func (sessionRepository *AuthRepository) GetOneByUserId(begin *sql.Tx, userId st
 
 func (sessionRepository *AuthRepository) FindOneByRefToken(begin *sql.Tx, refreshToken string) (result *entity.Session, err error) {
 	rows, queryErr := begin.Query(
-		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at FROM sessions WHERE refresh_token=$1 LIMIT 1;`,
+		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at FROM sessions WHERE refresh_token=$1 LIMIT 1;`,
 		refreshToken,
 	)
 	if queryErr != nil {
@@ -129,7 +128,7 @@ func (sessionRepository *AuthRepository) FindOneByRefToken(begin *sql.Tx, refres
 
 func (sessionRepository *AuthRepository) PatchOneById(begin *sql.Tx, id string, toPatchSession *entity.Session) (result *entity.Session, err error) {
 	_, queryErr := begin.Query(
-		`UPDATE sessions SET id=$1, user_id=$2, access_token=$3, refresh_token=$4, access_token_expired_at=$5, refresh_token_expired_at=$6, created_at=$7, updated_at=$8, WHERE id=$9;`,
+		`UPDATE sessions SET id=$1, user_id=$2, access_token=$3, refresh_token=$4, access_token_expired_at=$5, refresh_token_expired_at=$6, created_at=$7, updated_at=$8 WHERE id=$9;`,
 		toPatchSession.Id,
 		toPatchSession.UserId,
 		toPatchSession.AccessToken,
@@ -151,9 +150,8 @@ func (sessionRepository *AuthRepository) PatchOneById(begin *sql.Tx, id string, 
 	return result, err
 }
 func (sessionRepository *AuthRepository) DeleteOneById(begin *sql.Tx, id string) (result *entity.Session, err error) {
-	fmt.Println("tes di repo")
 	rows, queryErr := begin.Query(
-		`DELETE FROM sessions WHERE id=$1  RETURNING id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at, deleted_at;`,
+		`DELETE FROM sessions WHERE id=$1  RETURNING id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at;`,
 		id,
 	)
 	if queryErr != nil {

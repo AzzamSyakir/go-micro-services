@@ -11,8 +11,8 @@ type Session struct {
 	RefreshToken          null.String `json:"refresh_token"`
 	AccessTokenExpiredAt  null.Time   `json:"access_token_expired_at"`
 	RefreshTokenExpiredAt null.Time   `json:"refresh_token_expired_at"`
-	UpdatedAt             null.Time   `json:"updated_at"`
 	CreatedAt             null.Time   `json:"created_at"`
+	UpdatedAt             null.Time   `json:"updated_at"`
 }
 
 type User struct {

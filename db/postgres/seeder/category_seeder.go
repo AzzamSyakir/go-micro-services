@@ -31,7 +31,7 @@ func (CategorySeeder *CategorySeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO categories (id, name, created_at, updated_at) VALUES ($1, $2, $3, $4;",
+				"INSERT INTO categories (id, name, created_at, updated_at) VALUES ($1, $2, $3, $4);",
 				category.Id,
 				category.Name,
 				category.CreatedAt,

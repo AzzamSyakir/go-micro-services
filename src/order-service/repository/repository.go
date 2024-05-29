@@ -112,7 +112,7 @@ func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *pb.Or
 
 func (orderRepository *OrderRepository) Order(begin *sql.Tx, orders *pb.Order) (result *pb.OrderResponse, err error) {
 	rows, queryErr := begin.Query(
-		`INSERT INTO "orders"(id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		`INSERT INTO "orders"(id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		orders.Id,
 		orders.UserId,
 		orders.TotalPrice,
@@ -155,7 +155,7 @@ func (orderRepository OrderRepository) DetailOrder(tx *sql.Tx, id string) (resul
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
-		`SELECT id, user_id, total_price, total_paid, total_return, receipt_code,  created_at, updated_at, deleted_at FROM "orders" WHERE id=$1 LIMIT 1;`,
+		`SELECT id, user_id, total_price, total_paid, total_return, receipt_code,  created_at, updated_at FROM "orders" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 	if queryErr != nil {

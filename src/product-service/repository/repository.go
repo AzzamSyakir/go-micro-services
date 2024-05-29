@@ -66,7 +66,7 @@ func (productRepository ProductRepository) GetProductById(tx *sql.Tx, id string)
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
-		`SELECT id, sku, name,  stock, price, category_id,  created_at, updated_at, deleted_at FROM "products" WHERE id=$1 LIMIT 1;`,
+		`SELECT id, sku, name,  stock, price, category_id,  created_at, updated_at FROM "products" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 	if queryErr != nil {
@@ -90,7 +90,7 @@ func (productRepository ProductRepository) GetProductById(tx *sql.Tx, id string)
 
 func (productRepository *ProductRepository) PatchOneById(begin *sql.Tx, id string, toPatchProduct *pb.Product) (result *pb.Product, err error) {
 	rows, queryErr := begin.Query(
-		`UPDATE "products" SET name=$1,  stock=$2, price=$3, updated_at=$4 WHERE id = $5 ;`,
+		`UPDATE "products" SET name=$1,  stock=$2, price=$3, updated_at=$4 WHERE id = $5;`,
 		toPatchProduct.Name,
 		toPatchProduct.Stock,
 		toPatchProduct.Price,
@@ -114,7 +114,7 @@ func (productRepository *ProductRepository) ListProducts(begin *sql.Tx) (result 
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, sku, stock, price, category_id, created_at, updated_at, deleted_at FROM "products" `,
+		`SELECT id, name, sku, stock, price, category_id, created_at, updated_at FROM "products" `,
 	)
 
 	if queryErr != nil {

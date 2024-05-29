@@ -108,7 +108,7 @@ func (userRepository *UserRepository) GetUserById(begin *sql.Tx, id string) (res
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, email, password, balance, created_at, updated_at, deleted_at FROM "users" WHERE id=$1 LIMIT 1;`,
+		`SELECT id, name, email, password, balance, created_at, updated_at FROM "users" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 
@@ -135,7 +135,7 @@ func (userRepository *UserRepository) GetUserByEmail(begin *sql.Tx, email string
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, email, password, balance, created_at, updated_at, deleted_at FROM "users" WHERE email=$1 LIMIT 1;`,
+		`SELECT id, name, email, password, balance, created_at, updated_at FROM "users" WHERE email=$1 LIMIT 1;`,
 		email,
 	)
 

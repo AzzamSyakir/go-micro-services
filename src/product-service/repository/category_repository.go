@@ -58,7 +58,7 @@ func (categoryRepository CategoryRepository) GetProductById(tx *sql.Tx, id strin
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
-		`SELECT id, name, created_at, updated_at, deleted_at FROM "categories" WHERE id=$1 LIMIT 1;`,
+		`SELECT id, name, created_at, updated_at FROM "categories" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 	if queryErr != nil {
@@ -104,7 +104,7 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, created_at, updated_at, deleted_at FROM "categories" `,
+		`SELECT id, name, created_at, updated_at FROM "categories" `,
 	)
 
 	if queryErr != nil {
