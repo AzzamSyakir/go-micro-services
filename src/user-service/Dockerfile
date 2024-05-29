@@ -15,6 +15,7 @@ WORKDIR $WORKDIR
 
 # copy source from host to docker container
 COPY ./src/user-service/ ./src/user-service/
+COPY grpc/ grpc/
 COPY user.air.toml .
 COPY .env .
 COPY go.mod .

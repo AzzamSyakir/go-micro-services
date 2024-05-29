@@ -14,6 +14,7 @@ RUN go install github.com/cosmtrek/air@latest
 
 
 COPY ./src/product-service/ ./src/product-service/
+COPY grpc/ grpc/
 COPY product.air.toml .
 COPY .env .
 COPY go.mod .

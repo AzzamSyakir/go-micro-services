@@ -2,8 +2,8 @@ package container
 
 import (
 	"fmt"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/user-service/config"
-	"go-micro-services/src/user-service/delivery/grpc/pb"
 	"go-micro-services/src/user-service/repository"
 	"go-micro-services/src/user-service/use_case"
 

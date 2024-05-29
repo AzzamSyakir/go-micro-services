@@ -1,9 +1,9 @@
 package use_case
 
 import (
-	"go-micro-services/src/auth-service/client"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/auth-service/config"
-	"go-micro-services/src/auth-service/delivery/grpc/pb"
+	"go-micro-services/src/auth-service/delivery/grpc/client"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	model_response "go-micro-services/src/auth-service/model/response"

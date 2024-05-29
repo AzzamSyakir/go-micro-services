@@ -2,8 +2,8 @@ package container
 
 import (
 	"fmt"
-	"go-micro-services/src/auth-service/client"
 	"go-micro-services/src/auth-service/config"
+	"go-micro-services/src/auth-service/delivery/grpc/client"
 	httpdelivery "go-micro-services/src/auth-service/delivery/http"
 	"go-micro-services/src/auth-service/delivery/http/middleware"
 	"go-micro-services/src/auth-service/delivery/http/route"

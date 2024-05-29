@@ -13,6 +13,7 @@ ENV WORKDIR /app
 WORKDIR $WORKDIR
 
 COPY ./src/order-service/ ./src/order-service/
+COPY grpc/ grpc/
 COPY order.air.toml .
 COPY .env .
 COPY go.mod .

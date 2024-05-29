@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"go-micro-services/src/auth-service/delivery/grpc/pb"
+	"go-micro-services/grpc/pb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

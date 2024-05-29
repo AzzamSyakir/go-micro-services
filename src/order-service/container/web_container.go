@@ -2,9 +2,9 @@ package container
 
 import (
 	"fmt"
-	"go-micro-services/src/order-service/client"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/order-service/config"
-	"go-micro-services/src/order-service/delivery/grpc/pb"
+	"go-micro-services/src/order-service/delivery/grpc/client"
 	"go-micro-services/src/order-service/repository"
 	"go-micro-services/src/order-service/use_case"
 

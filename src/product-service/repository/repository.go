@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	pb "go-micro-services/src/product-service/delivery/grpc/pb/product"
+	"go-micro-services/grpc/pb"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"

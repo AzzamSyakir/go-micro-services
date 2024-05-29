@@ -14,6 +14,7 @@ RUN go install github.com/cosmtrek/air@latest
 
 # copy source from host to docker container
 COPY ./src/auth-service/ ./src/auth-service/
+COPY grpc/ grpc/
 COPY auth.air.toml .
 COPY .env .
 COPY go.mod .

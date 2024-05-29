@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"go-micro-services/src/user-service/delivery/grpc/pb"
+	"go-micro-services/grpc/pb"
 
 	"github.com/guregu/null"
 	"google.golang.org/protobuf/types/known/timestamppb"

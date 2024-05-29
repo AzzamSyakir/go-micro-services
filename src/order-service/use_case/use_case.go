@@ -3,9 +3,9 @@ package use_case
 import (
 	"context"
 	"fmt"
-	"go-micro-services/src/order-service/client"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/order-service/config"
-	"go-micro-services/src/order-service/delivery/grpc/pb"
+	"go-micro-services/src/order-service/delivery/grpc/client"
 	"go-micro-services/src/order-service/repository"
 	"math/rand"
 	"strconv"
@@ -144,7 +144,7 @@ func (orderUseCase *OrderUseCase) ListOrders(context.Context, *pb.Empty) (result
 	return result, commit
 }
 
-func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.OrderRequest) (result *pb.OrderResponse, err error) {
+func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.CreateOrderRequest) (result *pb.OrderResponse, err error) {
 	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
