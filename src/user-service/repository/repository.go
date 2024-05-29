@@ -160,7 +160,7 @@ func (userRepository *UserRepository) GetUserByEmail(begin *sql.Tx, email string
 
 func (userRepository *UserRepository) PatchOneById(begin *sql.Tx, id string, toPatchUser *pb.User) (result *pb.User, err error) {
 	rows, queryErr := begin.Query(
-		`UPDATE "users" SET id=$1, name=$2, email=$3, password=$4, balance=$5, created_at=$6, updated_at=$7, WHERE id = $8 ;`,
+		`UPDATE "users" SET id=$1, name=$2, email=$3, password=$4, balance=$5, created_at=$6, updated_at=$7 WHERE id = $8 ;`,
 		toPatchUser.Id,
 		toPatchUser.Name,
 		toPatchUser.Email,

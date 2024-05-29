@@ -9,7 +9,6 @@ type Response[T any] struct {
 	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 	Data    T      `json:"data,omitempty"`
-	Errors  any    `json:"errors,omitempty"`
 }
 
 func NewResponse[T any](w http.ResponseWriter, result *Response[T]) {

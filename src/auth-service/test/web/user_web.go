@@ -142,14 +142,13 @@ func (userWeb *UserWeb) UpdateUser(t *testing.T) {
 	if decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
-
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	assert.Equal(t, selectedUserMock.Id, bodyResponse.Data.Id)
+	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(selectedUserMock.Password.String)))
 	assert.Equal(t, bodyRequest.Name, bodyResponse.Data.Name)
 	assert.Equal(t, bodyRequest.Email, bodyResponse.Data.Email)
 	assert.Equal(t, bodyRequest.Balance, bodyResponse.Data.Balance)
-	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(bodyResponse.Data.Password.String), []byte(bodyRequest.Password.String)))
 }
 
 func (userWeb *UserWeb) GetUserById(t *testing.T) {

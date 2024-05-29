@@ -16,8 +16,8 @@ func Test(t *testing.T) {
 	authWeb := web.NewAuthWeb(t)
 	authWeb.Start()
 
-	// userWeb := web.NewUserWeb(t)
-	// userWeb.Start()
+	userWeb := web.NewUserWeb(t)
+	userWeb.Start()
 
 	// productWeb := web.NewProductWeb(t)
 	// productWeb.Start()
