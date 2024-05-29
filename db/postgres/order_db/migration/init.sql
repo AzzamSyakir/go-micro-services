@@ -7,7 +7,7 @@ create table IF NOT EXISTS orders
     total_return int not null ,
     receipt_code text not null  unique ,
     created_at timestamptz not null ,
-    updated_at timestamptz not null ,
+    updated_at timestamptz not null
 );
 
 create table IF NOT EXISTS order_products

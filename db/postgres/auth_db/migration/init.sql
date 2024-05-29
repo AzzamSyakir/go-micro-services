@@ -7,5 +7,5 @@ create table IF NOT EXISTS sessions
     access_token_expired_at timestamptz not null,
     refresh_token_expired_at timestamptz not null,
     created_at timestamptz not null,
-    updated_at timestamptz not null,
+    updated_at timestamptz not null
 );
