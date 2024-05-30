@@ -16,7 +16,7 @@ func NewProductRepository() *ProductRepository {
 }
 func (productRepository *ProductRepository) CreateProduct(begin *sql.Tx, toCreateproduct *pb.Product) (result *pb.Product, err error) {
 	_, queryErr := begin.Query(
-		`INSERT INTO "products" (id, sku, name, stock, price, category_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+		`INSERT INTO "products" (id, sku, name, stock, price, category_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
 		toCreateproduct.Id,
 		toCreateproduct.Sku,
 		toCreateproduct.Name,

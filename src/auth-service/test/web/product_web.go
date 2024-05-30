@@ -149,6 +149,7 @@ func (productWeb *ProductWeb) PatchOneById(t *testing.T) {
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	assert.Equal(t, selectedProductMock.Id, bodyResponse.Data.Id)
 	assert.Equal(t, bodyRequest.Name, bodyResponse.Data.Name)
+	assert.Equal(t, selectedProductMock.Sku, bodyResponse.Data.Sku)
 	assert.Equal(t, bodyRequest.Stock, bodyResponse.Data.Stock)
 	assert.Equal(t, bodyRequest.Price, bodyResponse.Data.Price)
 	assert.Equal(t, bodyRequest.CategoryId, bodyResponse.Data.CategoryId)

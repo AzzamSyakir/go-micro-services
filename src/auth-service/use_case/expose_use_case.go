@@ -329,6 +329,7 @@ func (exposeUseCase *ExposeUseCase) CreateProduct(request *model_request.CreateP
 	}
 	user := entity.Product{
 		Id:         null.NewString(createProduct.Data.Id, true),
+		Sku:        null.NewString(createProduct.Data.Sku, true),
 		Name:       null.NewString(createProduct.Data.Name, true),
 		CategoryId: null.NewString(createProduct.Data.CategoryId, true),
 		Price:      null.NewInt(createProduct.Data.Price, true),
@@ -363,6 +364,7 @@ func (exposeUseCase *ExposeUseCase) DeleteProduct(id string) (result *model_resp
 	}
 	product := entity.Product{
 		Id:         null.NewString(DeleteProduct.Data.Id, true),
+		Sku:        null.NewString(DeleteProduct.Data.Sku, true),
 		Name:       null.NewString(DeleteProduct.Data.Name, true),
 		CategoryId: null.NewString(DeleteProduct.Data.CategoryId, true),
 		Price:      null.NewInt(DeleteProduct.Data.Price, true),
@@ -413,6 +415,7 @@ func (exposeUseCase *ExposeUseCase) UpdateProduct(id string, request *model_requ
 	}
 	product := entity.Product{
 		Id:         null.NewString(UpdateProduct.Data.Id, true),
+		Sku:        null.NewString(UpdateProduct.Data.Sku, true),
 		Name:       null.NewString(UpdateProduct.Data.Name, true),
 		CategoryId: null.NewString(UpdateProduct.Data.CategoryId, true),
 		Price:      null.NewInt(UpdateProduct.Data.Price, true),
@@ -447,6 +450,7 @@ func (exposeUseCase *ExposeUseCase) DetailProduct(id string) (result *model_resp
 	}
 	product := entity.Product{
 		Id:         null.NewString(GetProduct.Data.Id, true),
+		Sku:        null.NewString(GetProduct.Data.Sku, true),
 		Name:       null.NewString(GetProduct.Data.Name, true),
 		CategoryId: null.NewString(GetProduct.Data.CategoryId, true),
 		Price:      null.NewInt(GetProduct.Data.Price, true),

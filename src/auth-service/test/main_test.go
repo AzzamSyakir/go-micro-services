@@ -19,11 +19,11 @@ func Test(t *testing.T) {
 	userWeb := web.NewUserWeb(t)
 	userWeb.Start()
 
-	// productWeb := web.NewProductWeb(t)
-	// productWeb.Start()
+	productWeb := web.NewProductWeb(t)
+	productWeb.Start()
 
-	// categoryWeb := web.NewCategoryWeb(t)
-	// categoryWeb.Start()
+	categoryWeb := web.NewCategoryWeb(t)
+	categoryWeb.Start()
 
 	// orderWeb := web.NewOrderWeb(t)
 	// orderWeb.Start()
