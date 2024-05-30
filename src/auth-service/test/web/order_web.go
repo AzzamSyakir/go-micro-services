@@ -115,7 +115,7 @@ func (orderWeb *OrderWeb) Order(t *testing.T) {
 		t.Fatal(decodeErr)
 	}
 
-	assert.Equal(t, http.StatusOK, response.StatusCode)
+	assert.Equal(t, http.StatusCreated, response.StatusCode)
 	assert.Equal(t, "application/json", response.Header.Get("Content-Type"))
 	assert.NotEqual(t, nil, bodyResponse.Data)
 	newOrderMock := &entity.Order{
