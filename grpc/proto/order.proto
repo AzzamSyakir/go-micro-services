@@ -22,7 +22,6 @@ message Order {
   string receiptCode = 6;
   google.protobuf.Timestamp createdAt = 7;
   google.protobuf.Timestamp updatedAt = 8;
-  google.protobuf.Timestamp deletedAt = 9;
   repeated OrderProduct products = 10;
 }
 

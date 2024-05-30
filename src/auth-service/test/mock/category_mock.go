@@ -26,14 +26,12 @@ func NewCategoryMock() *CategoryMock {
 				Name:      null.NewString(uuid.NewString(), true),
 				CreatedAt: null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
 				UpdatedAt: null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
-				DeletedAt: null.NewTime(time.Time{}, false),
 			},
 			{
 				Id:        null.NewString(uuid.NewString(), true),
 				Name:      null.NewString(uuid.NewString(), true),
 				CreatedAt: null.NewTime(currentTimeFromRfc3339.Add(1*time.Second), true),
 				UpdatedAt: null.NewTime(currentTimeFromRfc3339.Add(1*time.Second), true),
-				DeletedAt: null.NewTime(time.Time{}, false),
 			},
 		},
 	}

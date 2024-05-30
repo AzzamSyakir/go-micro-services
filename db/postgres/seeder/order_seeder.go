@@ -32,7 +32,7 @@ func (OrderSeeder *OrderSeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			_, err = begin.Query(
-				"INSERT INTO orders (id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+				"INSERT INTO orders (id, user_id, total_price, total_paid, total_return, receipt_code, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 				Order.Id,
 				Order.UserId,
 				Order.TotalPrice,
@@ -41,7 +41,6 @@ func (OrderSeeder *OrderSeeder) Up() {
 				Order.ReceiptCode,
 				Order.CreatedAt,
 				Order.UpdatedAt,
-				Order.DeletedAt,
 			)
 			return err
 		})

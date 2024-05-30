@@ -2,8 +2,8 @@ package use_case
 
 import (
 	"context"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/product-service/config"
-	pb "go-micro-services/src/product-service/delivery/grpc/pb/category"
 	"go-micro-services/src/product-service/repository"
 	"time"
 
@@ -32,7 +32,7 @@ func NewCategoryUseCase(
 	}
 	return categoryUseCase
 }
-func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id *pb.ByIdCategory) (result *pb.CategoryResponse, err error) {
+func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id *pb.ById) (result *pb.CategoryResponse, err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -75,7 +75,7 @@ func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id 
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, request *pb.RequestUpdate) (result *pb.CategoryResponse, err error) {
+func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, request *pb.UpdateCategoryRequest) (result *pb.CategoryResponse, err error) {
 
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
@@ -138,7 +138,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, request *pb.RequestCreate) (result *pb.CategoryResponse, err error) {
+func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, request *pb.CreateCategoryRequest) (result *pb.CategoryResponse, err error) {
 
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
@@ -157,7 +157,6 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, requ
 		Name:      request.Name,
 		CreatedAt: timestamppb.New(currentTime.Time),
 		UpdatedAt: timestamppb.New(currentTime.Time),
-		DeletedAt: timestamppb.New(time.Time{}),
 	}
 
 	createdCategory, err := categoryUseCase.CategoryRepository.CreateCategory(begin, newCategory)
@@ -180,7 +179,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, requ
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *pb.ByIdCategory) (result *pb.CategoryResponse, err error) {
+func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *pb.ById) (result *pb.CategoryResponse, err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -221,7 +220,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *
 	return result, commit
 }
 
-func (categoryUseCase *CategoryUseCase) ListCategorys(context.Context, *pb.EmptyCategory) (result *pb.CategoryResponseRepeated, err error) {
+func (categoryUseCase *CategoryUseCase) ListCategorys(context.Context, *pb.Empty) (result *pb.CategoryResponseRepeated, err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()

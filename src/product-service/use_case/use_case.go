@@ -3,8 +3,8 @@ package use_case
 import (
 	"context"
 	"fmt"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/product-service/config"
-	pb "go-micro-services/src/product-service/delivery/grpc/pb/product"
 	"go-micro-services/src/product-service/repository"
 	"math/rand"
 	"net/http"
@@ -77,7 +77,7 @@ func (productUseCase *ProductUseCase) GetProductById(ctx context.Context, id *pb
 	return result, commit
 }
 
-func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request *pb.Update) (result *pb.ProductResponse, err error) {
+func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request *pb.UpdateProductRequest) (result *pb.ProductResponse, err error) {
 	begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -143,7 +143,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request
 	return result, commit
 }
 
-func (productUseCase *ProductUseCase) CreateProduct(ctx context.Context, request *pb.Create) (result *pb.ProductResponse, err error) {
+func (productUseCase *ProductUseCase) CreateProduct(ctx context.Context, request *pb.CreateProductRequest) (result *pb.ProductResponse, err error) {
 	begin, err := productUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -178,7 +178,6 @@ func (productUseCase *ProductUseCase) CreateProduct(ctx context.Context, request
 		CategoryId: request.CategoryId,
 		CreatedAt:  timestamppb.New(currentTime.Time),
 		UpdatedAt:  timestamppb.New(currentTime.Time),
-		DeletedAt:  timestamppb.New(currentTime.Time),
 	}
 
 	createdProduct, err := productUseCase.ProductRepository.CreateProduct(begin, newproduct)

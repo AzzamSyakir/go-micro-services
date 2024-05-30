@@ -11,9 +11,8 @@ type Session struct {
 	RefreshToken          null.String `json:"refresh_token"`
 	AccessTokenExpiredAt  null.Time   `json:"access_token_expired_at"`
 	RefreshTokenExpiredAt null.Time   `json:"refresh_token_expired_at"`
-	UpdatedAt             null.Time   `json:"updated_at"`
 	CreatedAt             null.Time   `json:"created_at"`
-	DeletedAt             null.Time   `json:"deleted_at"`
+	UpdatedAt             null.Time   `json:"updated_at"`
 }
 
 type User struct {
@@ -24,7 +23,6 @@ type User struct {
 	Balance   null.Int    `json:"balance"`
 	CreatedAt null.Time   `json:"created_at"`
 	UpdatedAt null.Time   `json:"updated_at"`
-	DeletedAt null.Time   `json:"deleted_at"`
 }
 type Product struct {
 	Id         null.String `json:"id"`
@@ -35,7 +33,6 @@ type Product struct {
 	CategoryId null.String `json:"category_id"`
 	CreatedAt  null.Time   `json:"created_at"`
 	UpdatedAt  null.Time   `json:"updated_at"`
-	DeletedAt  null.Time   `json:"deleted_at"`
 }
 
 type Category struct {
@@ -43,7 +40,6 @@ type Category struct {
 	Name      null.String `json:"name"`
 	CreatedAt null.Time   `json:"created_at"`
 	UpdatedAt null.Time   `json:"updated_at"`
-	DeletedAt null.Time   `json:"deleted_at"`
 }
 
 type OrderProducts struct {
@@ -54,7 +50,6 @@ type OrderProducts struct {
 	Qty        null.Int    `json:"qty"`
 	CreatedAt  null.Time   `json:"created_at"`
 	UpdatedAt  null.Time   `json:"updated_at"`
-	DeletedAt  null.Time   `json:"deleted_at"`
 }
 type Order struct {
 	Id          null.String `json:"id"`
@@ -65,5 +60,4 @@ type Order struct {
 	TotalReturn null.Int    `json:"total_return"`
 	CreatedAt   null.Time   `json:"created_at"`
 	UpdatedAt   null.Time   `json:"updated_at"`
-	DeletedAt   null.Time   `json:"deleted_at"`
 }

@@ -3,8 +3,8 @@ package use_case
 import (
 	"context"
 	"fmt"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/user-service/config"
-	"go-micro-services/src/user-service/delivery/grpc/pb"
 	"go-micro-services/src/user-service/repository"
 	"time"
 
@@ -112,7 +112,7 @@ func (userUseCase *UserUseCase) GetUserByEmail(context context.Context, email *p
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.Update) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.UpdateUserRequest) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
 		rollback := begin.Rollback()
@@ -190,7 +190,7 @@ func (userUseCase *UserUseCase) UpdateUser(context context.Context, request *pb.
 	}
 	return result, commit
 }
-func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.Create) (result *pb.UserResponse, err error) {
+func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.CreateUserRequest) (result *pb.UserResponse, err error) {
 
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
 	if err != nil {
@@ -223,7 +223,6 @@ func (userUseCase *UserUseCase) CreateUser(context context.Context, request *pb.
 		Balance:   request.Balance,
 		CreatedAt: timestamppb.New(currentTime.Time),
 		UpdatedAt: timestamppb.New(currentTime.Time),
-		DeletedAt: &timestamppb.Timestamp{},
 	}
 
 	createdUser, err := userUseCase.UserRepository.CreateUser(begin, newUser)

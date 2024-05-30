@@ -1,8 +1,8 @@
 package use_case
 
 import (
-	"go-micro-services/src/auth-service/client"
 	"go-micro-services/src/auth-service/config"
+	"go-micro-services/src/auth-service/delivery/grpc/client"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	model_response "go-micro-services/src/auth-service/model/response"
@@ -109,7 +109,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 			rollback := begin.Rollback()
 			result = &model_response.Response[*entity.Session]{
 				Code:    http.StatusBadRequest,
-				Message: "AuthUseCase Login failed, query to db fail, " + err.Error(),
+				Message: "AuthUseCase Login failed, query updateSession  fail, " + err.Error(),
 				Data:    nil,
 			}
 			return result, rollback
@@ -133,7 +133,6 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		RefreshTokenExpiredAt: refreshTokenExpiredAt,
 		CreatedAt:             currentTime,
 		UpdatedAt:             currentTime,
-		DeletedAt:             null.NewTime(time.Time{}, false),
 	}
 
 	createdSession, err := authUseCase.AuthRepository.CreateSession(begin, newSession)
@@ -141,7 +140,7 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		rollback := begin.Rollback()
 		result = &model_response.Response[*entity.Session]{
 			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Login failed, query to db fail, " + err.Error(),
+			Message: "AuthUseCase Login failed, query createSession fail, " + err.Error(),
 			Data:    nil,
 		}
 		return result, rollback

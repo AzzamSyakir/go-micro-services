@@ -1,7 +1,7 @@
 package request
 
 import (
-	"go-micro-services/src/auth-service/delivery/grpc/pb"
+	"go-micro-services/grpc/pb"
 
 	"github.com/guregu/null"
 )

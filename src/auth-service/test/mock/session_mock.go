@@ -34,7 +34,6 @@ func NewSessionMock(
 				RefreshTokenExpiredAt: null.NewTime(currentTimeFromRfc3339.Add(time.Hour*24*2), true),
 				CreatedAt:             null.NewTime(currentTimeFromRfc3339.Add(time.Second*0), true),
 				UpdatedAt:             null.NewTime(currentTimeFromRfc3339.Add(time.Second*0), true),
-				DeletedAt:             null.NewTime(time.Time{}, false),
 			},
 			{
 				Id:                    null.NewString(uuid.NewString(), true),
@@ -45,7 +44,6 @@ func NewSessionMock(
 				RefreshTokenExpiredAt: null.NewTime(currentTimeFromRfc3339.Add(time.Hour*24*2), true),
 				CreatedAt:             null.NewTime(currentTimeFromRfc3339.Add(time.Second*0), true),
 				UpdatedAt:             null.NewTime(currentTimeFromRfc3339.Add(time.Second*0), true),
-				DeletedAt:             null.NewTime(time.Time{}, false),
 			},
 		},
 	}

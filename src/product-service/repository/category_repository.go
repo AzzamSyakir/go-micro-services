@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	pb "go-micro-services/src/product-service/delivery/grpc/pb/category"
+	"go-micro-services/grpc/pb"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -16,12 +16,11 @@ func NewCategoryRepository() *CategoryRepository {
 }
 func (CategoryRepository *CategoryRepository) CreateCategory(begin *sql.Tx, toCreateCategory *pb.Category) (result *pb.Category, err error) {
 	_, queryErr := begin.Query(
-		`INSERT INTO "categories" (id, name, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5);`,
+		`INSERT INTO "categories" (id, name, created_at, updated_at) VALUES ($1, $2, $3, $4);`,
 		toCreateCategory.Id,
 		toCreateCategory.Name,
 		toCreateCategory.CreatedAt.AsTime(),
 		toCreateCategory.UpdatedAt.AsTime(),
-		toCreateCategory.DeletedAt.AsTime(),
 	)
 	if queryErr != nil {
 		result = nil
@@ -38,20 +37,18 @@ func DeserializeCategoryRows(rows *sql.Rows) []*pb.Category {
 	var foundCategories []*pb.Category
 	for rows.Next() {
 		foundCategory := &pb.Category{}
-		var createdAt, updatedAt, deletedAt time.Time
+		var createdAt, updatedAt time.Time
 		scanErr := rows.Scan(
 			&foundCategory.Id,
 			&foundCategory.Name,
 			&createdAt,
 			&updatedAt,
-			&deletedAt,
 		)
 		if scanErr != nil {
 			panic(scanErr)
 		}
 		foundCategory.CreatedAt = timestamppb.New(createdAt)
 		foundCategory.UpdatedAt = timestamppb.New(updatedAt)
-		foundCategory.DeletedAt = timestamppb.New(deletedAt)
 		foundCategories = append(foundCategories, foundCategory)
 	}
 	return foundCategories
@@ -61,7 +58,7 @@ func (categoryRepository CategoryRepository) GetProductById(tx *sql.Tx, id strin
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = tx.Query(
-		`SELECT id, name, created_at, updated_at, deleted_at FROM "categories" WHERE id=$1 LIMIT 1;`,
+		`SELECT id, name, created_at, updated_at FROM "categories" WHERE id=$1 LIMIT 1;`,
 		id,
 	)
 	if queryErr != nil {
@@ -107,7 +104,7 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 	var rows *sql.Rows
 	var queryErr error
 	rows, queryErr = begin.Query(
-		`SELECT id, name, created_at, updated_at, deleted_at FROM "categories" `,
+		`SELECT id, name, created_at, updated_at FROM "categories" `,
 	)
 
 	if queryErr != nil {
@@ -120,21 +117,18 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 	var categories []*pb.Category
 	for rows.Next() {
 		category := &pb.Category{}
-		var createdAt, updatedAt, deletedAt time.Time
+		var createdAt, updatedAt time.Time
 		scanErr := rows.Scan(
 			&category.Id,
 			&category.Name,
 			&createdAt,
 			&updatedAt,
-			&deletedAt,
 		)
 		if scanErr != nil {
 			panic(scanErr)
 		}
 		category.CreatedAt = timestamppb.New(createdAt)
 		category.UpdatedAt = timestamppb.New(updatedAt)
-		category.DeletedAt = timestamppb.New(deletedAt)
-
 		categories = append(categories, category)
 	}
 
@@ -147,7 +141,7 @@ func (categoryRepository *CategoryRepository) ListCategories(begin *sql.Tx) (res
 
 func (CategoryRepository *CategoryRepository) DeleteOneById(begin *sql.Tx, id string) (result *pb.Category, err error) {
 	rows, queryErr := begin.Query(
-		`DELETE FROM "categories" WHERE id=$1 RETURNING id, name, created_at, updated_at, deleted_at`,
+		`DELETE FROM "categories" WHERE id=$1 RETURNING id, name, created_at, updated_at`,
 		id,
 	)
 	if queryErr != nil {

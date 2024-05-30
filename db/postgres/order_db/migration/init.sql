@@ -7,8 +7,7 @@ create table IF NOT EXISTS orders
     total_return int not null ,
     receipt_code text not null  unique ,
     created_at timestamptz not null ,
-    updated_at timestamptz not null ,
-    deleted_at timestamptz
+    updated_at timestamptz not null
 );
 
 create table IF NOT EXISTS order_products
@@ -20,6 +19,5 @@ create table IF NOT EXISTS order_products
     qty int not null ,
     created_at timestamptz not null ,
     updated_at timestamptz not null ,
-    deleted_at timestamptz,
     foreign key(order_id) references orders(id)
 );

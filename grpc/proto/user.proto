@@ -2,14 +2,19 @@ syntax = "proto3";
 package  go_micro_services;
 
 import "google/protobuf/timestamp.proto";
-import "order.proto";
+import "commons.proto";
+
 
 option go_package = "pb/";
 
 
 service UserService{
   rpc GetUserById(ById) returns (UserResponse);
+  rpc GetUserByEmail(ByEmail) returns (UserResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
+  rpc CreateUser(CreateUserRequest) returns (UserResponse);
+  rpc DeleteUser(ById) returns (UserResponse);
+  rpc ListUsers(empty) returns (UserResponseRepeated);
 }
 
 message User {
@@ -20,19 +25,31 @@ message User {
   int64 balance = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
-  google.protobuf.Timestamp deleted_at = 8;
 }
 
+message ByEmail {
+  string email=1;
+}
 message UserResponse{
   int64 code=1;
   string message=2;
   User data=3;
 }
-
+message UserResponseRepeated{
+  int64 code=1;
+  string message=2;
+  repeated User data=3;
+}
 message UpdateUserRequest{
   string id=1;
   optional string name=2;
   optional string email=3;
   optional string password=4;
   optional int64 balance=5;
+}
+message CreateUserRequest{
+  string name=1;
+  int64 balance=2;
+  string email=3;
+  string password=4;
 }

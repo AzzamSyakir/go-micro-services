@@ -34,7 +34,6 @@ func NewProductMock(
 				CategoryId: null.NewString(categoryMock.Data[0].Id.String, true),
 				CreatedAt:  null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
 				UpdatedAt:  null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
-				DeletedAt:  null.NewTime(time.Time{}, false),
 			},
 			{
 				Id:         null.NewString(uuid.NewString(), true),
@@ -45,7 +44,6 @@ func NewProductMock(
 				CategoryId: null.NewString(categoryMock.Data[0].Id.String, true),
 				CreatedAt:  null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
 				UpdatedAt:  null.NewTime(currentTimeFromRfc3339.Add(0*time.Second), true),
-				DeletedAt:  null.NewTime(time.Time{}, false),
 			},
 		},
 	}

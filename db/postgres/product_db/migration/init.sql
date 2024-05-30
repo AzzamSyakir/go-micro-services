@@ -3,8 +3,7 @@ create table IF NOT EXISTS categories
     id uuid not null primary key,
     name text not null unique ,
     created_at timestamptz not null ,
-    updated_at timestamptz not null ,
-    deleted_at timestamptz
+    updated_at timestamptz not null
 );
 
 create table IF NOT EXISTS products
@@ -17,6 +16,5 @@ create table IF NOT EXISTS products
     category_id uuid not null ,
     created_at timestamptz not null ,
     updated_at timestamptz not null ,
-    deleted_at timestamptz,
     foreign key(category_id) references categories(id)
 );

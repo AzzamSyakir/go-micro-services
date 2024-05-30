@@ -6,6 +6,5 @@ create table IF NOT EXISTS users
     email TEXT not null unique ,
     Balance int not null ,
     created_at timestamptz not null ,
-    updated_at timestamptz not null ,
-    deleted_at timestamptz
+    updated_at timestamptz not null
 );

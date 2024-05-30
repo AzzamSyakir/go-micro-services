@@ -40,7 +40,7 @@ func (userSeeder *UserSeeder) Up() {
 
 		queryErr := crdb.Execute(func() (err error) {
 			rows, err = begin.Query(
-				"INSERT INTO users (id, name, balance, email, password, created_at, updated_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
+				"INSERT INTO users (id, name, balance, email, password, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 				user.Id,
 				user.Name,
 				user.Balance,
@@ -48,7 +48,6 @@ func (userSeeder *UserSeeder) Up() {
 				password,
 				user.CreatedAt,
 				user.UpdatedAt,
-				user.DeletedAt,
 			)
 			return err
 		})
