@@ -25,7 +25,6 @@ This project uses the ``micro-services`` architecture as explained above, this `
 - order services
 - auth services 
 
-
 ## Installation
 
 ### first clone this repo
