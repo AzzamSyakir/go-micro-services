@@ -1,4 +1,4 @@
-# Go Micro-Services 
+# Go Microservices 
 
 POS-API develop using Microservices architecture pattern 
 # micro-services
