@@ -11,7 +11,7 @@ POS-API develop using Microservices architecture pattern
 As shown in the image above, clients (mobile, web, or desktop applications) send requests to an API gateway, which serves as the entry point, routing each request to the appropriate Microservices. Furthermore, each service operates independently, interacting with its own database and, if necessary, with other Microservices or an external API or service to fulfill requests.
 
 Microservices vs monoliths
-To further understand microservices, it's helpful to contrast them with the traditional pattern of developing applications — the monolithic architecture. Applications in a monolithic architecture are often constructed in layers, e.g., a presentation layer to handle user interaction, a business logic layer to process data according to business rules, and a data access layer to communicate with the database.
+To further understand Microservices, it's helpful to contrast them with the traditional pattern of developing applications — the monolithic architecture. Applications in a monolithic architecture are often constructed in layers, e.g., a presentation layer to handle user interaction, a business logic layer to process data according to business rules, and a data access layer to communicate with the database.
 
 
 ## introduction
