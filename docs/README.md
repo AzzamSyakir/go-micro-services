@@ -4,7 +4,7 @@ POS-API develop using Microservices architecture pattern
 ## What are Microservices?
 ```Microservices``` are an architectural approach to developing an application as a collection of small, self-contained services that each fulfill a specific business purpose. Developers can build these services in several programming languages, deploy, scale, and maintain them independently, and enable communication between them via well-defined APIs. The following image demonstrates how ```Microservices``` work in practice
 
-![Microservices architecture](docs/MicroServices Design.png)
+![MicroServices Design](https://github.com/user-attachments/assets/aa3b73ca-07b8-49ce-8266-0b1a96a839cf)
 
 As shown in the image above, clients (mobile, web, or desktop applications) send requests to an API gateway, which serves as the entry point, routing each request to the appropriate Microservices. Furthermore, each service operates independently, interacting with its own database and, if necessary, with other Microservices or an external API or service to fulfill requests.
 
