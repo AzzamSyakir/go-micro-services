@@ -1,5 +1,5 @@
 #start from golang base image
-FROM golang:1.22-alpine
+FROM golang:1.23-alpine
 
 #install dependencies
 RUN apk update
@@ -10,7 +10,7 @@ RUN mkdir -p /app
 ENV WORKDIR /app
 WORKDIR $WORKDIR
 
-RUN go install github.com/cosmtrek/air@latest
+RUN go install github.com/air-verse/air@latest
 
 # copy source from host to docker container
 COPY ./src/auth-service/ ./src/auth-service/

@@ -1,10 +1,10 @@
 #start from golang base image
-FROM golang:1.22-alpine
+FROM golang:1.23-alpine
 
 #install dependencies
 RUN apk update
 RUN apk add --no-cache git build-base
-RUN go install github.com/cosmtrek/air@latest
+RUN go install github.com/air-verse/air@latest
 
 
 #setup workdir
