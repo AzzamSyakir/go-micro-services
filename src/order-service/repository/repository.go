@@ -81,7 +81,7 @@ func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *pb.Or
 	var orders []*pb.Order
 	for rows.Next() {
 		order := &pb.Order{}
-		var createdAt, updatedAt, deletedAt time.Time
+		var createdAt, updatedAt time.Time
 		scanErr := rows.Scan(
 			&order.Id,
 			&order.UserId,
@@ -91,7 +91,6 @@ func (orderRepository *OrderRepository) ListOrders(begin *sql.Tx) (result *pb.Or
 			&order.ReceiptCode,
 			&createdAt,
 			&updatedAt,
-			&deletedAt,
 		)
 		order.CreatedAt = timestamppb.New(createdAt)
 		order.UpdatedAt = timestamppb.New(updatedAt)

@@ -27,7 +27,7 @@ type User struct {
 	unknownFields protoimpl.UnknownFields
 
 	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name      string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Name      string                 `protobuf:"bytes,2,opt,name=,proto3" json:"name,omitempty"`
 	Email     string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Password  string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
 	Balance   int64                  `protobuf:"varint,5,opt,name=balance,proto3" json:"balance,omitempty"`

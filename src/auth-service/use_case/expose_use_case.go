@@ -641,6 +641,7 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 			Data:    nil,
 			Message: "AuthUseCase error, order is failed" + err.Error(),
 		}
+		return result
 	}
 	session, err := exposeUseCase.AuthRepository.FindOneByAccToken(begin, tokenString)
 	if err != nil {
@@ -648,6 +649,7 @@ func (exposeUseCase *ExposeUseCase) Orders(tokenString string, request *model_re
 			Data:    nil,
 			Message: "AuthUseCase error, order is failed" + err.Error(),
 		}
+		return result
 	}
 	userId := session.UserId
 	req := &pb.CreateOrderRequest{
