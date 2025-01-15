@@ -149,6 +149,18 @@ services:
       - order-db:/var/lib/postgresql/data
 
 
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer
+    restart: unless-stopped
+    volumes:
+      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+      - "9000:9000"
+
 volumes:
   auth-db:
   user-db:
