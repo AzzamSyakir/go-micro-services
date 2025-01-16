@@ -2,6 +2,7 @@ package use_case
 
 import (
 	"context"
+	"fmt"
 	"go-micro-services/grpc/pb"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/delivery/grpc/client"
@@ -9,7 +10,6 @@ import (
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	model_response "go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/repository"
-	"log"
 	"net/http"
 	"time"
 
@@ -220,7 +220,7 @@ func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_respon
 }
 
 func (authUseCase *AuthUseCase) LogoutWithUserId(context context.Context, id *pb.ByUserId) (empty *pb.Empty, err error) {
-	log.Fatal("logout service in get called in usecase auth")
+	fmt.Println("logout service get called in usecase auth")
 	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
 	if err != nil {
 		begin.Rollback()
@@ -236,7 +236,8 @@ func (authUseCase *AuthUseCase) LogoutWithUserId(context context.Context, id *pb
 		begin.Rollback()
 		return &pb.Empty{}, err
 	}
-	_, err = authUseCase.AuthRepository.DeleteOneById(begin, foundSession.UserId.String)
+	fmt.Println("before delete session by user id ", foundSession.UserId.String)
+	_, err = authUseCase.AuthRepository.DeleteOneByUserId(begin, foundSession.UserId.String)
 	if err != nil {
 		begin.Rollback()
 		return &pb.Empty{}, err

@@ -82,6 +82,7 @@ func (sessionRepository *AuthRepository) FindOneByAccToken(begin *sql.Tx, access
 }
 
 func (sessionRepository *AuthRepository) GetOneByUserId(begin *sql.Tx, userId string) (result *entity.Session, err error) {
+	fmt.Println("auth service in get session by user id")
 	rows, queryErr := begin.Query(
 		`SELECT id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at FROM sessions WHERE user_id=$1 LIMIT 1;`,
 		userId,
@@ -172,6 +173,7 @@ func (sessionRepository *AuthRepository) DeleteOneById(begin *sql.Tx, id string)
 	return result, err
 }
 func (sessionRepository *AuthRepository) DeleteOneByUserId(begin *sql.Tx, id string) (result *entity.Session, err error) {
+	fmt.Println("auth service in delete session by user id")
 	rows, queryErr := begin.Query(
 		`DELETE FROM sessions WHERE user_id=$1  RETURNING id, user_id, access_token, refresh_token, access_token_expired_at, refresh_token_expired_at, created_at, updated_at;`,
 		id,

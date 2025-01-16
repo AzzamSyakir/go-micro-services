@@ -12,6 +12,7 @@ func main() {
 	fmt.Println("Auth Services started.")
 
 	webContainer := container.NewWebContainer()
+	// grpc server
 	go func() {
 		grpcAddress := fmt.Sprintf(
 			"%s:%s",
@@ -26,6 +27,7 @@ func main() {
 			log.Fatalf("failed to serve %v", err.Error())
 		}
 	}()
+	// http server
 	address := fmt.Sprintf(
 		"%s:%s",
 		"0.0.0.0",
