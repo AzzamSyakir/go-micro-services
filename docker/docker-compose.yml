@@ -13,7 +13,8 @@ services:
     expose:
       - 8080
     ports:
-     - ${AUTH_SERVICES_PORT}:${AUTH_SERVICES_PORT}
+     - ${AUTH_PORT}:${AUTH_PORT}
+     - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
     depends_on:
       - auth-db
     volumes:
@@ -30,7 +31,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${USER_SERVICES_PORT}:${USER_SERVICES_PORT}
+     - ${USER_PORT}:${USER_PORT}
     depends_on:
       - user-db
     volumes:
@@ -47,7 +48,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${PRODUCT_SERVICES_PORT}:${PRODUCT_SERVICES_PORT}
+     - ${PRODUCT_PORT}:${PRODUCT_PORT}
     depends_on:
       - product-db
     volumes:
@@ -66,7 +67,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${ORDER_SERVICES_PORT}:${ORDER_SERVICES_PORT}
+     - ${ORDER_PORT}:${ORDER_PORT}
     depends_on:
       - order-db
     volumes:
