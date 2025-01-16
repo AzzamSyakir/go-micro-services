@@ -28,6 +28,7 @@ services:
       dockerfile: ./src/user-service/Dockerfile
     environment:
       POSTGRES_HOST: user-db
+      AUTH_HOST: auth-services
     expose:
       - 8080
     ports:
