@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	LogoutWithUserId(ctx context.Context, in *ByAccessToken, opts ...grpc.CallOption) (*Empty, error)
+	LogoutWithUserId(ctx context.Context, in *ByUserId, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type authServiceClient struct {
@@ -37,7 +37,7 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) LogoutWithUserId(ctx context.Context, in *ByAccessToken, opts ...grpc.CallOption) (*Empty, error) {
+func (c *authServiceClient) LogoutWithUserId(ctx context.Context, in *ByUserId, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, AuthService_LogoutWithUserId_FullMethodName, in, out, cOpts...)
@@ -51,7 +51,7 @@ func (c *authServiceClient) LogoutWithUserId(ctx context.Context, in *ByAccessTo
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
 type AuthServiceServer interface {
-	LogoutWithUserId(context.Context, *ByAccessToken) (*Empty, error)
+	LogoutWithUserId(context.Context, *ByUserId) (*Empty, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -62,7 +62,7 @@ type AuthServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAuthServiceServer struct{}
 
-func (UnimplementedAuthServiceServer) LogoutWithUserId(context.Context, *ByAccessToken) (*Empty, error) {
+func (UnimplementedAuthServiceServer) LogoutWithUserId(context.Context, *ByUserId) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LogoutWithUserId not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
@@ -87,7 +87,7 @@ func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 }
 
 func _AuthService_LogoutWithUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ByAccessToken)
+	in := new(ByUserId)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func _AuthService_LogoutWithUserId_Handler(srv interface{}, ctx context.Context,
 		FullMethod: AuthService_LogoutWithUserId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).LogoutWithUserId(ctx, req.(*ByAccessToken))
+		return srv.(AuthServiceServer).LogoutWithUserId(ctx, req.(*ByUserId))
 	}
 	return interceptor(ctx, in, info, handler)
 }
