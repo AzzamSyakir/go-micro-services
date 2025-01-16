@@ -3,12 +3,14 @@ package repository
 import (
 	"database/sql"
 	"go-micro-services/grpc/pb"
+	"go-micro-services/src/user-service/delivery/grpc/client"
 
 	"github.com/guregu/null"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserRepository struct {
+	AuthClient *client.AuthServiceClient
 }
 
 func NewUserRepository() *UserRepository {

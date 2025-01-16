@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-micro-services/grpc/pb"
 	"go-micro-services/src/user-service/config"
+	"go-micro-services/src/user-service/delivery/grpc/client"
 	"go-micro-services/src/user-service/repository"
 	"time"
 
@@ -16,16 +17,19 @@ import (
 )
 
 type UserUseCase struct {
+	AuthClient *client.AuthServiceClient
 	pb.UnimplementedUserServiceServer
 	DatabaseConfig *config.DatabaseConfig
 	UserRepository *repository.UserRepository
 }
 
 func NewUserUseCase(
+	authClient *client.AuthServiceClient,
 	databaseConfig *config.DatabaseConfig,
 	userRepository *repository.UserRepository,
 ) *UserUseCase {
 	return &UserUseCase{
+		AuthClient:                     authClient,
 		UnimplementedUserServiceServer: pb.UnimplementedUserServiceServer{},
 		DatabaseConfig:                 databaseConfig,
 		UserRepository:                 userRepository,
@@ -249,7 +253,10 @@ func (userUseCase *UserUseCase) DeleteUser(context context.Context, id *pb.ById)
 	if err != nil {
 		return result, err
 	}
-
+	userId := &pb.ByUserId{
+		Id: id.Id,
+	}
+	userUseCase.AuthClient.LogoutWithUserId(userId)
 	deletedUser, deletedUserErr := userUseCase.UserRepository.DeleteUser(begin, id.Id)
 	if deletedUserErr != nil {
 		err = begin.Rollback()

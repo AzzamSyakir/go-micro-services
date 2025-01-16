@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-micro-services/grpc/pb"
 	"go-micro-services/src/user-service/config"
+	"go-micro-services/src/user-service/delivery/grpc/client"
 	"go-micro-services/src/user-service/repository"
 	"go-micro-services/src/user-service/use_case"
 
@@ -30,8 +31,13 @@ func NewWebContainer() *WebContainer {
 
 	userRepository := repository.NewUserRepository()
 	repositoryContainer := NewRepositoryContainer(userRepository)
-
-	userUseCase := use_case.NewUserUseCase(userDBConfig, userRepository)
+	authUrl := fmt.Sprintf(
+		"%s:%s",
+		envConfig.App.AuthHost,
+		envConfig.App.AuthGrpcPort,
+	)
+	initAuthClient := client.InitAuthServiceClient(authUrl)
+	userUseCase := use_case.NewUserUseCase(&initAuthClient, userDBConfig, userRepository)
 	grpcServer := grpc.NewServer()
 	pb.RegisterUserServiceServer(grpcServer, userUseCase)
 

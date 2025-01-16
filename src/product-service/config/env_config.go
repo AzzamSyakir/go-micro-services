@@ -23,8 +23,8 @@ type EnvConfig struct {
 func NewEnvConfig() *EnvConfig {
 	envConfig := &EnvConfig{
 		App: &AppEnv{
-			Host: os.Getenv("GATEWAY_APP_HOST"),
-			Port: os.Getenv("PRODUCT_SERVICES_PORT"),
+			Host: os.Getenv("AUTH_HOST"),
+			Port: os.Getenv("PRODUCT_PORT"),
 		},
 		ProductDB: &PostgresEnv{
 			Host:     os.Getenv("POSTGRES_HOST"),
