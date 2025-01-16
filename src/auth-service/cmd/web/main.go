@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"go-micro-services/src/auth-service/container"
+	"log"
+	"net"
 	"net/http"
 )
 
@@ -10,15 +12,28 @@ func main() {
 	fmt.Println("Auth Services started.")
 
 	webContainer := container.NewWebContainer()
-
+	go func() {
+		grpcAddress := fmt.Sprintf(
+			"%s:%s",
+			"0.0.0.0",
+			webContainer.Env.App.AuthGrpcPort,
+		)
+		netListen, err := net.Listen("tcp", grpcAddress)
+		if err != nil {
+			log.Fatalf("failed to listen %v", err)
+		}
+		if err := webContainer.Grpc.Serve(netListen); err != nil {
+			log.Fatalf("failed to serve %v", err.Error())
+		}
+	}()
 	address := fmt.Sprintf(
 		"%s:%s",
 		"0.0.0.0",
-		webContainer.Env.App.AuthPort,
+		webContainer.Env.App.AuthHttpPort,
 	)
 	listenAndServeErr := http.ListenAndServe(address, webContainer.Route.Router)
 	if listenAndServeErr != nil {
-		panic(listenAndServeErr)
+		log.Fatalf("failed to serve HTTP: %v", listenAndServeErr)
 	}
 	fmt.Println("Auth Services finished.")
 }

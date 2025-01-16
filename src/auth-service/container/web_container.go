@@ -2,6 +2,7 @@ package container
 
 import (
 	"fmt"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/delivery/grpc/client"
 	httpdelivery "go-micro-services/src/auth-service/delivery/http"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
 type WebContainer struct {
@@ -21,6 +23,7 @@ type WebContainer struct {
 	UseCase    *UseCaseContainer
 	Controller *ControllerContainer
 	Route      *route.RootRoute
+	Grpc       *grpc.Server
 }
 
 func NewWebContainer() *WebContainer {
@@ -57,6 +60,9 @@ func NewWebContainer() *WebContainer {
 	initOrderClient := client.InitOrderServiceClient(orderUrl)
 	initCategoryClient := client.InitCategoryServiceClient(productUrl)
 	authUseCase := use_case.NewAuthUseCase(authDBConfig, authRepository, envConfig, &initUserClient)
+	grpcServer := grpc.NewServer()
+	pb.RegisterAuthServiceServer(grpcServer, authUseCase)
+
 	exposeUseCase := use_case.NewExposeUseCase(authDBConfig, authRepository, envConfig, &initUserClient, &initProductClient, &initOrderClient, &initCategoryClient)
 
 	useCaseContainer := NewUseCaseContainer(authUseCase, exposeUseCase)
@@ -97,6 +103,7 @@ func NewWebContainer() *WebContainer {
 		UseCase:    useCaseContainer,
 		Controller: controllerContainer,
 		Route:      rootRoute,
+		Grpc:       grpcServer,
 	}
 
 	return webContainer

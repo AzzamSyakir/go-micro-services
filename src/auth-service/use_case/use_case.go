@@ -1,12 +1,15 @@
 package use_case
 
 import (
+	"context"
+	"go-micro-services/grpc/pb"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/delivery/grpc/client"
 	"go-micro-services/src/auth-service/entity"
 	model_request "go-micro-services/src/auth-service/model/request/controller"
 	model_response "go-micro-services/src/auth-service/model/response"
 	"go-micro-services/src/auth-service/repository"
+	"log"
 	"net/http"
 	"time"
 
@@ -16,6 +19,7 @@ import (
 )
 
 type AuthUseCase struct {
+	pb.UnimplementedAuthServiceServer
 	DatabaseConfig *config.DatabaseConfig
 	AuthRepository *repository.AuthRepository
 	Env            *config.EnvConfig
@@ -29,10 +33,11 @@ func NewAuthUseCase(
 	initUserClient *client.UserServiceClient,
 ) *AuthUseCase {
 	authUseCase := &AuthUseCase{
-		userClient:     initUserClient,
-		DatabaseConfig: databaseConfig,
-		AuthRepository: authRepository,
-		Env:            env,
+		UnimplementedAuthServiceServer: pb.UnimplementedAuthServiceServer{},
+		userClient:                     initUserClient,
+		DatabaseConfig:                 databaseConfig,
+		AuthRepository:                 authRepository,
+		Env:                            env,
 	}
 	return authUseCase
 }
@@ -212,6 +217,37 @@ func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_respon
 		Data:    deletedSession,
 	}
 	return result, commit
+}
+
+func (authUseCase *AuthUseCase) LogoutWithUserId(context context.Context, id *pb.ByUserId) (empty *pb.Empty, err error) {
+	log.Fatal("logout service in get called in usecase auth")
+	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+	if err != nil {
+		begin.Rollback()
+		return &pb.Empty{}, err
+	}
+
+	foundSession, err := authUseCase.AuthRepository.GetOneByUserId(begin, id.Id)
+	if err != nil {
+		begin.Rollback()
+		return &pb.Empty{}, err
+	}
+	if foundSession == nil {
+		begin.Rollback()
+		return &pb.Empty{}, err
+	}
+	_, err = authUseCase.AuthRepository.DeleteOneById(begin, foundSession.UserId.String)
+	if err != nil {
+		begin.Rollback()
+		return &pb.Empty{}, err
+	}
+
+	commitErr := begin.Commit()
+	if commitErr != nil {
+		return &pb.Empty{}, commitErr
+	}
+
+	return &pb.Empty{}, nil
 }
 
 func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *model_response.Response[*entity.Session], err error) {
