@@ -19,6 +19,7 @@ COPY .env .
 COPY go.mod .
 COPY go.sum .
 COPY Makefile .
+COPY tmp .
 
 # install dependencies project
 WORKDIR $WORKDIR/src/order-service/
