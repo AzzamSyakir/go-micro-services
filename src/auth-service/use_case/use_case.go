@@ -2,7 +2,6 @@ package use_case
 
 import (
 	"context"
-	"fmt"
 	"go-micro-services/grpc/pb"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/delivery/grpc/client"
