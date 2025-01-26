@@ -220,7 +220,6 @@ func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_respon
 }
 
 func (authUseCase *AuthUseCase) LogoutWithUserId(context context.Context, id *pb.ByUserId) (empty *pb.Empty, err error) {
-	fmt.Println("logout service get called in usecase auth")
 	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
 	if err != nil {
 		begin.Rollback()
@@ -236,7 +235,6 @@ func (authUseCase *AuthUseCase) LogoutWithUserId(context context.Context, id *pb
 		begin.Rollback()
 		return &pb.Empty{}, err
 	}
-	fmt.Println("before delete session by user id ", foundSession.UserId.String)
 	_, err = authUseCase.AuthRepository.DeleteOneByUserId(begin, foundSession.UserId.String)
 	if err != nil {
 		begin.Rollback()
