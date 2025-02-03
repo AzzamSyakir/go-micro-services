@@ -1,0 +1,176 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Go-Micro-Services API",
+    "description": "Go-Micro-Services is a POS API developed using microservices architecture. This API provides authentication, user management, product handling, and order processing functionalities.",
+    "version": "2.0",
+    "contact": {
+      "name": "Azzam Syakir",
+      "email": "azzam.sykir.work@gmail.com",
+      "url": "https://github.com/AzzamSyakir/go-micro-services"
+    }
+  },
+  "host": "localhost:8080",
+  "schemes": ["http"],
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter 'Bearer {token}' to authenticate requests."
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Endpoints related to user authentication, including login, registration, and token management."
+    },
+    {
+      "name": "Users",
+      "description": "User management endpoints."
+    },
+    {
+      "name": "Products",
+      "description": "Endpoints for managing products."
+    },
+    {
+      "name": "Categories",
+      "description": "Endpoints for managing product categories."
+    },
+    {
+      "name": "Orders",
+      "description": "Endpoints for order processing."
+    }
+  ],
+  "paths": {
+    "/auths/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "description": "Creates a new user account with email, name, and password.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "example": "John Doe" },
+                "email": { "type": "string", "example": "john.doe@example.com" },
+                "password": { "type": "string", "example": "password123" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "example": "uuid-1234" },
+                "name": { "type": "string", "example": "John Doe" },
+                "email": { "type": "string", "example": "john.doe@example.com" },
+                "balance": { "type": "integer", "example": 100000 },
+                "created_at": { "type": "string", "example": "2024-04-22T14:33:40Z" }
+              }
+            }
+          },
+          "400": { "description": "Invalid request" }
+        }
+      }
+    },
+    "/auths/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "description": "Authenticates the user and returns a JWT token.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string", "example": "john.doe@example.com" },
+                "password": { "type": "string", "example": "password123" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": { "type": "string", "example": "jwt-token-here" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Retrieve all users",
+        "description": "Returns a list of all registered users.",
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string", "example": "uuid-1234" },
+                  "name": { "type": "string", "example": "John Doe" },
+                  "email": { "type": "string", "example": "john.doe@example.com" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user by ID",
+        "description": "Retrieves user details based on the provided ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-example": "uuid-1234"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "example": "uuid-1234" },
+                "name": { "type": "string", "example": "John Doe" },
+                "email": { "type": "string", "example": "john.doe@example.com" }
+              }
+            }
+          },
+          "404": { "description": "User not found" }
+        }
+      }
+    }
+  }
+}
