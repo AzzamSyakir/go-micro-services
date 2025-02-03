@@ -9,21 +9,25 @@ import (
 	"time"
 
 	"github.com/guregu/null"
+	"github.com/rs/cors"
 )
 
 type AuthMiddleware struct {
 	SessionRepository *repository.AuthRepository
 	DatabaseConfig    *config.DatabaseConfig
+	Cors              *cors.Cors
 }
 
-func NewAuthMiddleware(sessionRepository repository.AuthRepository, databaseConfig *config.DatabaseConfig) *AuthMiddleware {
+func NewAuthMiddleware(sessionRepository repository.AuthRepository, databaseConfig *config.DatabaseConfig, cors *cors.Cors) *AuthMiddleware {
 	return &AuthMiddleware{
 		SessionRepository: &sessionRepository,
 		DatabaseConfig:    databaseConfig,
+		Cors:              cors,
 	}
 }
 
 func (authMiddleware *AuthMiddleware) Middleware(next http.Handler) http.Handler {
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		token = strings.Replace(token, "Bearer ", "", 1)
@@ -78,4 +82,14 @@ func (authMiddleware *AuthMiddleware) Middleware(next http.Handler) http.Handler
 		begin.Commit()
 		next.ServeHTTP(w, r)
 	})
+}
+
+func CorsMiddleware() *cors.Cors {
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+		AllowedHeaders:   []string{"*"},
+		Debug:            false,
+	})
+	return c
 }
