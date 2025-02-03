@@ -150,9 +150,22 @@ services:
       - ../db/postgres/order_db/migration:/docker-entrypoint-initdb.d
       - order-db:/var/lib/postgresql/data
 
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: swagger-ui
+    restart: unless-stopped
+    ports:
+      - ${SWAGGER_PORT}:8080
+    depends_on:
+      - app
+    volumes:
+      - ../api/docs/swagger.json:/spec/docs/swagger.json
+    environment:
+      SWAGGER_JSON: /spec/docs/swagger.json
+
+
 volumes:
   auth-db:
   user-db:
   product-db:
   order-db:
-  portainer-data:
