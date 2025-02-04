@@ -111,7 +111,7 @@ func (userUseCase *UserUseCase) GetUserByEmail(context context.Context, email *p
 	commit := begin.Commit()
 	result = &pb.UserResponse{
 		Code:    int64(codes.OK),
-		Message: "User UseCase GetOneById is succeed.",
+		Message: "User UseCase GetOneByEmail is succeed.",
 		Data:    GetUserByEmail,
 	}
 	return result, commit
