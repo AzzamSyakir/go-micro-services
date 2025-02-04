@@ -413,7 +413,7 @@
         ],
         "summary": "Get user session data",
         "operationId": "ListSessions",
-        "description": "Get user session data. Requires authentication with a Bearer Token.",
+        "description": "Retrieve user session data. Requires authentication with a Bearer Token. Disclaimer: This endpoint is for showcase purposes only and will not be used in real-world scenarios.",
         "parameters": [],
         "responses": {
           "200": {
