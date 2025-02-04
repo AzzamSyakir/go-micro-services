@@ -57,3 +57,7 @@ func (authController *AuthController) GetNewAccessToken(writer http.ResponseWrit
 	result, _ := authController.AuthUseCase.GetNewAccessToken(tokenString)
 	response.NewResponse(writer, result)
 }
+func (authController *AuthController) ListSession(writer http.ResponseWriter, reader *http.Request) {
+	getDatabase := authController.AuthUseCase.ListSessions()
+	response.NewResponse(writer, getDatabase)
+}

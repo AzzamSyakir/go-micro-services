@@ -191,3 +191,23 @@ func (sessionRepository *AuthRepository) DeleteOneByUserId(begin *sql.Tx, id str
 	err = nil
 	return result, err
 }
+func (sessionRepository *AuthRepository) ListSession(tx *sql.Tx) ([]*entity.Session, error) {
+	rows, err := tx.Query(`
+		SELECT 
+			id, 
+			user_id, 
+			access_token, 
+			refresh_token, 
+			access_token_expired_at, 
+			refresh_token_expired_at, 
+			created_at, 
+			updated_at 
+		FROM sessions;
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	sessions := DeserializeSessionRows(rows)
+	return sessions, nil
+}

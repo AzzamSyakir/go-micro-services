@@ -2,6 +2,7 @@ package use_case
 
 import (
 	"context"
+	"fmt"
 	"go-micro-services/grpc/pb"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/delivery/grpc/client"
@@ -311,4 +312,52 @@ func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *
 	}
 	return result, commit
 
+}
+func (authUseCase *AuthUseCase) ListSessions() (result *model_response.Response[[]*entity.Session]) {
+	tx, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+	if err != nil {
+		rollbackErr := tx.Rollback()
+		errorMessage := fmt.Sprintf("Failed to start transaction on AuthDB: %s. Rollback status: %v", err.Error(), rollbackErr)
+		return &model_response.Response[[]*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: errorMessage,
+			Data:    nil,
+		}
+	}
+
+	sessions, err := authUseCase.AuthRepository.ListSession(tx)
+	if err != nil {
+		rollbackErr := tx.Rollback()
+		errorMessage := fmt.Sprintf("Failed to retrieve session data: query execution error: %s. Rollback status: %v", err.Error(), rollbackErr)
+		return &model_response.Response[[]*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: errorMessage,
+			Data:    nil,
+		}
+	}
+
+	if len(sessions) == 0 {
+		rollbackErr := tx.Rollback()
+		errorMessage := fmt.Sprintf("No session data found. Ensure valid session data exists. Rollback status: %v", rollbackErr)
+		return &model_response.Response[[]*entity.Session]{
+			Code:    http.StatusBadRequest,
+			Message: errorMessage,
+			Data:    nil,
+		}
+	}
+
+	if commitErr := tx.Commit(); commitErr != nil {
+		errorMessage := fmt.Sprintf("Failed to commit transaction: %s", commitErr.Error())
+		return &model_response.Response[[]*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: errorMessage,
+			Data:    nil,
+		}
+	}
+
+	return &model_response.Response[[]*entity.Session]{
+		Code:    http.StatusOK,
+		Message: "Successfully retrieved session data.",
+		Data:    sessions,
+	}
 }
