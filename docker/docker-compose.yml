@@ -13,8 +13,8 @@ services:
     expose:
       - 8080
     ports:
-     - ${AUTH_PORT}:${AUTH_PORT}
-     - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
+      - ${AUTH_PORT}:${AUTH_PORT}
+      - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
     depends_on:
       - auth-db
     volumes:
@@ -32,7 +32,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${USER_PORT}:${USER_PORT}
+      - ${USER_PORT}:${USER_PORT}
     depends_on:
       - user-db
     volumes:
@@ -49,7 +49,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${PRODUCT_PORT}:${PRODUCT_PORT}
+      - ${PRODUCT_PORT}:${PRODUCT_PORT}
     depends_on:
       - product-db
     volumes:
@@ -68,7 +68,7 @@ services:
     expose:
       - 8080
     ports:
-     - ${ORDER_PORT}:${ORDER_PORT}
+      - ${ORDER_PORT}:${ORDER_PORT}
     depends_on:
       - order-db
     volumes:
@@ -159,10 +159,9 @@ services:
     depends_on:
       - auth-services
     volumes:
-      - ../api/docs/swagger.json:/spec/docs/swagger.json
+      - ../docs/api/swagger.json:/spec/docs/swagger.json
     environment:
       SWAGGER_JSON: /spec/docs/swagger.json
-
 
 volumes:
   auth-db:
