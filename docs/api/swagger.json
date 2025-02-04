@@ -406,6 +406,83 @@
         }
       }
     },
+    "/auths/list-sessions": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get user session data",
+        "operationId": "ListSessions",
+        "description": "Get user session data. Requires authentication with a Bearer Token.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "User session retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "example": 200
+                },
+                "message": {
+                  "type": "string",
+                  "example": "ListSessions request succeeded"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "example-session-uuid"
+                    },
+                    "user_id": {
+                      "type": "string",
+                      "example": "example-user-uuid"
+                    },
+                    "access_token": {
+                      "type": "string",
+                      "example": "example-access-token"
+                    },
+                    "access_token_expired_at": {
+                      "type": "string",
+                      "example": "2025-01-29T12:00:00Z"
+                    },
+                    "refresh_token": {
+                      "type": "string",
+                      "example": "example-refresh-token"
+                    },
+                    "refresh_token_expired_at": {
+                      "type": "string",
+                      "example": "2025-02-28T12:00:00Z"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2025-01-29T12:00:00Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "example": "2025-01-30T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Token is missing or invalid"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/users": {
       "get": {
         "tags": [
