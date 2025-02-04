@@ -39,14 +39,14 @@ func (authController *AuthController) Login(writer http.ResponseWriter, reader *
 	if decodeErr != nil {
 		http.Error(writer, decodeErr.Error(), 404)
 	}
-	foundUser, _ := authController.AuthUseCase.Login(request)
+	foundUser := authController.AuthUseCase.Login(request)
 	response.NewResponse(writer, foundUser)
 }
 func (authController *AuthController) Logout(writer http.ResponseWriter, reader *http.Request) {
 	token := reader.Header.Get("Authorization")
 	tokenString := strings.Replace(token, "Bearer ", "", 1)
 
-	result, _ := authController.AuthUseCase.Logout(tokenString)
+	result := authController.AuthUseCase.Logout(tokenString)
 	response.NewResponse(writer, result)
 }
 
@@ -54,7 +54,7 @@ func (authController *AuthController) GetNewAccessToken(writer http.ResponseWrit
 	token := reader.Header.Get("Authorization")
 	tokenString := strings.Replace(token, "Bearer ", "", 1)
 
-	result, _ := authController.AuthUseCase.GetNewAccessToken(tokenString)
+	result := authController.AuthUseCase.GetNewAccessToken(tokenString)
 	response.NewResponse(writer, result)
 }
 func (authController *AuthController) ListSession(writer http.ResponseWriter, reader *http.Request) {
