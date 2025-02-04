@@ -255,7 +255,7 @@ func (categoryUseCase *CategoryUseCase) ListCategorys(context.Context, *pb.Empty
 	commit := begin.Commit()
 	result = &pb.CategoryResponseRepeated{
 		Code:    int64(codes.OK),
-		Message: "CategoryUseCase ListCategory is Succed, ",
+		Message: "CategoryUseCase ListCategory is Succed",
 		Data:    listCategories.Data,
 	}
 	return result, commit
