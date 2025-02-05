@@ -138,6 +138,15 @@ func (userUseCase *UserUseCase) GetUserByEmail(ctx context.Context, email *pb.By
 }
 func (userUseCase *UserUseCase) UpdateUser(ctx context.Context, request *pb.UpdateUserRequest) (result *pb.UserResponse, err error) {
 	begin, err := userUseCase.DatabaseConfig.UserDB.Connection.Begin()
+	if request.Name == nil && request.Email == nil && request.Password == nil && request.Balance == nil {
+		rollbackErr := begin.Rollback()
+		result = &pb.UserResponse{
+			Code:    int64(codes.InvalidArgument),
+			Message: "Update failed. At least one field (Name, Email, Password, or Balance) must be provided for update.",
+			Data:    nil,
+		}
+		return result, rollbackErr
+	}
 	if err != nil {
 		rollbackErr := begin.Rollback()
 		result = &pb.UserResponse{
@@ -233,7 +242,15 @@ func (userUseCase *UserUseCase) CreateUser(ctx context.Context, request *pb.Crea
 		}
 		return result, rollbackErr
 	}
-
+	if request.Name == "" || request.Email == "" || request.Password == "" {
+		rollbackErr := begin.Rollback()
+		result = &pb.UserResponse{
+			Code:    int64(codes.InvalidArgument),
+			Message: "Registration failed. Name, Email, and Password are required and cannot be empty.",
+			Data:    nil,
+		}
+		return result, rollbackErr
+	}
 	hashedPassword, hashedPasswordErr := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if hashedPasswordErr != nil {
 		rollbackErr := begin.Rollback()
