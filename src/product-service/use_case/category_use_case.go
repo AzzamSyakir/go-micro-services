@@ -86,7 +86,15 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 			Data:    nil,
 		}, rollbackErr
 	}
-
+	if request.Name == nil || request.Id == "" {
+		rollbackErr := begin.Rollback()
+		result = &pb.CategoryResponse{
+			Code:    int64(codes.InvalidArgument),
+			Message: "Update failed. name for category must be provided for update.",
+			Data:    nil,
+		}
+		return result, rollbackErr
+	}
 	foundCategory, err := categoryUseCase.CategoryRepository.GetProductById(begin, request.Id)
 	if err != nil {
 		rollbackErr := begin.Rollback()
@@ -137,6 +145,15 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 }
 func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, request *pb.CreateCategoryRequest) (result *pb.CategoryResponse, err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if request.Name == "" {
+		rollbackErr := begin.Rollback()
+		result = &pb.CategoryResponse{
+			Code:    int64(codes.InvalidArgument),
+			Message: "failed to create category failed. need to provide name for category.",
+			Data:    nil,
+		}
+		return result, rollbackErr
+	}
 	if err != nil {
 		rollbackErr := begin.Rollback()
 		return &pb.CategoryResponse{
