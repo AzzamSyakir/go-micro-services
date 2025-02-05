@@ -114,7 +114,7 @@ func (orderUseCase *OrderUseCase) ListOrders(ctx context.Context, _ *pb.Empty) (
 		}, rollbackErr
 	}
 
-	if orderList.Data == nil || len(orderList.Data) == 0 {
+	if len(orderList.Data) == 0 {
 		rollbackErr := begin.Rollback()
 		return &pb.OrderResponseRepeated{
 			Code:    int64(codes.NotFound),
