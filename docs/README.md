@@ -47,7 +47,7 @@ This project follows the **Microservices** architecture, as explained earlier. I
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone "github repo links"
+git clone https://github.com/AzzamSyakir/go-micro-services.git
 ```
 
 ### 2️⃣ Build and run the project
@@ -105,12 +105,12 @@ Proyek ini menggunakan arsitektur **Microservices**, seperti yang telah dijelask
 
 ---
 
-## 🚀 Instalasi
+## 🚀 Instalasi dan running projek
 
 ### 1️⃣ Clone repository
 
 ```bash
-git clone "github repo links"
+git clone https://github.com/AzzamSyakir/go-micro-services.git
 ```
 
 ### 2️⃣ Build dan jalankan proyek
