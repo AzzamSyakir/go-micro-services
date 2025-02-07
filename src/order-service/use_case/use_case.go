@@ -8,7 +8,6 @@ import (
 	"go-micro-services/src/order-service/delivery/grpc/client"
 	"go-micro-services/src/order-service/repository"
 	"math/rand"
-	"strconv"
 	"strings"
 	"time"
 
@@ -40,204 +39,208 @@ func NewOrderUseCase(databaseConfig *config.DatabaseConfig, orderRepository *rep
 func (orderUseCase *OrderUseCase) GetOrderById(ctx context.Context, id *pb.ById) (result *pb.OrderResponse, err error) {
 	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponse{
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
 			Code:    int64(codes.Internal),
-			Message: "order-service DetailOrder is failed, begin fail, " + err.Error(),
+			Message: fmt.Sprintf("Failed to retrieve order details: Unable to start database transaction. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
 
-	orderProductFound, err := orderUseCase.OrderRepository.GetOrderProductsByOrderId(begin, id.Id)
+	orderProducts, err := orderUseCase.OrderRepository.GetOrderProductsByOrderId(begin, id.Id)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponse{
-			Code:    int64(codes.Canceled),
-			Message: "order-service DetailOrder is failed, GetOrderProducts fail, " + err.Error(),
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to retrieve order details: Error retrieving products for the order. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
-	orderFound, orderFoundErr := orderUseCase.OrderRepository.DetailOrder(begin, id.Id)
-	if orderFoundErr != nil {
-		rollback := begin.Rollback()
-		errorMessage := fmt.Sprintf(": %s", orderFoundErr)
-		result = &pb.OrderResponse{
-			Code:    int64(codes.Canceled),
-			Message: errorMessage,
-			Data:    nil,
-		}
-		return result, rollback
-	}
-	if orderFound == nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponse{
-			Code:    int64(codes.Canceled),
-			Message: "order-service, DetailOrder is failed, order is not found by id, " + id.Id,
-			Data:    nil,
-		}
 
-		return result, rollback
+	orderDetails, err := orderUseCase.OrderRepository.DetailOrder(begin, id.Id)
+	if err != nil {
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to retrieve order details: Database query error. Error: %v. Rollback status: %v", err, rollbackErr),
+			Data:    nil,
+		}, rollbackErr
 	}
-	commit := begin.Commit()
-	result = &pb.OrderResponse{
+
+	if orderDetails == nil {
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
+			Code:    int64(codes.NotFound),
+			Message: fmt.Sprintf("Order not found: No order exists with the given ID: %s. Rollback status: %v", id.Id, rollbackErr),
+			Data:    nil,
+		}, rollbackErr
+	}
+
+	if commitErr := begin.Commit(); commitErr != nil {
+		return &pb.OrderResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to finalize the database transaction. Error: %v", commitErr),
+			Data:    nil,
+		}, commitErr
+	}
+
+	orderDetails.Products = orderProducts.Data
+
+	return &pb.OrderResponse{
 		Code:    int64(codes.OK),
-		Message: "order-service, DetailOrder is succeed.",
-		Data:    orderFound,
-	}
-	result.Data.Products = orderProductFound.Data
-	return result, commit
+		Message: "Successfully retrieved order details.",
+		Data:    orderDetails,
+	}, nil
 }
 
-func (orderUseCase *OrderUseCase) ListOrders(context.Context, *pb.Empty) (result *pb.OrderResponseRepeated, err error) {
+func (orderUseCase *OrderUseCase) ListOrders(ctx context.Context, _ *pb.Empty) (result *pb.OrderResponseRepeated, err error) {
 	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponseRepeated{
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponseRepeated{
 			Code:    int64(codes.Internal),
-			Message: "Order-Service orderUseCase ListOrder is failed, begin fail, " + err.Error(),
+			Message: fmt.Sprintf("Failed to retrieve orders: Unable to start database transaction. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-
-		return result, rollback
+		}, rollbackErr
 	}
 
-	fetchOrder, err := orderUseCase.OrderRepository.ListOrders(begin)
+	orderList, err := orderUseCase.OrderRepository.ListOrders(begin)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponseRepeated{
-			Code:    int64(codes.Canceled),
-			Message: "Order-Service orderUseCase ListOrder is failed, query to db  fail, " + err.Error(),
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponseRepeated{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to retrieve orders: Database query error. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
-	for _, order := range fetchOrder.Data {
-		orderProductFound, err := orderUseCase.OrderRepository.GetOrderProductsByOrderId(begin, order.Id)
+
+	if len(orderList.Data) == 0 {
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponseRepeated{
+			Code:    int64(codes.NotFound),
+			Message: fmt.Sprintf("No orders found: There are no orders available in the system. Rollback status: %v", rollbackErr),
+			Data:    nil,
+		}, rollbackErr
+	}
+
+	for _, order := range orderList.Data {
+		orderProducts, err := orderUseCase.OrderRepository.GetOrderProductsByOrderId(begin, order.Id)
 		if err != nil {
-			rollback := begin.Rollback()
-			result = &pb.OrderResponseRepeated{
-				Code:    int64(codes.Canceled),
-				Message: "order-service DetailOrder is failed, GetOrderProducts fail" + err.Error(),
+			rollbackErr := begin.Rollback()
+			return &pb.OrderResponseRepeated{
+				Code:    int64(codes.Internal),
+				Message: fmt.Sprintf("Failed to retrieve products for order ID %s: Database query error. Error: %v. Rollback status: %v", order.Id, err, rollbackErr),
 				Data:    nil,
-			}
-			return result, rollback
+			}, rollbackErr
 		}
-		order.Products = orderProductFound.Data
+		order.Products = orderProducts.Data
 	}
-	if fetchOrder.Data == nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponseRepeated{
-			Code:    int64(codes.Canceled),
-			Message: "orderUseCase ListProduct is failed, data order is empty",
+
+	if commitErr := begin.Commit(); commitErr != nil {
+		return &pb.OrderResponseRepeated{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to finalize the database transaction. Error: %v", commitErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, commitErr
 	}
-	commit := begin.Commit()
-	result = &pb.OrderResponseRepeated{
+
+	return &pb.OrderResponseRepeated{
 		Code:    int64(codes.OK),
-		Message: "orderUseCase ListOrder is succeed.",
-		Data:    fetchOrder.Data,
-	}
-	return result, commit
+		Message: "Successfully retrieved all orders.",
+		Data:    orderList.Data,
+	}, nil
 }
 
 func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.CreateOrderRequest) (result *pb.OrderResponse, err error) {
 	begin, err := orderUseCase.DatabaseConfig.OrderDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponse{
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
 			Code:    int64(codes.Internal),
-			Message: "Order-Service orderUseCase Order is failed, begin fail, " + err.Error(),
+			Message: fmt.Sprintf("Failed to create order: Unable to start database transaction. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
+		}, rollbackErr
+	}
+
+	var totalOrderPrice int64
+	for i, product := range request.Products {
+		getProduct, err := orderUseCase.productClient.GetProductById(product.ProductId)
+		if err != nil {
+			rollbackErr := begin.Rollback()
+			return &pb.OrderResponse{
+				Code:    int64(codes.Internal),
+				Message: fmt.Sprintf("Failed to create order: Unable to retrieve product details for Product ID %s. Error: %v. Rollback status: %v", product.ProductId, err, rollbackErr),
+				Data:    nil,
+			}, rollbackErr
 		}
 
-		return result, rollback
-	}
-	//   Products
-	var totalOrderPrice int64
-	for i, products := range request.Products {
-		productId := products.ProductId
-		getProduct, err := orderUseCase.productClient.GetProductById(productId)
-		if err != nil {
-			rollback := begin.Rollback()
-			result = &pb.OrderResponse{
-				Code:    int64(codes.Canceled),
-				Message: "Order-Service orderUseCase Order is failed, getProduct fail, " + err.Error(),
-				Data:    nil,
-			}
-			return result, rollback
-		}
 		if getProduct.Data == nil {
-			rollback := begin.Rollback()
-			result = &pb.OrderResponse{
-				Code:    int64(codes.Canceled),
-				Message: "Order-Service orderUseCase Order is failed, " + getProduct.Message,
+			rollbackErr := begin.Rollback()
+			return &pb.OrderResponse{
+				Code:    int64(codes.NotFound),
+				Message: fmt.Sprintf("Failed to create order: Product with ID %s not found. %s. Rollback status: %v", product.ProductId, getProduct.Message, rollbackErr),
 				Data:    nil,
-			}
-			return result, rollback
+			}, rollbackErr
 		}
-		if products.Qty > getProduct.Data.Stock {
-			rollback := begin.Rollback()
-			result = &pb.OrderResponse{
-				Code:    int64(codes.Canceled),
-				Message: "Order-Service orderUseCase Order is failed, product out of stock.",
+
+		if product.Qty > getProduct.Data.Stock {
+			rollbackErr := begin.Rollback()
+			return &pb.OrderResponse{
+				Code:    int64(codes.FailedPrecondition),
+				Message: fmt.Sprintf("Failed to create order: Product with ID %s is out of stock. Requested quantity: %d, Available stock: %d. Rollback status: %v", product.ProductId, product.Qty, getProduct.Data.Stock, rollbackErr),
 				Data:    nil,
-			}
-			return result, rollback
+			}, rollbackErr
 		}
-		totalProductPrice := products.Qty * getProduct.Data.Price
+
+		totalProductPrice := product.Qty * getProduct.Data.Price
 		request.Products[i].TotalPrice = &totalProductPrice
 		totalOrderPrice += totalProductPrice
-		finalStock := getProduct.Data.Stock - products.Qty
-		orderUseCase.productClient.UpdateProduct(productId, finalStock)
+		finalStock := getProduct.Data.Stock - product.Qty
+		orderUseCase.productClient.UpdateProduct(product.ProductId, finalStock)
 	}
-	//  User
+
 	getUser, err := orderUseCase.userClient.GetUserById(request.UserId)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponse{
-			Code:    int64(codes.Canceled),
-			Message: "Order-Service orderUseCase Order is failed, " + err.Error(),
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to create order: Unable to retrieve user details. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-
-		return result, rollback
+		}, rollbackErr
 	}
+
 	if getUser.Data == nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponse{
-			Code:    int64(codes.Canceled),
-			Message: "Order-Service orderUseCase Order is failed, GetUser fail, " + getUser.Message,
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
+			Code:    int64(codes.NotFound),
+			Message: fmt.Sprintf("Failed to create order: User with ID %s not found. %s. Rollback status: %v", request.UserId, getUser.Message, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
-	finalBalance := getUser.Data.Balance - int64(totalOrderPrice)
-	orderUseCase.userClient.UpdateUser(request.UserId, finalBalance)
-	//    orders
-	if request.TotalPaid < int64(totalOrderPrice) {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponse{
-			Code:    int64(codes.Canceled),
-			Message: "order-service OrderUseCase is failed, oorder fail,  total paid is not enough, total paid	 required " + string(strconv.FormatInt(int64(totalOrderPrice), 10)),
-			Data:    nil,
-		}
 
-		return result, rollback
+	if request.TotalPaid < totalOrderPrice {
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
+			Code:    int64(codes.FailedPrecondition),
+			Message: fmt.Sprintf("Failed to create order: Insufficient payment. Total required: %d, Provided: %d. Rollback status: %v", totalOrderPrice, request.TotalPaid, rollbackErr),
+			Data:    nil,
+		}, rollbackErr
 	}
-	totalReturn := request.TotalPaid - int64(totalOrderPrice)
+
+	finalBalance := getUser.Data.Balance - totalOrderPrice
+	orderUseCase.userClient.UpdateUser(request.UserId, finalBalance)
+
+	totalReturn := request.TotalPaid - totalOrderPrice
 	firstLetter := strings.ToUpper(string(getUser.Data.Name[0]))
 	rand.Seed(time.Now().UnixNano())
 	randomDigits := rand.Intn(900) + 100
 	receiptCode := fmt.Sprintf("%s%d", firstLetter, randomDigits)
+
 	orderData := &pb.Order{
 		Id:          uuid.NewString(),
 		UserId:      request.UserId,
 		ReceiptCode: receiptCode,
-		TotalPrice:  int64(totalOrderPrice),
+		TotalPrice:  totalOrderPrice,
 		TotalPaid:   request.TotalPaid,
 		TotalReturn: totalReturn,
 		CreatedAt:   timestamppb.New(time.Now()),
@@ -246,46 +249,51 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.CreateO
 
 	order, err := orderUseCase.OrderRepository.Order(begin, orderData)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.OrderResponse{
-			Code:    int64(codes.Canceled),
-			Message: "order-service OrderUseCase is failed, order  fail,  query to db fail, " + err.Error(),
+		rollbackErr := begin.Rollback()
+		return &pb.OrderResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to create order: Database error while saving order details. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-
-		return result, rollback
+		}, rollbackErr
 	}
-	//    orderProducts
+
 	var productsInfo []*pb.OrderProduct
-	for _, orderProducts := range request.Products {
-		orderProductsData := &pb.OrderProduct{
+	for _, orderProduct := range request.Products {
+		orderProductData := &pb.OrderProduct{
 			Id:         uuid.NewString(),
 			OrderId:    order.Data.Id,
-			ProductId:  orderProducts.ProductId,
+			ProductId:  orderProduct.ProductId,
 			TotalPrice: totalOrderPrice,
-			Qty:        orderProducts.Qty,
+			Qty:        orderProduct.Qty,
 			CreatedAt:  timestamppb.New(time.Now()),
 			UpdatedAt:  timestamppb.New(time.Now()),
 		}
-		orderProduct, err := orderUseCase.OrderRepository.OrderProducts(begin, orderProductsData)
+		orderProductSaved, err := orderUseCase.OrderRepository.OrderProducts(begin, orderProductData)
 		if err != nil {
-			rollback := begin.Rollback()
-			result = &pb.OrderResponse{
-				Code:    int64(codes.Canceled),
-				Message: "Order-Service orderUseCase Order is failed, " + err.Error(),
+			rollbackErr := begin.Rollback()
+			return &pb.OrderResponse{
+				Code:    int64(codes.Internal),
+				Message: fmt.Sprintf("Failed to create order: Error while saving product details for Order ID %s. Error: %v. Rollback status: %v", order.Data.Id, err, rollbackErr),
 				Data:    nil,
-			}
-			return result, rollback
+			}, rollbackErr
 		}
-		productsInfo = append(productsInfo, orderProduct)
+		productsInfo = append(productsInfo, orderProductSaved)
 	}
-	commit := begin.Commit()
+
+	if commitErr := begin.Commit(); commitErr != nil {
+		return &pb.OrderResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to finalize the order transaction. Error: %v", commitErr),
+			Data:    nil,
+		}, commitErr
+	}
+
 	result = &pb.OrderResponse{
 		Code:    int64(codes.OK),
-		Message: "orderUseCase success, order is success",
+		Message: fmt.Sprintf("Order created successfully. Order ID: %s, Receipt Code: %s, Total Price: %d, Total Paid: %d, Total Return: %d", order.Data.Id, receiptCode, totalOrderPrice, request.TotalPaid, totalReturn),
 		Data:    order.Data,
 	}
 	result.Data.Products = productsInfo
 
-	return result, commit
+	return result, nil
 }

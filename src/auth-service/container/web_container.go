@@ -22,7 +22,7 @@ type WebContainer struct {
 	Repository *RepositoryContainer
 	UseCase    *UseCaseContainer
 	Controller *ControllerContainer
-	Route      *route.RootRoute
+	Route      *route.AuthRoute
 	Grpc       *grpc.Server
 	Middleware *middleware.AuthMiddleware
 }
@@ -76,17 +76,13 @@ func NewWebContainer() *WebContainer {
 	router := mux.NewRouter()
 	corsMiddleware := middleware.CorsMiddleware()
 	authMiddleware := middleware.NewAuthMiddleware(*authRepository, authDBConfig, corsMiddleware)
-	authRoute := route.NewAuthRoute(router, authController)
+	authRoute := route.NewAuthRoute(router, authController, authMiddleware)
 	// expose route
 	userRoute := route.NewUserRoute(router, exposeController, authMiddleware)
 	productRoute := route.NewProductRoute(router, exposeController, authMiddleware)
 	categoryRoute := route.NewCategoryRoute(router, exposeController, authMiddleware)
 	orderRoute := route.NewOrderRoute(router, exposeController, authMiddleware)
 
-	rootRoute := route.NewRootRoute(
-		router,
-		authRoute,
-	)
 	exposeRoute := route.NewExposeRoute(
 		router,
 		userRoute,
@@ -94,8 +90,7 @@ func NewWebContainer() *WebContainer {
 		categoryRoute,
 		orderRoute,
 	)
-
-	rootRoute.Register()
+	authRoute.Register()
 	exposeRoute.Register()
 
 	webContainer := &WebContainer{
@@ -104,7 +99,7 @@ func NewWebContainer() *WebContainer {
 		Repository: repositoryContainer,
 		UseCase:    useCaseContainer,
 		Controller: controllerContainer,
-		Route:      rootRoute,
+		Route:      authRoute,
 		Grpc:       grpcServer,
 		Middleware: authMiddleware,
 	}

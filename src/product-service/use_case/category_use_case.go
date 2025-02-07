@@ -2,6 +2,7 @@ package use_case
 
 import (
 	"context"
+	"fmt"
 	"go-micro-services/grpc/pb"
 	"go-micro-services/src/product-service/config"
 	"go-micro-services/src/product-service/repository"
@@ -10,7 +11,6 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/google/uuid"
-	"github.com/guregu/null"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -35,79 +35,83 @@ func NewCategoryUseCase(
 func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id *pb.ById) (result *pb.CategoryResponse, err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
 			Code:    int64(codes.Internal),
-			Message: "CategoryUseCase GetCategory is failed, begin fail, " + err.Error(),
+			Message: fmt.Sprintf("Failed to retrieve category: Unable to start database transaction. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-
-		return result, rollback
+		}, rollbackErr
 	}
+
 	categoryFound, err := categoryUseCase.CategoryRepository.GetProductById(begin, id.Id)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
-			Code:    int64(codes.Canceled),
-			Message: "CategoryUseCase GetCategory is failed, query to db fail, " + err.Error(),
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to retrieve category: Database query error while fetching category with ID %s. Error: %v. Rollback status: %v", id.Id, err, rollbackErr),
 			Data:    nil,
-		}
-
-		return result, rollback
+		}, rollbackErr
 	}
+
 	if categoryFound == nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
-			Code:    int64(codes.Canceled),
-			Message: "CategoryUseCase GetCategory is failed, category not found by id, " + id.Id,
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.NotFound),
+			Message: fmt.Sprintf("Category not found: No category exists with ID %s. Rollback status: %v", id.Id, rollbackErr),
 			Data:    nil,
-		}
-
-		return result, rollback
+		}, rollbackErr
 	}
-	commit := begin.Commit()
-	result = &pb.CategoryResponse{
+
+	if commitErr := begin.Commit(); commitErr != nil {
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to finalize the transaction while retrieving category with ID %s. Error: %v", id.Id, commitErr),
+			Data:    nil,
+		}, commitErr
+	}
+
+	return &pb.CategoryResponse{
 		Code:    int64(codes.OK),
-		Message: "CategoryUseCase GetProductById is succeed.",
+		Message: fmt.Sprintf("Category retrieved successfully. Category ID: %s", id.Id),
 		Data:    categoryFound,
-	}
-
-	return result, commit
+	}, nil
 }
-
 func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, request *pb.UpdateCategoryRequest) (result *pb.CategoryResponse, err error) {
-
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
 			Code:    int64(codes.Internal),
-			Message: "CategoryUseCase UpdateCategory is failed, begin fail, " + err.Error(),
+			Message: fmt.Sprintf("Failed to update category: Unable to start database transaction. Error: %v. Rollback status: %v", err, rollbackErr),
+			Data:    nil,
+		}, rollbackErr
+	}
+	if request.Name == nil || request.Id == "" {
+		rollbackErr := begin.Rollback()
+		result = &pb.CategoryResponse{
+			Code:    int64(codes.InvalidArgument),
+			Message: "Update failed. name for category must be provided for update.",
 			Data:    nil,
 		}
-		return result, rollback
+		return result, rollbackErr
 	}
 	foundCategory, err := categoryUseCase.CategoryRepository.GetProductById(begin, request.Id)
 	if err != nil {
-		begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-		if err != nil {
-			rollback := begin.Rollback()
-			result = &pb.CategoryResponse{
-				Code:    int64(codes.Canceled),
-				Message: "CategoryUseCase UpdateCategory is failed, query to db fail, " + err.Error(),
-				Data:    nil,
-			}
-			return result, rollback
-		}
-	}
-	if foundCategory == nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
-			Code:    int64(codes.Canceled),
-			Message: "CategoryUseCase Update Category is failed, category is not found by id, " + request.Id,
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to update category: Database query error while retrieving category with ID %s. Error: %v. Rollback status: %v", request.Id, err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
+	}
+
+	if foundCategory == nil {
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.NotFound),
+			Message: fmt.Sprintf("Failed to update category: No category found with ID %s. Rollback status: %v", request.Id, rollbackErr),
+			Data:    nil,
+		}, rollbackErr
 	}
 
 	if request.Name != nil {
@@ -115,148 +119,185 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 	}
 	foundCategory.UpdatedAt = timestamppb.New(time.Now())
 
-	patchedcategory, err := categoryUseCase.CategoryRepository.PatchOneById(begin, request.Id, foundCategory)
+	patchedCategory, err := categoryUseCase.CategoryRepository.PatchOneById(begin, request.Id, foundCategory)
 	if err != nil {
-		begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-		if err != nil {
-			rollback := begin.Rollback()
-			result = &pb.CategoryResponse{
-				Code:    int64(codes.OK),
-				Message: "CategoryUseCase UpdateCategory is failed, query to db fail, " + err.Error(),
-				Data:    nil,
-			}
-			return result, rollback
-		}
-	}
-
-	commit := begin.Commit()
-	result = &pb.CategoryResponse{
-		Code:    int64(codes.OK),
-		Message: "CategoryUseCase UpdateCategory is succeed.",
-		Data:    patchedcategory,
-	}
-	return result, commit
-}
-
-func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, request *pb.CreateCategoryRequest) (result *pb.CategoryResponse, err error) {
-
-	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
-	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
 			Code:    int64(codes.Internal),
-			Message: "CategoryUseCase AddCategory is failed, begin fail, " + err.Error(),
+			Message: fmt.Sprintf("Failed to update category: Error updating category in the database. Error: %v. Rollback status: %v", err, rollbackErr),
+			Data:    nil,
+		}, rollbackErr
+	}
+
+	if commitErr := begin.Commit(); commitErr != nil {
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to finalize the transaction while updating category with ID %s. Error: %v", request.Id, commitErr),
+			Data:    nil,
+		}, commitErr
+	}
+
+	return &pb.CategoryResponse{
+		Code:    int64(codes.OK),
+		Message: fmt.Sprintf("Category updated successfully. Category ID: %s", request.Id),
+		Data:    patchedCategory,
+	}, nil
+}
+func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, request *pb.CreateCategoryRequest) (result *pb.CategoryResponse, err error) {
+	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
+	if request.Name == "" {
+		rollbackErr := begin.Rollback()
+		result = &pb.CategoryResponse{
+			Code:    int64(codes.InvalidArgument),
+			Message: "failed to create category failed. need to provide name for category.",
 			Data:    nil,
 		}
-		return result, rollback
+		return result, rollbackErr
+	}
+	if err != nil {
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to create category: Unable to start database transaction. Error: %v. Rollback status: %v", err, rollbackErr),
+			Data:    nil,
+		}, rollbackErr
 	}
 
-	currentTime := null.NewTime(time.Now(), true)
+	if request.Name == "" {
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.InvalidArgument),
+			Message: fmt.Sprintf("Failed to create category: Category name is required. Rollback status: %v", rollbackErr),
+			Data:    nil,
+		}, rollbackErr
+	}
+
+	currentTime := time.Now()
 	newCategory := &pb.Category{
 		Id:        uuid.NewString(),
 		Name:      request.Name,
-		CreatedAt: timestamppb.New(currentTime.Time),
-		UpdatedAt: timestamppb.New(currentTime.Time),
+		CreatedAt: timestamppb.New(currentTime),
+		UpdatedAt: timestamppb.New(currentTime),
 	}
 
 	createdCategory, err := categoryUseCase.CategoryRepository.CreateCategory(begin, newCategory)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
-			Code:    int64(codes.Canceled),
-			Message: "CategoryUseCase AddCategory is failed, query to db fail, " + err.Error(),
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to create category: Database insertion error. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
 
-	commit := begin.Commit()
-	result = &pb.CategoryResponse{
-		Code:    int64(codes.Canceled),
-		Message: "CategoryUseCase Register is succeed.",
+	if commitErr := begin.Commit(); commitErr != nil {
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to finalize the transaction while creating category. Error: %v", commitErr),
+			Data:    nil,
+		}, commitErr
+	}
+
+	return &pb.CategoryResponse{
+		Code:    int64(codes.OK),
+		Message: fmt.Sprintf("Category created successfully. Category ID: %s, Name: %s", createdCategory.Id, createdCategory.Name),
 		Data:    createdCategory,
-	}
-	return result, commit
+	}, nil
 }
-
 func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *pb.ById) (result *pb.CategoryResponse, err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
 			Code:    int64(codes.Internal),
-			Message: "CategoryUseCase DeleteCategory is failed, begin fail, " + err.Error(),
+			Message: fmt.Sprintf("Failed to delete category: Unable to start database transaction. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
 
-	deletedcategory, err := categoryUseCase.CategoryRepository.DeleteOneById(begin, id.Id)
+	if id.Id == "" {
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.InvalidArgument),
+			Message: fmt.Sprintf("Failed to delete category: Category ID is required. Rollback status: %v", rollbackErr),
+			Data:    nil,
+		}, rollbackErr
+	}
+
+	deletedCategory, err := categoryUseCase.CategoryRepository.DeleteOneById(begin, id.Id)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
-			Code:    int64(codes.Canceled),
-			Message: "CategoryUseCase DeleteCategory is failed, Query to db fail, " + err.Error(),
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to delete category: Database deletion error. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
-	}
-	if deletedcategory == nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponse{
-			Code:    int64(codes.Canceled),
-			Message: "CategoryUseCase DeleteCategory is failed, category is not deleted by id , " + id.Id,
-			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
 
-	commit := begin.Commit()
-	result = &pb.CategoryResponse{
+	if deletedCategory == nil {
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponse{
+			Code:    int64(codes.NotFound),
+			Message: fmt.Sprintf("Failed to delete category: No category found with ID %s. Rollback status: %v", id.Id, rollbackErr),
+			Data:    nil,
+		}, rollbackErr
+	}
+
+	if commitErr := begin.Commit(); commitErr != nil {
+		return &pb.CategoryResponse{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to finalize the transaction while deleting category. Error: %v", commitErr),
+			Data:    nil,
+		}, commitErr
+	}
+
+	return &pb.CategoryResponse{
 		Code:    int64(codes.OK),
-		Message: "CategoryUseCase DeleteCategory is succed.",
-		Data:    deletedcategory,
-	}
-	return result, commit
+		Message: fmt.Sprintf("Category deleted successfully. Category ID: %s", deletedCategory.Id),
+		Data:    deletedCategory,
+	}, nil
 }
-
-func (categoryUseCase *CategoryUseCase) ListCategorys(context.Context, *pb.Empty) (result *pb.CategoryResponseRepeated, err error) {
+func (categoryUseCase *CategoryUseCase) ListCategories(ctx context.Context, _ *pb.Empty) (result *pb.CategoryResponseRepeated, err error) {
 	begin, err := categoryUseCase.DatabaseConfig.ProductDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponseRepeated{
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponseRepeated{
 			Code:    int64(codes.Internal),
-			Message: "CategoryUseCase ListCategory is failed, begin fail, " + err.Error(),
+			Message: fmt.Sprintf("Failed to retrieve categories: Unable to start database transaction. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
 
 	listCategories, err := categoryUseCase.CategoryRepository.ListCategories(begin)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponseRepeated{
-			Code:    int64(codes.Canceled),
-			Message: "CategoryUseCase ListCategory is failed, Query to db, " + err.Error(),
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponseRepeated{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to retrieve categories: Database query error. Error: %v. Rollback status: %v", err, rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
 
-	if listCategories.Data == nil {
-		rollback := begin.Rollback()
-		result = &pb.CategoryResponseRepeated{
-			Code:    int64(codes.Canceled),
-			Message: "CategoryUseCase UpdateCategory is failed, Category is empty, ",
+	if listCategories == nil || len(listCategories.Data) == 0 {
+		rollbackErr := begin.Rollback()
+		return &pb.CategoryResponseRepeated{
+			Code:    int64(codes.NotFound),
+			Message: fmt.Sprintf("No categories found in the database. Rollback status: %v", rollbackErr),
 			Data:    nil,
-		}
-		return result, rollback
+		}, rollbackErr
 	}
-	commit := begin.Commit()
-	result = &pb.CategoryResponseRepeated{
+
+	if commitErr := begin.Commit(); commitErr != nil {
+		return &pb.CategoryResponseRepeated{
+			Code:    int64(codes.Internal),
+			Message: fmt.Sprintf("Failed to finalize the transaction while retrieving categories. Error: %v", commitErr),
+			Data:    nil,
+		}, commitErr
+	}
+
+	return &pb.CategoryResponseRepeated{
 		Code:    int64(codes.OK),
-		Message: "CategoryUseCase ListCategory is Succed, ",
+		Message: "Successfully retrieved category list.",
 		Data:    listCategories.Data,
-	}
-	return result, commit
+	}, nil
 }

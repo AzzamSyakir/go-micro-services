@@ -2,6 +2,7 @@ package use_case
 
 import (
 	"context"
+	"fmt"
 	"go-micro-services/grpc/pb"
 	"go-micro-services/src/auth-service/config"
 	"go-micro-services/src/auth-service/delivery/grpc/client"
@@ -41,47 +42,44 @@ func NewAuthUseCase(
 	return authUseCase
 }
 
-func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (result *model_response.Response[*entity.Session], err error) {
-	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (result *model_response.Response[*entity.Session]) {
+	tx, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
 			Code:    http.StatusInternalServerError,
-			Message: "AuthUseCase Login failed, begin fail, " + err.Error(),
+			Message: "Login failed: Unable to start database transaction. " + err.Error(),
 			Data:    nil,
 		}
-		return result, rollback
 	}
 
 	foundUser, err := authUseCase.userClient.GetUserByEmail(request.Email.String)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: foundUser.Message,
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Login failed: Error retrieving user data. " + err.Error(),
 			Data:    nil,
 		}
-		return result, rollback
-	}
-	if foundUser.Data == nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: foundUser.Message,
-			Data:    nil,
-		}
-		return result, rollback
 	}
 
-	comparePasswordErr := bcrypt.CompareHashAndPassword([]byte(foundUser.Data.Password), []byte(request.Password.String))
-	if comparePasswordErr != nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
+	if foundUser.Data == nil {
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
 			Code:    http.StatusNotFound,
-			Message: "AuthUseCase Login is failed, password is not match.",
+			Message: "Login failed: User not found.",
 			Data:    nil,
 		}
-		return result, rollback
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Data.Password), []byte(request.Password.String))
+	if err != nil {
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusUnauthorized,
+			Message: "Login failed: Incorrect password.",
+			Data:    nil,
+		}
 	}
 
 	accessToken := null.NewString(uuid.NewString(), true)
@@ -90,42 +88,46 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 	accessTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Minute*10), true)
 	refreshTokenExpiredAt := null.NewTime(currentTime.Time.Add(time.Hour*24*2), true)
 
-	foundSession, err := authUseCase.AuthRepository.GetOneByUserId(begin, foundUser.Data.Id)
+	foundSession, err := authUseCase.AuthRepository.GetOneByUserId(tx, foundUser.Data.Id)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Login failed, query to db fail, " + err.Error(),
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Login failed: Error retrieving session from database. " + err.Error(),
 			Data:    nil,
 		}
-		return result, rollback
 	}
 
 	if foundSession != nil {
-
 		foundSession.AccessToken = accessToken
 		foundSession.RefreshToken = refreshToken
 		foundSession.AccessTokenExpiredAt = accessTokenExpiredAt
 		foundSession.RefreshTokenExpiredAt = refreshTokenExpiredAt
 		foundSession.UpdatedAt = currentTime
-		patchedSession, err := authUseCase.AuthRepository.PatchOneById(begin, foundSession.Id.String, foundSession)
+
+		patchedSession, err := authUseCase.AuthRepository.PatchOneById(tx, foundSession.Id.String, foundSession)
 		if err != nil {
-			rollback := begin.Rollback()
-			result = &model_response.Response[*entity.Session]{
-				Code:    http.StatusBadRequest,
-				Message: "AuthUseCase Login failed, query updateSession  fail, " + err.Error(),
+			tx.Rollback()
+			return &model_response.Response[*entity.Session]{
+				Code:    http.StatusInternalServerError,
+				Message: "Login failed: Unable to update session. " + err.Error(),
 				Data:    nil,
 			}
-			return result, rollback
 		}
 
-		commit := begin.Commit()
-		result = &model_response.Response[*entity.Session]{
+		if commitErr := tx.Commit(); commitErr != nil {
+			return &model_response.Response[*entity.Session]{
+				Code:    http.StatusInternalServerError,
+				Message: "Login failed: Unable to commit transaction. " + commitErr.Error(),
+				Data:    nil,
+			}
+		}
+
+		return &model_response.Response[*entity.Session]{
 			Code:    http.StatusOK,
-			Message: "AuthUseCase Login is succeed",
+			Message: "Login successful.",
 			Data:    patchedSession,
 		}
-		return result, commit
 	}
 
 	newSession := &entity.Session{
@@ -139,176 +141,263 @@ func (authUseCase *AuthUseCase) Login(request *model_request.LoginRequest) (resu
 		UpdatedAt:             currentTime,
 	}
 
-	createdSession, err := authUseCase.AuthRepository.CreateSession(begin, newSession)
+	createdSession, err := authUseCase.AuthRepository.CreateSession(tx, newSession)
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Login failed, query createSession fail, " + err.Error(),
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Login failed: Unable to create new session. " + err.Error(),
 			Data:    nil,
 		}
-		return result, rollback
 	}
-	commit := begin.Commit()
-	result = &model_response.Response[*entity.Session]{
+
+	if commitErr := tx.Commit(); commitErr != nil {
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Login failed: Unable to finalize transaction. " + commitErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return &model_response.Response[*entity.Session]{
 		Code:    http.StatusOK,
-		Message: "AuthUseCase Login is succeed",
+		Message: "Login successful.",
 		Data:    createdSession,
 	}
-	return result, commit
 }
-
-func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_response.Response[*entity.Session], err error) {
-	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+func (authUseCase *AuthUseCase) Logout(accessToken string) (result *model_response.Response[*entity.Session]) {
+	tx, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
 			Code:    http.StatusInternalServerError,
-			Message: "AuthUseCase Logout failed, begin fail, " + err.Error(),
+			Message: "Logout failed: Unable to start database transaction. " + err.Error(),
 			Data:    nil,
 		}
-		return result, rollback
 	}
 
-	foundSession, err := authUseCase.AuthRepository.FindOneByAccToken(begin, accessToken)
-	if err != nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
+	if accessToken == "" {
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
 			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Logout failed, Invalid token, " + err.Error(),
+			Message: "Logout failed: Access token is required.",
 			Data:    nil,
 		}
-		return result, rollback
 	}
+
+	foundSession, err := authUseCase.AuthRepository.FindOneByAccToken(tx, accessToken)
+	if err != nil {
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusUnauthorized,
+			Message: "Logout failed: Invalid access token. " + err.Error(),
+			Data:    nil,
+		}
+	}
+
 	if foundSession == nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Logout is failed, session is not found by access token.",
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusNotFound,
+			Message: "Logout failed: No active session found for the provided access token.",
 			Data:    nil,
 		}
-		return result, rollback
-	}
-	deletedSession, err := authUseCase.AuthRepository.DeleteOneById(begin, foundSession.Id.String)
-	if err != nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Logout failed, query to db fail, " + err.Error(),
-			Data:    nil,
-		}
-		return result, rollback
-	}
-	if deletedSession == nil {
-		rollback := begin.Rollback()
-		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase Logout failed, delete session failed",
-			Data:    nil,
-		}
-		return result, rollback
 	}
 
-	commit := begin.Commit()
-	result = &model_response.Response[*entity.Session]{
+	deletedSession, err := authUseCase.AuthRepository.DeleteOneById(tx, foundSession.Id.String)
+	if err != nil {
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Logout failed: Unable to delete session from database. " + err.Error(),
+			Data:    nil,
+		}
+	}
+
+	if deletedSession == nil {
+		tx.Rollback()
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Logout failed: Session deletion was unsuccessful.",
+			Data:    nil,
+		}
+	}
+
+	if commitErr := tx.Commit(); commitErr != nil {
+		return &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Logout failed: Unable to finalize transaction. " + commitErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return &model_response.Response[*entity.Session]{
 		Code:    http.StatusOK,
-		Message: "AuthUseCase Logout is succeed.",
+		Message: "Logout successful.",
 		Data:    deletedSession,
 	}
-	return result, commit
 }
-
 func (authUseCase *AuthUseCase) LogoutWithUserId(context context.Context, id *pb.ByUserId) (empty *pb.Empty, err error) {
-	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+	tx, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
 	if err != nil {
-		begin.Rollback()
-		return &pb.Empty{}, err
+		tx.Rollback()
+		return &pb.Empty{}, fmt.Errorf("Logout failed: Unable to start database transaction. %v", err)
 	}
 
-	foundSession, err := authUseCase.AuthRepository.GetOneByUserId(begin, id.Id)
+	if id.Id == "" {
+		tx.Rollback()
+		return &pb.Empty{}, fmt.Errorf("Logout failed: User ID is required")
+	}
+
+	foundSession, err := authUseCase.AuthRepository.GetOneByUserId(tx, id.Id)
 	if err != nil {
-		begin.Rollback()
-		return &pb.Empty{}, err
+		tx.Rollback()
+		return &pb.Empty{}, fmt.Errorf("Logout failed: Error retrieving session from database. %v", err)
 	}
 	if foundSession == nil {
-		begin.Rollback()
-		return &pb.Empty{}, err
-	}
-	_, err = authUseCase.AuthRepository.DeleteOneByUserId(begin, foundSession.UserId.String)
-	if err != nil {
-		begin.Rollback()
-		return &pb.Empty{}, err
+		tx.Rollback()
+		return &pb.Empty{}, fmt.Errorf("Logout failed: No active session found for the given user ID")
 	}
 
-	commitErr := begin.Commit()
+	_, err = authUseCase.AuthRepository.DeleteOneByUserId(tx, foundSession.UserId.String)
+	if err != nil {
+		tx.Rollback()
+		return &pb.Empty{}, fmt.Errorf("Logout failed: Unable to delete session. %v", err)
+	}
+
+	commitErr := tx.Commit()
 	if commitErr != nil {
-		return &pb.Empty{}, commitErr
+		return &pb.Empty{}, fmt.Errorf("Logout failed: Error committing transaction. %v", commitErr)
 	}
 
 	return &pb.Empty{}, nil
 }
-
-func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *model_response.Response[*entity.Session], err error) {
-	begin, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+func (authUseCase *AuthUseCase) GetNewAccessToken(refreshToken string) (result *model_response.Response[*entity.Session]) {
+	tx, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
 	if err != nil {
-		rollback := begin.Rollback()
+		tx.Rollback()
 		result = &model_response.Response[*entity.Session]{
 			Code:    http.StatusInternalServerError,
-			Message: "AuthUseCase GetNewAccesToken failed, begin fail, " + err.Error(),
+			Message: "Failed to generate new access token: Unable to start database transaction. " + err.Error(),
 			Data:    nil,
 		}
-		return result, rollback
+		return result
 	}
-	foundSession, err := authUseCase.AuthRepository.FindOneByRefToken(begin, refreshToken)
-	if err != nil {
-		rollback := begin.Rollback()
+
+	if refreshToken == "" {
+		tx.Rollback()
 		result = &model_response.Response[*entity.Session]{
 			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase GetNewAccesToken failed, query to db fail, " + err.Error(),
+			Message: "Failed to generate new access token: Refresh token is required.",
 			Data:    nil,
 		}
-		return result, rollback
+		return result
+	}
+
+	foundSession, err := authUseCase.AuthRepository.FindOneByRefToken(tx, refreshToken)
+	if err != nil {
+		tx.Rollback()
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to generate new access token: Error retrieving session from database. " + err.Error(),
+			Data:    nil,
+		}
+		return result
 	}
 
 	if foundSession == nil {
-		rollback := begin.Rollback()
+		tx.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase GetNewAccesToken  failed, session is not found by refresh token.",
+			Code:    http.StatusNotFound,
+			Message: "Failed to generate new access token: No session found for the provided refresh token.",
 			Data:    nil,
 		}
-		return result, rollback
+		return result
 	}
 
 	if foundSession.RefreshTokenExpiredAt.Time.Before(time.Now()) {
-		rollback := begin.Rollback()
+		tx.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusNotFound,
-			Message: "AuthUseCase GetNewAccessToken is failed, refresh token is expired.",
+			Code:    http.StatusUnauthorized,
+			Message: "Failed to generate new access token: Refresh token has expired.",
 			Data:    nil,
 		}
-		return result, rollback
+		return result
 	}
 
 	foundSession.AccessToken = null.NewString(uuid.NewString(), true)
 	foundSession.UpdatedAt = null.NewTime(time.Now(), true)
-	patchedSession, err := authUseCase.AuthRepository.PatchOneById(begin, foundSession.Id.String, foundSession)
+	patchedSession, err := authUseCase.AuthRepository.PatchOneById(tx, foundSession.Id.String, foundSession)
 	if err != nil {
-		rollback := begin.Rollback()
+		tx.Rollback()
 		result = &model_response.Response[*entity.Session]{
-			Code:    http.StatusBadRequest,
-			Message: "AuthUseCase GetNewAccesToken  failed, query to db fail," + err.Error(),
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to generate new access token: Unable to update session in database. " + err.Error(),
 			Data:    nil,
 		}
-		return result, rollback
+		return result
 	}
 
-	commit := begin.Commit()
+	commit := tx.Commit()
+	if commit != nil {
+		result = &model_response.Response[*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to generate new access token: Error committing transaction. " + commit.Error(),
+			Data:    nil,
+		}
+		tx.Commit()
+		return result
+	}
+
 	result = &model_response.Response[*entity.Session]{
 		Code:    http.StatusOK,
-		Message: "AuthUseCase GetNewAccessToken is succeed.",
+		Message: "New access token generated successfully.",
 		Data:    patchedSession,
 	}
-	return result, commit
+	return result
+}
+func (authUseCase *AuthUseCase) ListSessions() (result *model_response.Response[[]*entity.Session]) {
+	tx, err := authUseCase.DatabaseConfig.AuthDB.Connection.Begin()
+	if err != nil {
+		tx.Rollback()
+		return &model_response.Response[[]*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Error: Unable to start database transaction. " + err.Error(),
+			Data:    nil,
+		}
+	}
 
+	sessions, err := authUseCase.AuthRepository.ListSession(tx)
+	if err != nil {
+		tx.Rollback()
+		return &model_response.Response[[]*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Error: Failed to retrieve session data from the database. " + err.Error(),
+			Data:    nil,
+		}
+	}
+
+	if len(sessions) == 0 {
+		tx.Rollback()
+		return &model_response.Response[[]*entity.Session]{
+			Code:    http.StatusNotFound,
+			Message: "No active sessions found in the database.",
+			Data:    nil,
+		}
+	}
+
+	if commitErr := tx.Commit(); commitErr != nil {
+		tx.Rollback()
+		return &model_response.Response[[]*entity.Session]{
+			Code:    http.StatusInternalServerError,
+			Message: "Error: Failed to finalize the database transaction. " + commitErr.Error(),
+			Data:    nil,
+		}
+	}
+
+	return &model_response.Response[[]*entity.Session]{
+		Code:    http.StatusOK,
+		Message: "Successfully retrieved all active sessions.",
+		Data:    sessions,
+	}
 }
