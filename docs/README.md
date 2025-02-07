@@ -42,7 +42,7 @@ This project follows the **Microservices** architecture, as explained earlier. I
 
 ---
 
-## 🚀 Installation
+## 🚀 Installation and try on your own machine
 
 ### 1️⃣ Clone the repository
 
@@ -105,7 +105,7 @@ Proyek ini menggunakan arsitektur **Microservices**, seperti yang telah dijelask
 
 ---
 
-## 🚀 Instalasi dan running projek
+## 🚀 Instalasi dan jalankan di komputer local
 
 ### 1️⃣ Clone repository
 
