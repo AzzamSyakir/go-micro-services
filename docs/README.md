@@ -1,43 +1,129 @@
 # Go Microservices
 
-POS-API develop using Microservices architecture pattern 
-## What are Microservices?
-```Microservices``` are an architectural approach to developing an application as a collection of small, self-contained services that each fulfill a specific business purpose. Developers can build these services in several programming languages, deploy, scale, and maintain them independently, and enable communication between them via well-defined APIs. The following image demonstrates how ```Microservices``` work in practice
+POS-API is developed using the **Microservices** architecture pattern.
 
-![MicroServices Design](https://github.com/user-attachments/assets/aa3b73ca-07b8-49ce-8266-0b1a96a839cf)
+---
 
-As shown in the image above, clients (mobile, web, or desktop applications) send requests to an API gateway, which serves as the entry point, routing each request to the appropriate Microservices. Furthermore, each service operates independently, interacting with its own database and, if necessary, with other Microservices or an external API or service to fulfill requests.
+## 📌 What are Microservices?
 
-Microservices vs monoliths
-To further understand Microservices, it's helpful to contrast them with the traditional pattern of developing applications — the monolithic architecture. Applications in a monolithic architecture are often constructed in layers, e.g., a presentation layer to handle user interaction, a business logic layer to process data according to business rules, and a data access layer to communicate with the database.
+`Microservices` is an architectural approach where an application is divided into small, self-contained services, each serving a specific business function. These services can be developed in different programming languages, deployed, scaled, and maintained independently, while communicating through well-defined APIs.
 
+In practice, Microservices architecture works as shown in the following diagram:
 
-## introduction
+---
 
-This project uses the ``Microservices`` architecture as explained above, this ``project aims to be a boilerplate/template and can be used as an example and guide`` to make it easier for developers to create micro-services applications with Golang
-## Features
-- docker container per services
-- db per services 
-- communication between services with grpc
-- user services 
-- product services 
-- order services
-- auth services 
+## 📊 Database Diagram
 
-## Installation
+The **Entity Relationship Diagram (ERD)** of this project is as follows:
 
-### first clone this repo
+![Database Design](erd.png)
+
+---
+
+## 📖 Introduction
+
+This project follows the **Microservices** architecture, as explained earlier. It serves as a **boilerplate/template**, providing an example and guide for developers looking to build microservices-based applications using Golang.
+
+💡 **Check out the API documentation:** ![API Documentation](ip address will add later)
+
+---
+
+## ⚡ Features
+
+- Docker container per service
+- Dedicated database per service
+- Inter-service communication using gRPC
+- Available services:
+  - **User Service**
+  - **Product Service**
+  - **Order Service**
+  - **Auth Service**
+- Well-documented API with Swagger
+
+---
+
+## 🚀 Installation
+
+### 1️⃣ Clone the repository
+
 ```bash
 git clone "github repo links"
 ```
-### build and run  projects 
+
+### 2️⃣ Build and run the project
+
 ```bash
 go mod tidy
-```
-```bash
 make start-docker
 ```
-### run test
+
+### 3️⃣ Run tests
+
 ```bash
 make start-test
 ```
+
+---
+
+# ID
+
+## 📌 Apa Itu Microservices?
+
+`Microservices` adalah pendekatan arsitektur di mana sebuah aplikasi dibagi menjadi layanan-layanan kecil yang berdiri sendiri, masing-masing memiliki fungsi bisnis tertentu. Setiap layanan dapat dikembangkan dengan berbagai bahasa pemrograman, dideploy, diskalakan, dan dikelola secara independen, serta berkomunikasi melalui API yang terdefinisi dengan baik.
+
+Dalam praktiknya, arsitektur Microservices bekerja seperti yang ditunjukkan dalam diagram berikut:
+
+---
+
+## 📊 Diagram Basis Data
+
+Berikut adalah **Entity Relationship Diagram (ERD)** dari proyek ini:
+
+![Database Design](erd.png)
+
+---
+
+## 📖 Pendahuluan
+
+Proyek ini menggunakan arsitektur **Microservices**, seperti yang telah dijelaskan sebelumnya. Proyek ini bertujuan sebagai **boilerplate/template**, memberikan contoh dan panduan bagi developer dalam membangun aplikasi berbasis microservices dengan Golang.
+
+💡 **Lihat dokumentasi API:** ![API Documentation](ip address will add later)
+
+---
+
+## ⚡ Fitur
+
+- Setiap layanan berjalan dalam **container Docker**
+- Setiap layanan memiliki **database sendiri**
+- Komunikasi antar layanan menggunakan **gRPC**
+- Layanan yang tersedia:
+  - **User Service**
+  - **Product Service**
+  - **Order Service**
+  - **Auth Service**
+- Dokumentasi API yang lengkap dengan **Swagger**
+
+---
+
+## 🚀 Instalasi
+
+### 1️⃣ Clone repository
+
+```bash
+git clone "github repo links"
+```
+
+### 2️⃣ Build dan jalankan proyek
+
+```bash
+go mod tidy
+make start-docker
+```
+
+### 3️⃣ Jalankan unit test
+
+```bash
+make start-test
+```
+
+---
