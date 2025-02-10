@@ -11,7 +11,6 @@ POS-API is developed using the **Microservices** architecture pattern.
 In practice, Microservices architecture works as shown in the following diagram:
 
 ---
-
 ## 📊 Database Diagram
 
 The **Entity Relationship Diagram (ERD)** of this project is as follows:
