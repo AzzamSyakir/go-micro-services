@@ -1,5 +1,4 @@
-# Go Microservices
-
+# Go Microservices Project
 POS-API is developed using the **Microservices** architecture pattern.
 ---
 ## 📌 What are Microservices?
