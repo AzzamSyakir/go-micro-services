@@ -1,15 +1,12 @@
 # Go Microservices
 
 POS-API is developed using the **Microservices** architecture pattern.
-
 ---
-
 ## 📌 What are Microservices?
 
 `Microservices` is an architectural approach where an application is divided into small, self-contained services, each serving a specific business function. These services can be developed in different programming languages, deployed, scaled, and maintained independently, while communicating through well-defined APIs.
 
 In practice, Microservices architecture works as shown in the following diagram:
-
 ---
 ## 📊 Database Diagram
 
