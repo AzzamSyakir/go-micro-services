@@ -49,8 +49,12 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
-      - name: Build the Docker image
-        run: docker build -f docker/dockerfile -t bukanasa/bantu-backend:latest .
+      - name: Build Docker images
+        run: |
+          docker build -f src/auth-service/dockerfile -t bukanasa/go-micro-services/auth-service:latest .
+          docker build -f src/order-service/dockerfile -t bukanasa/go-micro-services/order-service:latest .
+          docker build -f src/product-service/dockerfile -t bukanasa/go-micro-services/product-service:latest .
+          docker build -f src/user-service/dockerfile -t bukanasa/go-micro-services/user-service:latest .
 
       - name: Push Docker image to DockerHub
         run: docker push bukanasa/bantu-backend:latest
