@@ -1,0 +1,56 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          GATEWAY_APP_HOST=${{ secrets.GATEWAY_APP_HOST }}
+          GATEWAY_APP_PORT=${{ secrets.GATEWAY_APP_PORT }}
+          SWAGGER_PORT=${{ secrets.SWAGGER_PORT }}
+
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_NAME=${{ secrets.DB_NAME }}
+
+          RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_USER=${{ secrets.RABBITMQ_USER }}
+          RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+          RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
+          RABBITMQ_QUEUE_NAMES=${{ secrets.RABBITMQ_QUEUE_NAMES }}
+
+          REDIS_ADDR=${{ secrets.REDIS_ADDR }}
+          REDIS_PORT=${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          REDIS_DB=${{ secrets.REDIS_DB }}
+
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          XENDIT_KEY=${{ secrets.XENDIT_KEY }}
+          EOF
+
+      - name: Login to DockerHub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+      - name: Build the Docker image
+        run: docker build -f docker/dockerfile -t bukanasa/bantu-backend:latest .
+
+      - name: Push Docker image to DockerHub
+        run: docker push bukanasa/bantu-backend:latest
