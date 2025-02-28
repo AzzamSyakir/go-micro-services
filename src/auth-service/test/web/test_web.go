@@ -36,7 +36,6 @@ func NewTestWeb() *TestWeb {
 
 	return testWeb
 }
-
 func (web *TestWeb) GetAllSeeder() *seeder.AllSeeder {
 	userSeeder := seeder.NewUserSeeder(web.UserContainer.UserDB)
 	categorySeeder := seeder.NewCategorySeeder(web.ProductContainer.ProductDB)
