@@ -24,7 +24,7 @@ func NewTestWeb() *TestWeb {
 	authWebContainer := auth_container.NewWebContainer()
 	orderWebContainer := order_container.NewWebContainer()
 
-	server := httptest.NewServer(authWebContainer.Route.Router)
+	server := httptest.NewServer(authWebContainer.Route)
 
 	testWeb := &TestWeb{
 		Server:           server,
