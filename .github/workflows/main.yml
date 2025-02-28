@@ -14,29 +14,30 @@ jobs:
       - name: Create .env file
         run: |
           cat <<EOF > .env
-          GATEWAY_APP_PORT=${{ secrets.GATEWAY_APP_PORT }}
+          # Environment variables for the application
+          AUTH_HOST=${{ secrets.AUTH_HOST }}
+          USER_HOST=${{ secrets.USER_HOST }}
+          PRODUCT_HOST=${{ secrets.PRODUCT_HOST }}
+          ORDER_HOST=${{ secrets.ORDER_HOST }}
+
+          # Ports for various services
+          AUTH_PORT=${{ secrets.AUTH_PORT }}
+          USER_PORT=${{ secrets.USER_PORT }}
+          PRODUCT_PORT=${{ secrets.PRODUCT_PORT }}
+          ORDER_PORT=${{ secrets.ORDER_PORT }}
+          AUTH_GRPC_PORT=${{ secrets.AUTH_GRPC_PORT }}
           SWAGGER_PORT=${{ secrets.SWAGGER_PORT }}
 
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_PORT=${{ secrets.DB_PORT }}
-          DB_NAME=${{ secrets.DB_NAME }}
+          # PostgreSQL configuration
+          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
 
-          RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
-          RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
-          RABBITMQ_USER=${{ secrets.RABBITMQ_USER }}
-          RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
-          RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
-          RABBITMQ_QUEUE_NAMES=${{ secrets.RABBITMQ_QUEUE_NAMES }}
-
-          REDIS_ADDR=${{ secrets.REDIS_ADDR }}
-          REDIS_PORT=${{ secrets.REDIS_PORT }}
-          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-          REDIS_DB=${{ secrets.REDIS_DB }}
-
-          SECRET_KEY=${{ secrets.SECRET_KEY }}
-          XENDIT_KEY=${{ secrets.XENDIT_KEY }}
+          # Ports for various PostgreSQL services
+          POSTGRES_AUTH_PORT=${{ secrets.POSTGRES_AUTH_PORT }}
+          POSTGRES_USER_PORT=${{ secrets.POSTGRES_USER_PORT }}
+          POSTGRES_PRODUCT_PORT=${{ secrets.POSTGRES_PRODUCT_PORT }}
+          POSTGRES_ORDER_PORT=${{ secrets.POSTGRES_ORDER_PORT }}
           EOF
 
       - name: Login to DockerHub
