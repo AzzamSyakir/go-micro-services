@@ -22,7 +22,7 @@ type WebContainer struct {
 	Repository *RepositoryContainer
 	UseCase    *UseCaseContainer
 	Controller *ControllerContainer
-	Route      *route.AuthRoute
+	Route      *mux.Router
 	Grpc       *grpc.Server
 	Middleware *middleware.AuthMiddleware
 }
@@ -99,7 +99,7 @@ func NewWebContainer() *WebContainer {
 		Repository: repositoryContainer,
 		UseCase:    useCaseContainer,
 		Controller: controllerContainer,
-		Route:      authRoute,
+		Route:      router,
 		Grpc:       grpcServer,
 		Middleware: authMiddleware,
 	}

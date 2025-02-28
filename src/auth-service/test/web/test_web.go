@@ -24,7 +24,7 @@ func NewTestWeb() *TestWeb {
 	authWebContainer := auth_container.NewWebContainer()
 	orderWebContainer := order_container.NewWebContainer()
 
-	server := httptest.NewServer(authWebContainer.Route.Router)
+	server := httptest.NewServer(authWebContainer.Route)
 
 	testWeb := &TestWeb{
 		Server:           server,
@@ -36,7 +36,6 @@ func NewTestWeb() *TestWeb {
 
 	return testWeb
 }
-
 func (web *TestWeb) GetAllSeeder() *seeder.AllSeeder {
 	userSeeder := seeder.NewUserSeeder(web.UserContainer.UserDB)
 	categorySeeder := seeder.NewCategorySeeder(web.ProductContainer.ProductDB)

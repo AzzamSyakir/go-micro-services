@@ -33,7 +33,7 @@ func main() {
 		"0.0.0.0",
 		webContainer.Env.App.AuthHttpPort,
 	)
-	listenAndServeErr := http.ListenAndServe(address, webContainer.Middleware.Cors.Handler(webContainer.Route.Router))
+	listenAndServeErr := http.ListenAndServe(address, webContainer.Middleware.Cors.Handler(webContainer.Route))
 	if listenAndServeErr != nil {
 		log.Fatalf("failed to serve HTTP: %v", listenAndServeErr)
 	}
