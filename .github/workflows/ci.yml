@@ -47,7 +47,7 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
       - name: Create DockerHub repository if not exists
         env:
@@ -68,18 +68,14 @@ jobs:
 
       - name: Build Docker images
         run: |
-          # Pastikan context build sesuai dengan direktori Dockerfile masing-masing
-          docker build -f src/auth-service/Dockerfile -t bukanasa/go-micro-services:auth-service-latest src/auth-service
-          docker build -f src/order-service/Dockerfile -t bukanasa/go-micro-services:order-service-latest src/order-service
-          docker build -f src/product-service/Dockerfile -t bukanasa/go-micro-services:product-service-latest src/product-service
-          docker build -f src/user-service/Dockerfile -t bukanasa/go-micro-services:user-service-latest src/user-service
+          docker build -f src/auth-service/Dockerfile -t bukanasa/go-micro-services/auth-service:latest .
+          docker build -f src/order-service/Dockerfile -t bukanasa/go-micro-services/order-service:latest .
+          docker build -f src/product-service/Dockerfile -t bukanasa/go-micro-services/product-service:latest .
+          docker build -f src/user-service/Dockerfile -t bukanasa/go-micro-services/user-service:latest .
 
-      - name: List Docker images (for debugging)
-        run: docker images
-
-      - name: Push Docker images to DockerHub
+      - name: Push Docker image to DockerHub
         run: |
-          docker push bukanasa/go-micro-services:auth-service-latest
-          docker push bukanasa/go-micro-services:order-service-latest
-          docker push bukanasa/go-micro-services:product-service-latest
-          docker push bukanasa/go-micro-services:user-service-latest
+          docker push bukanasa/go-micro-services/auth-service:latest
+          docker push bukanasa/go-micro-services/order-service:latest
+          docker push bukanasa/go-micro-services/product-service:latest
+          docker push bukanasa/go-micro-services/user-service:latest
