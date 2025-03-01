@@ -2,7 +2,7 @@ name: CD Pipeline
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]
+    workflows: ["CD Pipeline"]
     types:
       - completed
 
@@ -47,20 +47,24 @@ jobs:
         run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
       - name: Pull Docker Image
-        run: docker pull bukanasa/bantu-backend:latest
+        run: |
+              docker pull bukanasa/go-micro-services:auth-service-latest
+              docker pull bukanasa/go-micro-services:order-service-latest
+              docker pull bukanasa/go-micro-services:product-service-latest
+              docker pull bukanasa/go-micro-services:user-service-latest
 
             
       - name: Stop and Remove Old Containers
         run: |
-          docker compose --env-file ./.env -f ~/program/bantu-backend/docker/docker-compose.yml down --remove-orphans || true
+          docker compose --env-file ./.env -f ~/program/go-micro-services/docker/docker-compose.yml down --remove-orphans || true
       
       - name: Remove Old Docker Image
         run: |
-          docker images --filter "reference=bukanasa/bantu-backend" --format "{{.ID}}" | xargs -r docker rmi -f || true
+          docker images --filter "reference=bukanasa/go-micro-services" --format "{{.ID}}" | xargs -r docker rmi -f || true
           
       - name: Run Docker
         run: |
-          mv .env ~/program/bantu-backend 
+          mv .env ~/program/go-micro-services 
           cd 
-          cd program/bantu-backend
+          cd program/go-micro-services
           docker compose --env-file .env -f docker/docker-compose.yml up -d
