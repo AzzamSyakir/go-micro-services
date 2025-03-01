@@ -1,0 +1,63 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          # Environment variables for the application
+          AUTH_HOST=${{ secrets.AUTH_HOST }}
+          USER_HOST=${{ secrets.USER_HOST }}
+          PRODUCT_HOST=${{ secrets.PRODUCT_HOST }}
+          ORDER_HOST=${{ secrets.ORDER_HOST }}
+
+          # Ports for various services
+          AUTH_PORT=${{ secrets.AUTH_PORT }}
+          USER_PORT=${{ secrets.USER_PORT }}
+          PRODUCT_PORT=${{ secrets.PRODUCT_PORT }}
+          ORDER_PORT=${{ secrets.ORDER_PORT }}
+          AUTH_GRPC_PORT=${{ secrets.AUTH_GRPC_PORT }}
+          SWAGGER_PORT=${{ secrets.SWAGGER_PORT }}
+
+          # PostgreSQL configuration
+          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+
+          # Ports for various PostgreSQL services
+          POSTGRES_AUTH_PORT=${{ secrets.POSTGRES_AUTH_PORT }}
+          POSTGRES_USER_PORT=${{ secrets.POSTGRES_USER_PORT }}
+          POSTGRES_PRODUCT_PORT=${{ secrets.POSTGRES_PRODUCT_PORT }}
+          POSTGRES_ORDER_PORT=${{ secrets.POSTGRES_ORDER_PORT }}
+          EOF
+
+      - name: Login to DockerHub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+      - name: Build Docker images
+        run: |
+          docker build -f src/auth-service/Dockerfile -t bukanasa/go-micro-services:auth-service-latest .
+          docker build -f src/order-service/Dockerfile -t bukanasa/go-micro-services:order-service-latest .
+          docker build -f src/product-service/Dockerfile -t bukanasa/go-micro-services:product-service-latest .
+          docker build -f src/user-service/Dockerfile -t bukanasa/go-micro-services:user-service-latest .
+
+      - name: Push Docker image to DockerHub
+        run: |
+          docker push bukanasa/go-micro-services:auth-service-latest
+          docker push bukanasa/go-micro-services:order-service-latest
+          docker push bukanasa/go-micro-services:product-service-latest
+          docker push bukanasa/go-micro-services:user-service-latest
