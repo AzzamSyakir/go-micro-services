@@ -56,8 +56,4 @@ jobs:
           docker build -f src/user-service/Dockerfile -t bukanasa/go-micro-services/user-service:latest .
 
       - name: Push Docker image to DockerHub
-        run: |
-          docker push bukanasa/go-micro-services/auth-service:latest
-          docker push bukanasa/go-micro-services/order-service:latest
-          docker push bukanasa/go-micro-services/product-service:latest
-          docker push bukanasa/go-micro-services/user-service:latest
+        run: docker push bukanasa/go-micro-services/auth-service:latest
