@@ -62,3 +62,4 @@ jobs:
           docker push bukanasa/go-micro-services/order-service:latest
           docker push bukanasa/go-micro-services/product-service:latest
           docker push bukanasa/go-micro-services/user-service:latest
+    
