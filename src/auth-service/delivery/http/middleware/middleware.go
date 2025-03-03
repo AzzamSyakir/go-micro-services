@@ -85,11 +85,6 @@ func (authMiddleware *AuthMiddleware) Middleware(next http.Handler) http.Handler
 }
 
 func CorsMiddleware() *cors.Cors {
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowCredentials: true,
-		AllowedHeaders:   []string{"*"},
-		Debug:            false,
-	})
+	c := cors.AllowAll()
 	return c
 }
