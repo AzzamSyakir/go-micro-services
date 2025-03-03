@@ -469,7 +469,7 @@ func (exposeUseCase *ExposeUseCase) DetailProduct(id string) (result *model_resp
 // category
 
 func (exposeUseCase *ExposeUseCase) ListCategories() (result *model_response.Response[[]*entity.Category]) {
-	ListCategory, err := exposeUseCase.CategoryClient.ListCategorys()
+	ListCategory, err := exposeUseCase.CategoryClient.ListCategories()
 	if err != nil {
 		result = &model_response.Response[[]*entity.Category]{
 			Code:    http.StatusBadRequest,
