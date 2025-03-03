@@ -68,6 +68,7 @@
           {
             "in": "body",
             "name": "body",
+            "description": "User information to register",
             "required": true,
             "schema": {
               "type": "object",
@@ -84,7 +85,12 @@
                   "type": "string",
                   "example": "examplePassword123"
                 }
-              }
+              },
+              "required": [
+                "name",
+                "email",
+                "password"
+              ]
             }
           }
         ],
@@ -100,26 +106,26 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "UserUseCase Register is succeed."
+                  "example": "User successfully registered."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-created-user"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "name": {
                       "type": "string",
-                      "example": "Example User"
+                      "example": "created name"
                     },
                     "email": {
                       "type": "string",
-                      "example": "example.user@example.com"
+                      "example": "created-email@gmail.com"
                     },
                     "password": {
                       "type": "string",
-                      "example": "hashed-password-example"
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
                     },
                     "balance": {
                       "type": "integer",
@@ -127,11 +133,13 @@
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-01-29T12:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741292669Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-01-29T12:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741292669Z"
                     }
                   }
                 }
@@ -168,7 +176,11 @@
                   "type": "string",
                   "example": "examplePassword123"
                 }
-              }
+              },
+              "required": [
+                "email",
+                "password"
+              ]
             }
           }
         ],
@@ -184,42 +196,46 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "AuthUseCase Login is succeed"
+                  "example": "Login successful."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-login-user"
+                      "example": "7cc3fa6b-d43c-4d7c-95fc-bdbe1a714d30"
                     },
                     "user_id": {
                       "type": "string",
-                      "example": "uuid-user-id"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "access_token": {
                       "type": "string",
-                      "example": "example-access-token"
+                      "example": "43864ba1-c69a-44ea-a5b8-0eeedac4a749"
                     },
                     "refresh_token": {
                       "type": "string",
-                      "example": "example-refresh-token"
+                      "example": "b7759332-67f4-4e59-93a5-45c725a4affd"
                     },
                     "access_token_expired_at": {
                       "type": "string",
-                      "example": "2025-01-31T12:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:54:19.343068395Z"
                     },
                     "refresh_token_expired_at": {
                       "type": "string",
-                      "example": "2025-02-15T12:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-05T02:44:19.343068395Z"
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-01-29T11:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:44:19.343068395Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-01-29T11:30:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:44:19.343068395Z"
                     }
                   }
                 }
@@ -237,9 +253,9 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "GetNewAccessToken For User",
-        "operationId": "GetNewAccessTokenForUser",
-        "description": "Creates a new AccessToken For User, so user can interact with other Endpoints",
+        "summary": "Create New Access Token for User",
+        "operationId": "createNewAccessToken",
+        "description": "Creates a new access token for the user so they can interact with other endpoints.",
         "parameters": [
           {
             "in": "body",
@@ -266,7 +282,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Token retrieved successfully",
+            "description": "New access token generated successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -276,42 +292,46 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "AuthUseCase GetNewAccessToken is succeed."
+                  "example": "New access token generated successfully."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "44c818a3-4e36-4fb3-924f-401008529225"
+                      "example": "7cc3fa6b-d43c-4d7c-95fc-bdbe1a714d30"
                     },
                     "user_id": {
                       "type": "string",
-                      "example": "89a40ce8-34bc-4159-895a-8beb3e46da84"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "access_token": {
                       "type": "string",
-                      "example": "8d15c260-2c91-4599-8eb2-9886568a2b11"
+                      "example": "101cc63d-d875-4d32-be2a-3a5ae8073b28"
                     },
                     "refresh_token": {
                       "type": "string",
-                      "example": "d918ddf8-7817-4ac4-9e5e-80f354b7edbc"
+                      "example": "b7759332-67f4-4e59-93a5-45c725a4affd"
                     },
                     "access_token_expired_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:19:56.208272Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:54:19.343068Z"
                     },
                     "refresh_token_expired_at": {
                       "type": "string",
-                      "example": "2025-02-05T06:09:56.208272Z"
+                      "format": "date-time",
+                      "example": "2025-03-05T02:44:19.343068Z"
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:09:56.208272Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:44:19.343068Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:10:14.400485603Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:49:17.20982664Z"
                     }
                   }
                 }
@@ -331,7 +351,7 @@
         ],
         "summary": "Logout",
         "operationId": "LogoutUser",
-        "description": "Logout CurrentUser or delete session data",
+        "description": "Logout current user or delete session data.",
         "parameters": [
           {
             "in": "header",
@@ -344,7 +364,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Logout successfully",
+            "description": "Logout successful",
             "schema": {
               "type": "object",
               "properties": {
@@ -354,46 +374,46 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "AuthUseCase Logout is succeed."
+                  "example": "Logout successful."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "44c818a3-4e36-4fb3-924f-401008529225"
+                      "example": "7cc3fa6b-d43c-4d7c-95fc-bdbe1a714d30"
                     },
                     "user_id": {
                       "type": "string",
-                      "example": "89a40ce8-34bc-4159-895a-8beb3e46da84"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "access_token": {
                       "type": "string",
-                      "example": "8d15c260-2c91-4599-8eb2-9886568a2b11"
+                      "example": "101cc63d-d875-4d32-be2a-3a5ae8073b28"
                     },
                     "refresh_token": {
                       "type": "string",
-                      "example": "d918ddf8-7817-4ac4-9e5e-80f354b7edbc"
+                      "example": "b7759332-67f4-4e59-93a5-45c725a4affd"
                     },
                     "access_token_expired_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:19:56.208272Z"
+                      "example": "2025-03-03T02:54:19.343068Z"
                     },
                     "refresh_token_expired_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-05T06:09:56.208272Z"
+                      "example": "2025-03-05T02:44:19.343068Z"
                     },
                     "created_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:09:56.208272Z"
+                      "example": "2025-03-03T02:44:19.343068Z"
                     },
                     "updated_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:10:14.400486Z"
+                      "example": "2025-03-03T02:49:17.209827Z"
                     }
                   }
                 }
@@ -417,7 +437,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "User session retrieved successfully",
+            "description": "Successfully retrieved all active sessions.",
             "schema": {
               "type": "object",
               "properties": {
@@ -427,42 +447,49 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "ListSessions request succeeded"
+                  "example": "Successfully retrieved all active sessions."
                 },
                 "data": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "example": "example-session-uuid"
-                    },
-                    "user_id": {
-                      "type": "string",
-                      "example": "example-user-uuid"
-                    },
-                    "access_token": {
-                      "type": "string",
-                      "example": "example-access-token"
-                    },
-                    "access_token_expired_at": {
-                      "type": "string",
-                      "example": "2025-01-29T12:00:00Z"
-                    },
-                    "refresh_token": {
-                      "type": "string",
-                      "example": "example-refresh-token"
-                    },
-                    "refresh_token_expired_at": {
-                      "type": "string",
-                      "example": "2025-02-28T12:00:00Z"
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "example": "2025-01-29T12:00:00Z"
-                    },
-                    "updated_at": {
-                      "type": "string",
-                      "example": "2025-01-30T12:00:00Z"
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "558efd0e-f6a1-44b8-8b24-30c52c805e7f"
+                      },
+                      "user_id": {
+                        "type": "string",
+                        "example": "8d59e693-64c2-428b-bc33-7b98ecf6ce7c"
+                      },
+                      "access_token": {
+                        "type": "string",
+                        "example": "14f4e1b6-e28d-4371-9cb3-00065ede06a3"
+                      },
+                      "refresh_token": {
+                        "type": "string",
+                        "example": "c1805616-74b8-42d7-b851-1a77e9d073bb"
+                      },
+                      "access_token_expired_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T00:24:24.829355Z"
+                      },
+                      "refresh_token_expired_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-05T00:14:24.829355Z"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T00:14:24.829355Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T00:14:24.829355Z"
+                      }
                     }
                   }
                 }
