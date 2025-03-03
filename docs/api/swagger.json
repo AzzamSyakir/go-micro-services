@@ -525,7 +525,7 @@
         ],
         "responses": {
           "200": {
-            "description": "List of users",
+            "description": "Successfully retrieved all users.",
             "schema": {
               "type": "object",
               "properties": {
@@ -535,64 +535,48 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "User UseCase ListUser is succeed."
+                  "example": "Successfully retrieved all users."
                 },
                 "data": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/User"
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "created name"
+                      },
+                      "email": {
+                        "type": "string",
+                        "example": "created-email@gmail.com"
+                      },
+                      "password": {
+                        "type": "string",
+                        "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
+                      },
+                      "balance": {
+                        "type": "integer",
+                        "example": 0
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T02:39:54.741293Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T02:39:54.741293Z"
+                      }
+                    }
                   }
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/users/{id}": {
-      "get": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Get user by ID",
-        "operationId": "getUserById",
-        "description": "Get user details based on the provided ID.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "x-example": "uuid-user-id"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User details",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "example": 200
-                },
-                "message": {
-                  "type": "string",
-                  "example": "User UseCase GetOneById is succeed."
-                },
-                "data": {
-                  "$ref": "#/definitions/User"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found"
           }
         }
       }
@@ -621,7 +605,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User details",
+            "description": "User retrieved successfully by email.",
             "schema": {
               "type": "object",
               "properties": {
@@ -631,14 +615,14 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "User UseCase GetOneByEmail is succeed."
+                  "example": "User retrieved successfully by email."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "e70e2a34-a0bc-498f-9029-438b70028848"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "name": {
                       "type": "string",
@@ -650,7 +634,7 @@
                     },
                     "password": {
                       "type": "string",
-                      "example": "$2a$10$oW9OYzmvaEcuDnTraTXBiuy4YCDM9PoiNMXuNHT01DueY9YvwoPJO"
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
                     },
                     "balance": {
                       "type": "integer",
@@ -659,12 +643,12 @@
                     "created_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T22:42:31.910586Z"
+                      "example": "2025-03-03T02:39:54.741293Z"
                     },
                     "updated_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T22:42:31.910586Z"
+                      "example": "2025-03-03T02:39:54.741293Z"
                     }
                   }
                 }
@@ -678,7 +662,85 @@
       }
     },
     "/users/{userId}": {
-      "patch": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get user by ID",
+        "operationId": "getUserById",
+        "description": "Get user details based on the provided user ID.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved successfully.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "example": 200
+                },
+                "message": {
+                  "type": "string",
+                  "example": "User retrieved successfully."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "created name"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "created-email@gmail.com"
+                    },
+                    "password": {
+                      "type": "string",
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
+                    },
+                    "balance": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741293Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741293Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "put": {
         "tags": [
           "Users"
         ],
@@ -696,7 +758,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "89a40ce8-34bc-4159-895a-8beb3e46da84"
+            "x-example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
           },
           {
             "name": "body",
@@ -715,7 +777,7 @@
                 },
                 "password": {
                   "type": "string",
-                  "example": "$2a$10$THF2ee9ZAjt22il.9F/vneYeplYWhxvIFSc/vna9TblaqHSs2iFY2"
+                  "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
                 },
                 "balance": {
                   "type": "integer",
@@ -742,14 +804,14 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "UserUserCase UpdateUser is succeed."
+                  "example": "User updated successfully."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "89a40ce8-34bc-4159-895a-8beb3e46da84"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "name": {
                       "type": "string",
@@ -761,7 +823,7 @@
                     },
                     "password": {
                       "type": "string",
-                      "example": "$2a$10$THF2ee9ZAjt22il.9F/vneYeplYWhxvIFSc/vna9TblaqHSs2iFY2"
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
                     },
                     "balance": {
                       "type": "integer",
@@ -770,12 +832,12 @@
                     "created_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:09:44.369085Z"
+                      "example": "2025-03-03T02:39:54.741293Z"
                     },
                     "updated_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:16:07.288545422Z"
+                      "example": "2025-03-03T03:54:01.051294888Z"
                     }
                   }
                 }
@@ -805,7 +867,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "e70e2a34-a0bc-498f-9029-438b70028848"
+            "x-example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
           }
         ],
         "responses": {
@@ -820,7 +882,42 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "UserUserCase DeleteUser is succeed."
+                  "example": "User with ID b740369b-8957-4f36-b7ed-b0b8e1d07caf has been successfully deleted."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "created name"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "created-email@gmail.com"
+                    },
+                    "password": {
+                      "type": "string",
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
+                    },
+                    "balance": {
+                      "type": "integer",
+                      "example": 10000000
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741293Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T03:54:01.051295Z"
+                    }
+                  }
                 }
               }
             }
