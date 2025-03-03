@@ -75,7 +75,7 @@ func (productUseCase *ProductUseCase) GetProductById(ctx context.Context, id *pb
 
 	return &pb.ProductResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Product details retrieved successfully for ID %s.", id.Id),
+		Message: "Product details retrieved successfully",
 		Data:    productFound,
 	}, nil
 }
@@ -168,7 +168,7 @@ func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request
 
 	return &pb.ProductResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Product updated successfully. ID: %s", request.Id),
+		Message: "Product updated successfully.",
 		Data:    updatedProduct,
 	}, nil
 }
@@ -252,7 +252,7 @@ func (productUseCase *ProductUseCase) CreateProduct(ctx context.Context, request
 
 	return &pb.ProductResponse{
 		Code:    http.StatusCreated,
-		Message: fmt.Sprintf("Product successfully created. ID: %s, SKU: %s", createdProduct.Id, createdProduct.Sku),
+		Message: "Product created successfully.",
 		Data:    createdProduct,
 	}, nil
 }
@@ -305,7 +305,7 @@ func (productUseCase *ProductUseCase) DeleteProduct(ctx context.Context, id *pb.
 
 	return &pb.ProductResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Product with ID %s has been successfully deleted.", id.Id),
+		Message: "Product has been successfully deleted.",
 		Data:    deletedProduct,
 	}, nil
 }
@@ -356,7 +356,7 @@ func (productUseCase *ProductUseCase) ListProducts(ctx context.Context, request 
 
 	result = &pb.ProductResponseRepeated{
 		Code:    int64(codes.OK),
-		Message: "Product list fetched successfully.",
+		Message: "Product list retrieved successfully.",
 		Data:    fetchProduct.Data,
 	}
 	return result, nil

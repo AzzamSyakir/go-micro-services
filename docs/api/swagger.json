@@ -1300,11 +1300,11 @@
               "properties": {
                 "sku": {
                   "type": "string",
-                  "example": "SKU-EXAMPLE"
+                  "example": "E256"
                 },
                 "name": {
                   "type": "string",
-                  "example": "Example Product"
+                  "example": "example product"
                 },
                 "stock": {
                   "type": "integer",
@@ -1316,9 +1316,16 @@
                 },
                 "category_id": {
                   "type": "string",
-                  "example": "uuid-category-id"
+                  "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
                 }
-              }
+              },
+              "required": [
+                "sku",
+                "name",
+                "stock",
+                "price",
+                "category_id"
+              ]
             }
           }
         ],
@@ -1334,22 +1341,22 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "ProductUseCase CreateProduct is success"
+                  "example": "Product created successfully."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-product-id"
+                      "example": "f99116f7-dd32-4672-b99c-e125e867910e"
                     },
                     "sku": {
                       "type": "string",
-                      "example": "SKU-EXAMPLE"
+                      "example": "E256"
                     },
                     "name": {
                       "type": "string",
-                      "example": "Example Product"
+                      "example": "example product"
                     },
                     "stock": {
                       "type": "integer",
@@ -1361,15 +1368,17 @@
                     },
                     "category_id": {
                       "type": "string",
-                      "example": "uuid-category-id"
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:22:36Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.83409818Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:22:36Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.83409818Z"
                     }
                   }
                 }
@@ -1392,7 +1401,7 @@
         ],
         "responses": {
           "200": {
-            "description": "List of products",
+            "description": "Product list retrieved successfully.",
             "schema": {
               "type": "object",
               "properties": {
@@ -1402,12 +1411,48 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "product-service UseCase, ListProduct is succeed."
+                  "example": "Product list retrieved successfully."
                 },
                 "data": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/Product"
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "f99116f7-dd32-4672-b99c-e125e867910e"
+                      },
+                      "sku": {
+                        "type": "string",
+                        "example": "E256"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "example product"
+                      },
+                      "stock": {
+                        "type": "integer",
+                        "example": 100
+                      },
+                      "price": {
+                        "type": "integer",
+                        "example": 7000
+                      },
+                      "category_id": {
+                        "type": "string",
+                        "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T06:55:22.834098Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T06:55:22.834098Z"
+                      }
+                    }
                   }
                 }
               }
@@ -1435,12 +1480,12 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-product-id"
+            "x-example": "f99116f7-dd32-4672-b99c-e125e867910e"
           }
         ],
         "responses": {
           "200": {
-            "description": "Product details",
+            "description": "Product details retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -1450,13 +1495,52 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "product-service UseCase, DetailProduct is succeed."
+                  "example": "Product details retrieved successfully"
                 },
                 "data": {
-                  "$ref": "#/definitions/Product"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "f99116f7-dd32-4672-b99c-e125e867910e"
+                    },
+                    "sku": {
+                      "type": "string",
+                      "example": "E256"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example product"
+                    },
+                    "stock": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "price": {
+                      "type": "integer",
+                      "example": 7000
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.834098Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.834098Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Product not found"
           }
         }
       },
@@ -1478,7 +1562,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-product-id"
+            "x-example": "f99116f7-dd32-4672-b99c-e125e867910e"
           },
           {
             "in": "body",
@@ -1493,21 +1577,28 @@
                 },
                 "name": {
                   "type": "string",
-                  "example": "Updated Example Product"
+                  "example": "example update product"
                 },
                 "stock": {
                   "type": "integer",
-                  "example": 150
+                  "example": 100
                 },
                 "price": {
                   "type": "integer",
-                  "example": 8000
+                  "example": 7000
                 },
                 "category_id": {
                   "type": "string",
-                  "example": "uuid-category-id"
+                  "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
                 }
-              }
+              },
+              "required": [
+                "sku",
+                "name",
+                "stock",
+                "price",
+                "category_id"
+              ]
             }
           }
         ],
@@ -1523,13 +1614,52 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "product-service UseCase Update Product is success."
+                  "example": "Product updated successfully."
                 },
                 "data": {
-                  "$ref": "#/definitions/Product"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "f99116f7-dd32-4672-b99c-e125e867910e"
+                    },
+                    "sku": {
+                      "type": "string",
+                      "example": "E256"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example update product"
+                    },
+                    "stock": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "price": {
+                      "type": "integer",
+                      "example": 7000
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.834098Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:58:49.076601703Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Product not found"
           }
         }
       },
@@ -1551,7 +1681,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-product-id"
+            "x-example": "3be4c34b-cf94-47f4-b9af-8f2139b259ea"
           }
         ],
         "responses": {
@@ -1566,13 +1696,52 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "product-service UseCase DeleteProduct is succeed."
+                  "example": "Product has been successfully deleted."
                 },
                 "data": {
-                  "$ref": "#/definitions/Product"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "3be4c34b-cf94-47f4-b9af-8f2139b259ea"
+                    },
+                    "sku": {
+                      "type": "string",
+                      "example": "example product"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "E930"
+                    },
+                    "stock": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "price": {
+                      "type": "integer",
+                      "example": 7000
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T07:00:00.181402Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T07:00:00.181402Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Product not found"
           }
         }
       }
