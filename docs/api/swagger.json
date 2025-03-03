@@ -117,11 +117,11 @@
                     },
                     "name": {
                       "type": "string",
-                      "example": "created name"
+                      "example": "Example User"
                     },
                     "email": {
                       "type": "string",
-                      "example": "created-email@gmail.com"
+                      "example": "example.user@example.com"
                     },
                     "password": {
                       "type": "string",
@@ -548,11 +548,11 @@
                       },
                       "name": {
                         "type": "string",
-                        "example": "created name"
+                        "example": "Example User"
                       },
                       "email": {
                         "type": "string",
-                        "example": "created-email@gmail.com"
+                        "example": "example.user@example.com"
                       },
                       "password": {
                         "type": "string",
@@ -600,7 +600,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "created-email@gmail.com"
+            "x-example": "example.user@example.com"
           }
         ],
         "responses": {
@@ -626,11 +626,11 @@
                     },
                     "name": {
                       "type": "string",
-                      "example": "created name"
+                      "example": "Example User"
                     },
                     "email": {
                       "type": "string",
-                      "example": "created-email@gmail.com"
+                      "example": "example.user@example.com"
                     },
                     "password": {
                       "type": "string",
@@ -706,11 +706,11 @@
                     },
                     "name": {
                       "type": "string",
-                      "example": "created name"
+                      "example": "Example User"
                     },
                     "email": {
                       "type": "string",
-                      "example": "created-email@gmail.com"
+                      "example": "example.user@example.com"
                     },
                     "password": {
                       "type": "string",
@@ -769,11 +769,11 @@
               "properties": {
                 "name": {
                   "type": "string",
-                  "example": "created name"
+                  "example": "Example User"
                 },
                 "email": {
                   "type": "string",
-                  "example": "created-email@gmail.com"
+                  "example": "example.user@example.com"
                 },
                 "password": {
                   "type": "string",
@@ -815,11 +815,11 @@
                     },
                     "name": {
                       "type": "string",
-                      "example": "created name"
+                      "example": "Example User"
                     },
                     "email": {
                       "type": "string",
-                      "example": "created-email@gmail.com"
+                      "example": "example.user@example.com"
                     },
                     "password": {
                       "type": "string",
@@ -893,11 +893,11 @@
                     },
                     "name": {
                       "type": "string",
-                      "example": "created name"
+                      "example": "Example User"
                     },
                     "email": {
                       "type": "string",
-                      "example": "created-email@gmail.com"
+                      "example": "example.user@example.com"
                     },
                     "password": {
                       "type": "string",
@@ -953,7 +953,10 @@
                   "type": "string",
                   "example": "Example Category"
                 }
-              }
+              },
+              "required": [
+                "name"
+              ]
             }
           }
         ],
@@ -969,26 +972,28 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase Register is succeed."
+                  "example": "Category Created Successfully"
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-category-id"
+                      "example": "2111a162-a912-454d-aaf0-0feeafe60d9f"
                     },
                     "name": {
                       "type": "string",
-                      "example": "Example Category"
+                      "example": "example category"
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:17:52Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T06:11:47.988013891Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:17:52Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T06:11:47.988013891Z"
                     }
                   }
                 }
@@ -1003,7 +1008,7 @@
         ],
         "summary": "Get List Category",
         "operationId": "ListCategories",
-        "description": "retrioeve a list of categories.",
+        "description": "Retrieve a list of categories.",
         "security": [
           {
             "BearerAuth": []
@@ -1011,7 +1016,7 @@
         ],
         "responses": {
           "200": {
-            "description": "CategoryUseCase ListCategory is Succed",
+            "description": "Successfully retrieved category list.",
             "schema": {
               "type": "object",
               "properties": {
@@ -1021,26 +1026,31 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase ListCategory is Succed"
+                  "example": "Successfully retrieved category list."
                 },
                 "data": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "example": "uuid-category-id"
-                    },
-                    "name": {
-                      "type": "string",
-                      "example": "Example Category"
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "example": "2025-02-03T06:17:52Z"
-                    },
-                    "updated_at": {
-                      "type": "string",
-                      "example": "2025-02-03T06:17:52Z"
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "2111a162-a912-454d-aaf0-0feeafe60d9f"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "example category"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T06:11:47.988014Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T06:11:47.988014Z"
+                      }
                     }
                   }
                 }
@@ -1069,12 +1079,12 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-category-id"
+            "x-example": "2111a162-a912-454d-aaf0-0feeafe60d9f"
           }
         ],
         "responses": {
           "200": {
-            "description": "Category details",
+            "description": "Category retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -1084,13 +1094,36 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase GetProductById is succeed."
+                  "example": "Category retrieved successfully"
                 },
                 "data": {
-                  "$ref": "#/definitions/Category"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "2111a162-a912-454d-aaf0-0feeafe60d9f"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example category"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:11:47.988014Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:11:47.988014Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Category not found"
           }
         }
       },
@@ -1112,7 +1145,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-category-id"
+            "x-example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
           },
           {
             "in": "body",
@@ -1123,9 +1156,12 @@
               "properties": {
                 "name": {
                   "type": "string",
-                  "example": "Updated Category"
+                  "example": "example updated category"
                 }
-              }
+              },
+              "required": [
+                "name"
+              ]
             }
           }
         ],
@@ -1141,13 +1177,36 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase UpdateCategory is succeed."
+                  "example": "Category updated successfully."
                 },
                 "data": {
-                  "$ref": "#/definitions/Category"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example updated category"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:39:10.95694Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:39:12.646837852Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Category not found"
           }
         }
       },
@@ -1169,7 +1228,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-category-id"
+            "x-example": "8aa955d4-3c6a-4d80-943c-6800cdbe4bdc"
           }
         ],
         "responses": {
@@ -1184,13 +1243,36 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase DeleteCategory is succeed."
+                  "example": "Category deleted successfully."
                 },
                 "data": {
-                  "$ref": "#/definitions/Category"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "8aa955d4-3c6a-4d80-943c-6800cdbe4bdc"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example category"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:34:46.547866Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:34:46.547866Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Category not found"
           }
         }
       }
