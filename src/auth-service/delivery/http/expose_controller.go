@@ -113,7 +113,7 @@ func (exposeController *ExposeController) UpdateProduct(writer http.ResponseWrit
 	request := &model_request.ProductPatchOneByIdRequest{}
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
-		panic(decodeErr)
+		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
 	}
 	result := exposeController.ExposeUseCase.UpdateProduct(id, request)
 
@@ -164,7 +164,7 @@ func (exposeController *ExposeController) UpdateCategory(writer http.ResponseWri
 	request := &model_request.CategoryRequest{}
 	decodeErr := json.NewDecoder(reader.Body).Decode(request)
 	if decodeErr != nil {
-		panic(decodeErr)
+		http.Error(writer, "Failed to decode request body: "+decodeErr.Error(), http.StatusBadRequest)
 	}
 	result := exposeController.ExposeUseCase.UpdateCategory(id, request)
 

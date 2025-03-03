@@ -1769,7 +1769,7 @@
               "properties": {
                 "user_id": {
                   "type": "string",
-                  "example": "uuid-user-id"
+                  "example": "568814d8-6c42-426e-a552-cbbec50ee4bb"
                 },
                 "products": {
                   "type": "array",
@@ -1778,16 +1778,24 @@
                     "properties": {
                       "product_id": {
                         "type": "string",
-                        "example": "uuid-product-id"
+                        "example": "75e42c2e-c245-48b4-b6f9-30d23e47fe55"
                       },
                       "qty": {
                         "type": "integer",
                         "example": 1
                       }
-                    }
+                    },
+                    "required": [
+                      "product_id",
+                      "qty"
+                    ]
                   }
                 }
-              }
+              },
+              "required": [
+                "user_id",
+                "products"
+              ]
             }
           }
         ],
@@ -1803,26 +1811,26 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "orderUseCase success, order is success"
+                  "example": "Order created successfully."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-order-id"
+                      "example": "e6fd0e76-f4c2-4969-bfd7-1b8b28c3440c"
                     },
                     "user_id": {
                       "type": "string",
-                      "example": "uuid-user-id"
+                      "example": "568814d8-6c42-426e-a552-cbbec50ee4bb"
                     },
                     "receipt_code": {
                       "type": "string",
-                      "example": "RECEIPT-123"
+                      "example": "C108"
                     },
                     "total_price": {
                       "type": "integer",
-                      "example": 14000
+                      "example": 7000
                     },
                     "total_paid": {
                       "type": "integer",
@@ -1830,15 +1838,17 @@
                     },
                     "total_return": {
                       "type": "integer",
-                      "example": 6000
+                      "example": 13000
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:46:36Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T09:32:11.471529623Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:46:36Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T09:32:11.471529783Z"
                     },
                     "products": {
                       "type": "array",
@@ -1847,19 +1857,19 @@
                         "properties": {
                           "id": {
                             "type": "string",
-                            "example": "uuid-product-item-id"
+                            "example": "ee9d9b8f-2cca-4941-93df-398e69339526"
                           },
                           "user_id": {
                             "type": "string",
-                            "example": "uuid-user-id"
+                            "example": "e6fd0e76-f4c2-4969-bfd7-1b8b28c3440c"
                           },
                           "product_id": {
                             "type": "string",
-                            "example": "uuid-product-id"
+                            "example": "75e42c2e-c245-48b4-b6f9-30d23e47fe55"
                           },
                           "total_price": {
                             "type": "integer",
-                            "example": 14000
+                            "example": 7000
                           },
                           "qty": {
                             "type": "integer",
@@ -1867,11 +1877,13 @@
                           },
                           "created_at": {
                             "type": "string",
-                            "example": "2025-02-03T06:46:36Z"
+                            "format": "date-time",
+                            "example": "2025-03-03T09:32:11.473435019Z"
                           },
                           "updated_at": {
                             "type": "string",
-                            "example": "2025-02-03T06:46:36Z"
+                            "format": "date-time",
+                            "example": "2025-03-03T09:32:11.473435327Z"
                           }
                         }
                       }
@@ -1907,12 +1919,86 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "orderUseCase ListOrder is succeed."
+                  "example": "Successfully retrieved all orders."
                 },
                 "data": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/Order"
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "a46c4525-7196-43b9-88d4-8924a4993abb"
+                      },
+                      "user_id": {
+                        "type": "string",
+                        "example": "568814d8-6c42-426e-a552-cbbec50ee4bb"
+                      },
+                      "receipt_code": {
+                        "type": "string",
+                        "example": "C155"
+                      },
+                      "total_price": {
+                        "type": "integer",
+                        "example": 7000
+                      },
+                      "total_paid": {
+                        "type": "integer",
+                        "example": 20000
+                      },
+                      "total_return": {
+                        "type": "integer",
+                        "example": 13000
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T09:54:05.246685Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T09:54:05.246685Z"
+                      },
+                      "products": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "5875486d-cfea-4f67-af14-842092b5c3f8"
+                            },
+                            "user_id": {
+                              "type": "string",
+                              "example": "a46c4525-7196-43b9-88d4-8924a4993abb"
+                            },
+                            "product_id": {
+                              "type": "string",
+                              "example": "75e42c2e-c245-48b4-b6f9-30d23e47fe55"
+                            },
+                            "total_price": {
+                              "type": "integer",
+                              "example": 7000
+                            },
+                            "qty": {
+                              "type": "integer",
+                              "example": 1
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "example": "2025-03-03T09:54:05.247091Z"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "example": "2025-03-03T09:54:05.247091Z"
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -1940,12 +2026,12 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-order-id"
+            "x-example": "a46c4525-7196-43b9-88d4-8924a4993abb"
           }
         ],
         "responses": {
           "200": {
-            "description": "Order details",
+            "description": "Order details retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -1955,13 +2041,90 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "order-service, DetailOrder is succeed."
+                  "example": "Successfully retrieved order details."
                 },
                 "data": {
-                  "$ref": "#/definitions/Order"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "a46c4525-7196-43b9-88d4-8924a4993abb"
+                    },
+                    "user_id": {
+                      "type": "string",
+                      "example": "568814d8-6c42-426e-a552-cbbec50ee4bb"
+                    },
+                    "receipt_code": {
+                      "type": "string",
+                      "example": "C155"
+                    },
+                    "total_price": {
+                      "type": "integer",
+                      "example": 7000
+                    },
+                    "total_paid": {
+                      "type": "integer",
+                      "example": 20000
+                    },
+                    "total_return": {
+                      "type": "integer",
+                      "example": 13000
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T09:54:05.246685Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T09:54:05.246685Z"
+                    },
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "5875486d-cfea-4f67-af14-842092b5c3f8"
+                          },
+                          "user_id": {
+                            "type": "string",
+                            "example": "a46c4525-7196-43b9-88d4-8924a4993abb"
+                          },
+                          "product_id": {
+                            "type": "string",
+                            "example": "75e42c2e-c245-48b4-b6f9-30d23e47fe55"
+                          },
+                          "total_price": {
+                            "type": "integer",
+                            "example": 7000
+                          },
+                          "qty": {
+                            "type": "integer",
+                            "example": 1
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-03-03T09:54:05.247091Z"
+                          },
+                          "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-03-03T09:54:05.247091Z"
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Order not found"
           }
         }
       }
