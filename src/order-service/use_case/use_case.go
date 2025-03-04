@@ -213,7 +213,7 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.CreateO
 		rollbackErr := begin.Rollback()
 		return &pb.OrderResponse{
 			Code:    int64(codes.NotFound),
-			Message: fmt.Sprintf("Failed to create order: User with ID %s not found. %s. Rollback status: %v", request.UserId, getUser.Message, rollbackErr),
+			Message: fmt.Sprintf("Failed to create order: User not found. %s. Rollback status: %v", getUser.Message, rollbackErr),
 			Data:    nil,
 		}, rollbackErr
 	}

@@ -171,7 +171,7 @@ func (userUseCase *UserUseCase) UpdateUser(ctx context.Context, request *pb.Upda
 		rollbackErr := begin.Rollback()
 		result = &pb.UserResponse{
 			Code:    int64(codes.NotFound),
-			Message: fmt.Sprintf("User with ID %s not found for update. Rollback status: %v", request.Id, rollbackErr),
+			Message: fmt.Sprintf("User  not found for update. Rollback status: %v", rollbackErr),
 			Data:    nil,
 		}
 		return result, rollbackErr
@@ -331,7 +331,7 @@ func (userUseCase *UserUseCase) DeleteUser(ctx context.Context, id *pb.ById) (re
 		rollbackErr := begin.Rollback()
 		result = &pb.UserResponse{
 			Code:    int64(codes.NotFound),
-			Message: fmt.Sprintf("User with ID %s not found. Deletion failed. Rollback status: %v", id.Id, rollbackErr),
+			Message: fmt.Sprintf("User not found. Deletion failed. Rollback status: %v", rollbackErr),
 			Data:    nil,
 		}
 		return result, rollbackErr
@@ -349,7 +349,7 @@ func (userUseCase *UserUseCase) DeleteUser(ctx context.Context, id *pb.ById) (re
 
 	result = &pb.UserResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("User with ID %s has been successfully deleted.", id.Id),
+		Message: "User has been successfully deleted.",
 		Data:    deletedUser,
 	}
 	return result, nil

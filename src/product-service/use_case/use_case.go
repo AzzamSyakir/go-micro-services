@@ -108,15 +108,6 @@ func (productUseCase *ProductUseCase) UpdateProduct(ctx context.Context, request
 			Data:    nil,
 		}, rollbackErr
 	}
-	if request.CategoryId != nil {
-		rollbackErr := begin.Rollback()
-		result = &pb.ProductResponse{
-			Code:    int64(codes.InvalidArgument),
-			Message: "Update failed. Category Id is a must.",
-			Data:    nil,
-		}
-		return result, rollbackErr
-	}
 	if request.Name == nil || request.Stock == nil || request.Price == nil {
 		rollbackErr := begin.Rollback()
 		result = &pb.ProductResponse{
