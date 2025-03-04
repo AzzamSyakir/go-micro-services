@@ -253,33 +253,9 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Create New Access Token for User",
+        "summary": "Generate New Access Token using Refresh Token (via Header)",
         "operationId": "createNewAccessToken",
-        "description": "Creates a new access token for the user so they can interact with other endpoints.",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "example": "example.user@example.com"
-                },
-                "password": {
-                  "type": "string",
-                  "example": "examplePassword123"
-                }
-              },
-              "required": [
-                "email",
-                "password"
-              ]
-            }
-          }
-        ],
+        "description": "This endpoint is locked. You must provide a refresh token in the Authorization header (i.e., replace your typical access token with your refresh token) to generate a new access token.",
         "responses": {
           "200": {
             "description": "New access token generated successfully",
@@ -341,7 +317,12 @@
           "400": {
             "description": "Invalid request"
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/auths/Logout": {
