@@ -173,7 +173,7 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.CreateO
 				Data:    nil,
 			}, rollbackErr
 		}
-
+		fmt.Println("productId ", product.ProductId)
 		if getProduct.Data == nil {
 			rollbackErr := begin.Rollback()
 			return &pb.OrderResponse{
@@ -290,7 +290,7 @@ func (orderUseCase *OrderUseCase) Order(ctx context.Context, request *pb.CreateO
 
 	result = &pb.OrderResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Order created successfully. Order ID: %s, Receipt Code: %s, Total Price: %d, Total Paid: %d, Total Return: %d", order.Data.Id, receiptCode, totalOrderPrice, request.TotalPaid, totalReturn),
+		Message: "Order created successfully.",
 		Data:    order.Data,
 	}
 	result.Data.Products = productsInfo

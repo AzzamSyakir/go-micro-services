@@ -68,6 +68,7 @@
           {
             "in": "body",
             "name": "body",
+            "description": "User information to register",
             "required": true,
             "schema": {
               "type": "object",
@@ -84,7 +85,12 @@
                   "type": "string",
                   "example": "examplePassword123"
                 }
-              }
+              },
+              "required": [
+                "name",
+                "email",
+                "password"
+              ]
             }
           }
         ],
@@ -100,14 +106,14 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "UserUseCase Register is succeed."
+                  "example": "User successfully registered."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-created-user"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "name": {
                       "type": "string",
@@ -119,7 +125,7 @@
                     },
                     "password": {
                       "type": "string",
-                      "example": "hashed-password-example"
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
                     },
                     "balance": {
                       "type": "integer",
@@ -127,11 +133,13 @@
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-01-29T12:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741292669Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-01-29T12:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741292669Z"
                     }
                   }
                 }
@@ -168,7 +176,11 @@
                   "type": "string",
                   "example": "examplePassword123"
                 }
-              }
+              },
+              "required": [
+                "email",
+                "password"
+              ]
             }
           }
         ],
@@ -184,42 +196,46 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "AuthUseCase Login is succeed"
+                  "example": "Login successful."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-login-user"
+                      "example": "7cc3fa6b-d43c-4d7c-95fc-bdbe1a714d30"
                     },
                     "user_id": {
                       "type": "string",
-                      "example": "uuid-user-id"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "access_token": {
                       "type": "string",
-                      "example": "example-access-token"
+                      "example": "43864ba1-c69a-44ea-a5b8-0eeedac4a749"
                     },
                     "refresh_token": {
                       "type": "string",
-                      "example": "example-refresh-token"
+                      "example": "b7759332-67f4-4e59-93a5-45c725a4affd"
                     },
                     "access_token_expired_at": {
                       "type": "string",
-                      "example": "2025-01-31T12:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:54:19.343068395Z"
                     },
                     "refresh_token_expired_at": {
                       "type": "string",
-                      "example": "2025-02-15T12:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-05T02:44:19.343068395Z"
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-01-29T11:00:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:44:19.343068395Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-01-29T11:30:00Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:44:19.343068395Z"
                     }
                   }
                 }
@@ -237,36 +253,12 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "GetNewAccessToken For User",
-        "operationId": "GetNewAccessTokenForUser",
-        "description": "Creates a new AccessToken For User, so user can interact with other Endpoints",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "example": "example.user@example.com"
-                },
-                "password": {
-                  "type": "string",
-                  "example": "examplePassword123"
-                }
-              },
-              "required": [
-                "email",
-                "password"
-              ]
-            }
-          }
-        ],
+        "summary": "Generate New Access Token using Refresh Token (via Header)",
+        "operationId": "createNewAccessToken",
+        "description": "This endpoint is locked. You must provide a refresh token in the Authorization header (i.e., replace your typical access token with your refresh token) to generate a new access token.",
         "responses": {
           "200": {
-            "description": "Token retrieved successfully",
+            "description": "New access token generated successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -276,42 +268,46 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "AuthUseCase GetNewAccessToken is succeed."
+                  "example": "New access token generated successfully."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "44c818a3-4e36-4fb3-924f-401008529225"
+                      "example": "7cc3fa6b-d43c-4d7c-95fc-bdbe1a714d30"
                     },
                     "user_id": {
                       "type": "string",
-                      "example": "89a40ce8-34bc-4159-895a-8beb3e46da84"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "access_token": {
                       "type": "string",
-                      "example": "8d15c260-2c91-4599-8eb2-9886568a2b11"
+                      "example": "101cc63d-d875-4d32-be2a-3a5ae8073b28"
                     },
                     "refresh_token": {
                       "type": "string",
-                      "example": "d918ddf8-7817-4ac4-9e5e-80f354b7edbc"
+                      "example": "b7759332-67f4-4e59-93a5-45c725a4affd"
                     },
                     "access_token_expired_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:19:56.208272Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:54:19.343068Z"
                     },
                     "refresh_token_expired_at": {
                       "type": "string",
-                      "example": "2025-02-05T06:09:56.208272Z"
+                      "format": "date-time",
+                      "example": "2025-03-05T02:44:19.343068Z"
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:09:56.208272Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:44:19.343068Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:10:14.400485603Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T02:49:17.20982664Z"
                     }
                   }
                 }
@@ -321,7 +317,12 @@
           "400": {
             "description": "Invalid request"
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/auths/Logout": {
@@ -331,7 +332,7 @@
         ],
         "summary": "Logout",
         "operationId": "LogoutUser",
-        "description": "Logout CurrentUser or delete session data",
+        "description": "Logout current user or delete session data.",
         "parameters": [
           {
             "in": "header",
@@ -344,7 +345,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Logout successfully",
+            "description": "Logout successful",
             "schema": {
               "type": "object",
               "properties": {
@@ -354,46 +355,46 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "AuthUseCase Logout is succeed."
+                  "example": "Logout successful."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "44c818a3-4e36-4fb3-924f-401008529225"
+                      "example": "7cc3fa6b-d43c-4d7c-95fc-bdbe1a714d30"
                     },
                     "user_id": {
                       "type": "string",
-                      "example": "89a40ce8-34bc-4159-895a-8beb3e46da84"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "access_token": {
                       "type": "string",
-                      "example": "8d15c260-2c91-4599-8eb2-9886568a2b11"
+                      "example": "101cc63d-d875-4d32-be2a-3a5ae8073b28"
                     },
                     "refresh_token": {
                       "type": "string",
-                      "example": "d918ddf8-7817-4ac4-9e5e-80f354b7edbc"
+                      "example": "b7759332-67f4-4e59-93a5-45c725a4affd"
                     },
                     "access_token_expired_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:19:56.208272Z"
+                      "example": "2025-03-03T02:54:19.343068Z"
                     },
                     "refresh_token_expired_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-05T06:09:56.208272Z"
+                      "example": "2025-03-05T02:44:19.343068Z"
                     },
                     "created_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:09:56.208272Z"
+                      "example": "2025-03-03T02:44:19.343068Z"
                     },
                     "updated_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:10:14.400486Z"
+                      "example": "2025-03-03T02:49:17.209827Z"
                     }
                   }
                 }
@@ -417,7 +418,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "User session retrieved successfully",
+            "description": "Successfully retrieved all active sessions.",
             "schema": {
               "type": "object",
               "properties": {
@@ -427,42 +428,49 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "ListSessions request succeeded"
+                  "example": "Successfully retrieved all active sessions."
                 },
                 "data": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "example": "example-session-uuid"
-                    },
-                    "user_id": {
-                      "type": "string",
-                      "example": "example-user-uuid"
-                    },
-                    "access_token": {
-                      "type": "string",
-                      "example": "example-access-token"
-                    },
-                    "access_token_expired_at": {
-                      "type": "string",
-                      "example": "2025-01-29T12:00:00Z"
-                    },
-                    "refresh_token": {
-                      "type": "string",
-                      "example": "example-refresh-token"
-                    },
-                    "refresh_token_expired_at": {
-                      "type": "string",
-                      "example": "2025-02-28T12:00:00Z"
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "example": "2025-01-29T12:00:00Z"
-                    },
-                    "updated_at": {
-                      "type": "string",
-                      "example": "2025-01-30T12:00:00Z"
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "558efd0e-f6a1-44b8-8b24-30c52c805e7f"
+                      },
+                      "user_id": {
+                        "type": "string",
+                        "example": "8d59e693-64c2-428b-bc33-7b98ecf6ce7c"
+                      },
+                      "access_token": {
+                        "type": "string",
+                        "example": "14f4e1b6-e28d-4371-9cb3-00065ede06a3"
+                      },
+                      "refresh_token": {
+                        "type": "string",
+                        "example": "c1805616-74b8-42d7-b851-1a77e9d073bb"
+                      },
+                      "access_token_expired_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T00:24:24.829355Z"
+                      },
+                      "refresh_token_expired_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-05T00:14:24.829355Z"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T00:14:24.829355Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T00:14:24.829355Z"
+                      }
                     }
                   }
                 }
@@ -498,7 +506,7 @@
         ],
         "responses": {
           "200": {
-            "description": "List of users",
+            "description": "Successfully retrieved all users.",
             "schema": {
               "type": "object",
               "properties": {
@@ -508,64 +516,48 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "User UseCase ListUser is succeed."
+                  "example": "Successfully retrieved all users."
                 },
                 "data": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/User"
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "Example User"
+                      },
+                      "email": {
+                        "type": "string",
+                        "example": "example.user@example.com"
+                      },
+                      "password": {
+                        "type": "string",
+                        "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
+                      },
+                      "balance": {
+                        "type": "integer",
+                        "example": 0
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T02:39:54.741293Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T02:39:54.741293Z"
+                      }
+                    }
                   }
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/users/{id}": {
-      "get": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Get user by ID",
-        "operationId": "getUserById",
-        "description": "Get user details based on the provided ID.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "x-example": "uuid-user-id"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User details",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "code": {
-                  "type": "integer",
-                  "example": 200
-                },
-                "message": {
-                  "type": "string",
-                  "example": "User UseCase GetOneById is succeed."
-                },
-                "data": {
-                  "$ref": "#/definitions/User"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found"
           }
         }
       }
@@ -589,12 +581,12 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "created-email@gmail.com"
+            "x-example": "example.user@example.com"
           }
         ],
         "responses": {
           "200": {
-            "description": "User details",
+            "description": "User retrieved successfully by email.",
             "schema": {
               "type": "object",
               "properties": {
@@ -604,26 +596,26 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "User UseCase GetOneByEmail is succeed."
+                  "example": "User retrieved successfully by email."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "e70e2a34-a0bc-498f-9029-438b70028848"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "name": {
                       "type": "string",
-                      "example": "created name"
+                      "example": "Example User"
                     },
                     "email": {
                       "type": "string",
-                      "example": "created-email@gmail.com"
+                      "example": "example.user@example.com"
                     },
                     "password": {
                       "type": "string",
-                      "example": "$2a$10$oW9OYzmvaEcuDnTraTXBiuy4YCDM9PoiNMXuNHT01DueY9YvwoPJO"
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
                     },
                     "balance": {
                       "type": "integer",
@@ -632,12 +624,12 @@
                     "created_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T22:42:31.910586Z"
+                      "example": "2025-03-03T02:39:54.741293Z"
                     },
                     "updated_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T22:42:31.910586Z"
+                      "example": "2025-03-03T02:39:54.741293Z"
                     }
                   }
                 }
@@ -651,7 +643,85 @@
       }
     },
     "/users/{userId}": {
-      "patch": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get user by ID",
+        "operationId": "getUserById",
+        "description": "Get user details based on the provided user ID.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved successfully.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "example": 200
+                },
+                "message": {
+                  "type": "string",
+                  "example": "User retrieved successfully."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Example User"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "example.user@example.com"
+                    },
+                    "password": {
+                      "type": "string",
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
+                    },
+                    "balance": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741293Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741293Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "put": {
         "tags": [
           "Users"
         ],
@@ -669,7 +739,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "89a40ce8-34bc-4159-895a-8beb3e46da84"
+            "x-example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
           },
           {
             "name": "body",
@@ -680,15 +750,15 @@
               "properties": {
                 "name": {
                   "type": "string",
-                  "example": "created name"
+                  "example": "Example User"
                 },
                 "email": {
                   "type": "string",
-                  "example": "created-email@gmail.com"
+                  "example": "example.user@example.com"
                 },
                 "password": {
                   "type": "string",
-                  "example": "$2a$10$THF2ee9ZAjt22il.9F/vneYeplYWhxvIFSc/vna9TblaqHSs2iFY2"
+                  "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
                 },
                 "balance": {
                   "type": "integer",
@@ -715,26 +785,26 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "UserUserCase UpdateUser is succeed."
+                  "example": "User updated successfully."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "89a40ce8-34bc-4159-895a-8beb3e46da84"
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
                     },
                     "name": {
                       "type": "string",
-                      "example": "created name"
+                      "example": "Example User"
                     },
                     "email": {
                       "type": "string",
-                      "example": "created-email@gmail.com"
+                      "example": "example.user@example.com"
                     },
                     "password": {
                       "type": "string",
-                      "example": "$2a$10$THF2ee9ZAjt22il.9F/vneYeplYWhxvIFSc/vna9TblaqHSs2iFY2"
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
                     },
                     "balance": {
                       "type": "integer",
@@ -743,12 +813,12 @@
                     "created_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:09:44.369085Z"
+                      "example": "2025-03-03T02:39:54.741293Z"
                     },
                     "updated_at": {
                       "type": "string",
                       "format": "date-time",
-                      "example": "2025-02-03T06:16:07.288545422Z"
+                      "example": "2025-03-03T03:54:01.051294888Z"
                     }
                   }
                 }
@@ -778,7 +848,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "e70e2a34-a0bc-498f-9029-438b70028848"
+            "x-example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
           }
         ],
         "responses": {
@@ -793,7 +863,42 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "UserUserCase DeleteUser is succeed."
+                  "example": "User with ID b740369b-8957-4f36-b7ed-b0b8e1d07caf has been successfully deleted."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "b740369b-8957-4f36-b7ed-b0b8e1d07caf"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Example User"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "example.user@example.com"
+                    },
+                    "password": {
+                      "type": "string",
+                      "example": "$2a$10$wHCIdkxeK91Kmup0Pjt6xeu3rtqm7NXeiVbAgO5Q1z/wCkznWlTSi"
+                    },
+                    "balance": {
+                      "type": "integer",
+                      "example": 10000000
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T02:39:54.741293Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T03:54:01.051295Z"
+                    }
+                  }
                 }
               }
             }
@@ -829,7 +934,10 @@
                   "type": "string",
                   "example": "Example Category"
                 }
-              }
+              },
+              "required": [
+                "name"
+              ]
             }
           }
         ],
@@ -845,26 +953,28 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase Register is succeed."
+                  "example": "Category Created Successfully"
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-category-id"
+                      "example": "2111a162-a912-454d-aaf0-0feeafe60d9f"
                     },
                     "name": {
                       "type": "string",
-                      "example": "Example Category"
+                      "example": "example category"
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:17:52Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T06:11:47.988013891Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:17:52Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T06:11:47.988013891Z"
                     }
                   }
                 }
@@ -879,7 +989,7 @@
         ],
         "summary": "Get List Category",
         "operationId": "ListCategories",
-        "description": "retrioeve a list of categories.",
+        "description": "Retrieve a list of categories.",
         "security": [
           {
             "BearerAuth": []
@@ -887,7 +997,7 @@
         ],
         "responses": {
           "200": {
-            "description": "CategoryUseCase ListCategory is Succed",
+            "description": "Successfully retrieved category list.",
             "schema": {
               "type": "object",
               "properties": {
@@ -897,26 +1007,31 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase ListCategory is Succed"
+                  "example": "Successfully retrieved category list."
                 },
                 "data": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "example": "uuid-category-id"
-                    },
-                    "name": {
-                      "type": "string",
-                      "example": "Example Category"
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "example": "2025-02-03T06:17:52Z"
-                    },
-                    "updated_at": {
-                      "type": "string",
-                      "example": "2025-02-03T06:17:52Z"
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "2111a162-a912-454d-aaf0-0feeafe60d9f"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "example category"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T06:11:47.988014Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T06:11:47.988014Z"
+                      }
                     }
                   }
                 }
@@ -945,12 +1060,12 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-category-id"
+            "x-example": "2111a162-a912-454d-aaf0-0feeafe60d9f"
           }
         ],
         "responses": {
           "200": {
-            "description": "Category details",
+            "description": "Category retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -960,13 +1075,36 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase GetProductById is succeed."
+                  "example": "Category retrieved successfully"
                 },
                 "data": {
-                  "$ref": "#/definitions/Category"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "2111a162-a912-454d-aaf0-0feeafe60d9f"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example category"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:11:47.988014Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:11:47.988014Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Category not found"
           }
         }
       },
@@ -988,7 +1126,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-category-id"
+            "x-example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
           },
           {
             "in": "body",
@@ -999,9 +1137,12 @@
               "properties": {
                 "name": {
                   "type": "string",
-                  "example": "Updated Category"
+                  "example": "example updated category"
                 }
-              }
+              },
+              "required": [
+                "name"
+              ]
             }
           }
         ],
@@ -1017,13 +1158,36 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase UpdateCategory is succeed."
+                  "example": "Category updated successfully."
                 },
                 "data": {
-                  "$ref": "#/definitions/Category"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example updated category"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:39:10.95694Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:39:12.646837852Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Category not found"
           }
         }
       },
@@ -1045,7 +1209,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-category-id"
+            "x-example": "8aa955d4-3c6a-4d80-943c-6800cdbe4bdc"
           }
         ],
         "responses": {
@@ -1060,13 +1224,36 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "CategoryUseCase DeleteCategory is succeed."
+                  "example": "Category deleted successfully."
                 },
                 "data": {
-                  "$ref": "#/definitions/Category"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "8aa955d4-3c6a-4d80-943c-6800cdbe4bdc"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example category"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:34:46.547866Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:34:46.547866Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Category not found"
           }
         }
       }
@@ -1094,11 +1281,11 @@
               "properties": {
                 "sku": {
                   "type": "string",
-                  "example": "SKU-EXAMPLE"
+                  "example": "E256"
                 },
                 "name": {
                   "type": "string",
-                  "example": "Example Product"
+                  "example": "example product"
                 },
                 "stock": {
                   "type": "integer",
@@ -1110,9 +1297,16 @@
                 },
                 "category_id": {
                   "type": "string",
-                  "example": "uuid-category-id"
+                  "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
                 }
-              }
+              },
+              "required": [
+                "sku",
+                "name",
+                "stock",
+                "price",
+                "category_id"
+              ]
             }
           }
         ],
@@ -1128,22 +1322,22 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "ProductUseCase CreateProduct is success"
+                  "example": "Product created successfully."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-product-id"
+                      "example": "f99116f7-dd32-4672-b99c-e125e867910e"
                     },
                     "sku": {
                       "type": "string",
-                      "example": "SKU-EXAMPLE"
+                      "example": "E256"
                     },
                     "name": {
                       "type": "string",
-                      "example": "Example Product"
+                      "example": "example product"
                     },
                     "stock": {
                       "type": "integer",
@@ -1155,15 +1349,17 @@
                     },
                     "category_id": {
                       "type": "string",
-                      "example": "uuid-category-id"
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:22:36Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.83409818Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:22:36Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.83409818Z"
                     }
                   }
                 }
@@ -1186,7 +1382,7 @@
         ],
         "responses": {
           "200": {
-            "description": "List of products",
+            "description": "Product list retrieved successfully.",
             "schema": {
               "type": "object",
               "properties": {
@@ -1196,12 +1392,48 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "product-service UseCase, ListProduct is succeed."
+                  "example": "Product list retrieved successfully."
                 },
                 "data": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/Product"
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "f99116f7-dd32-4672-b99c-e125e867910e"
+                      },
+                      "sku": {
+                        "type": "string",
+                        "example": "E256"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "example product"
+                      },
+                      "stock": {
+                        "type": "integer",
+                        "example": 100
+                      },
+                      "price": {
+                        "type": "integer",
+                        "example": 7000
+                      },
+                      "category_id": {
+                        "type": "string",
+                        "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T06:55:22.834098Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T06:55:22.834098Z"
+                      }
+                    }
                   }
                 }
               }
@@ -1229,12 +1461,12 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-product-id"
+            "x-example": "f99116f7-dd32-4672-b99c-e125e867910e"
           }
         ],
         "responses": {
           "200": {
-            "description": "Product details",
+            "description": "Product details retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -1244,13 +1476,52 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "product-service UseCase, DetailProduct is succeed."
+                  "example": "Product details retrieved successfully"
                 },
                 "data": {
-                  "$ref": "#/definitions/Product"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "f99116f7-dd32-4672-b99c-e125e867910e"
+                    },
+                    "sku": {
+                      "type": "string",
+                      "example": "E256"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example product"
+                    },
+                    "stock": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "price": {
+                      "type": "integer",
+                      "example": 7000
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.834098Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.834098Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Product not found"
           }
         }
       },
@@ -1272,7 +1543,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-product-id"
+            "x-example": "f99116f7-dd32-4672-b99c-e125e867910e"
           },
           {
             "in": "body",
@@ -1287,21 +1558,28 @@
                 },
                 "name": {
                   "type": "string",
-                  "example": "Updated Example Product"
+                  "example": "example update product"
                 },
                 "stock": {
                   "type": "integer",
-                  "example": 150
+                  "example": 100
                 },
                 "price": {
                   "type": "integer",
-                  "example": 8000
+                  "example": 7000
                 },
                 "category_id": {
                   "type": "string",
-                  "example": "uuid-category-id"
+                  "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
                 }
-              }
+              },
+              "required": [
+                "sku",
+                "name",
+                "stock",
+                "price",
+                "category_id"
+              ]
             }
           }
         ],
@@ -1317,13 +1595,52 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "product-service UseCase Update Product is success."
+                  "example": "Product updated successfully."
                 },
                 "data": {
-                  "$ref": "#/definitions/Product"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "f99116f7-dd32-4672-b99c-e125e867910e"
+                    },
+                    "sku": {
+                      "type": "string",
+                      "example": "E256"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "example update product"
+                    },
+                    "stock": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "price": {
+                      "type": "integer",
+                      "example": 7000
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:55:22.834098Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T06:58:49.076601703Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Product not found"
           }
         }
       },
@@ -1345,7 +1662,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-product-id"
+            "x-example": "3be4c34b-cf94-47f4-b9af-8f2139b259ea"
           }
         ],
         "responses": {
@@ -1360,13 +1677,52 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "product-service UseCase DeleteProduct is succeed."
+                  "example": "Product has been successfully deleted."
                 },
                 "data": {
-                  "$ref": "#/definitions/Product"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "3be4c34b-cf94-47f4-b9af-8f2139b259ea"
+                    },
+                    "sku": {
+                      "type": "string",
+                      "example": "example product"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "E930"
+                    },
+                    "stock": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "price": {
+                      "type": "integer",
+                      "example": 7000
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "example": "7c9028c2-fd8a-40e8-b42f-c6112cee382c"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T07:00:00.181402Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T07:00:00.181402Z"
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Product not found"
           }
         }
       }
@@ -1394,7 +1750,7 @@
               "properties": {
                 "user_id": {
                   "type": "string",
-                  "example": "uuid-user-id"
+                  "example": "568814d8-6c42-426e-a552-cbbec50ee4bb"
                 },
                 "products": {
                   "type": "array",
@@ -1403,16 +1759,24 @@
                     "properties": {
                       "product_id": {
                         "type": "string",
-                        "example": "uuid-product-id"
+                        "example": "75e42c2e-c245-48b4-b6f9-30d23e47fe55"
                       },
                       "qty": {
                         "type": "integer",
                         "example": 1
                       }
-                    }
+                    },
+                    "required": [
+                      "product_id",
+                      "qty"
+                    ]
                   }
                 }
-              }
+              },
+              "required": [
+                "user_id",
+                "products"
+              ]
             }
           }
         ],
@@ -1428,26 +1792,26 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "orderUseCase success, order is success"
+                  "example": "Order created successfully."
                 },
                 "data": {
                   "type": "object",
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "uuid-order-id"
+                      "example": "e6fd0e76-f4c2-4969-bfd7-1b8b28c3440c"
                     },
                     "user_id": {
                       "type": "string",
-                      "example": "uuid-user-id"
+                      "example": "568814d8-6c42-426e-a552-cbbec50ee4bb"
                     },
                     "receipt_code": {
                       "type": "string",
-                      "example": "RECEIPT-123"
+                      "example": "C108"
                     },
                     "total_price": {
                       "type": "integer",
-                      "example": 14000
+                      "example": 7000
                     },
                     "total_paid": {
                       "type": "integer",
@@ -1455,15 +1819,17 @@
                     },
                     "total_return": {
                       "type": "integer",
-                      "example": 6000
+                      "example": 13000
                     },
                     "created_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:46:36Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T09:32:11.471529623Z"
                     },
                     "updated_at": {
                       "type": "string",
-                      "example": "2025-02-03T06:46:36Z"
+                      "format": "date-time",
+                      "example": "2025-03-03T09:32:11.471529783Z"
                     },
                     "products": {
                       "type": "array",
@@ -1472,19 +1838,19 @@
                         "properties": {
                           "id": {
                             "type": "string",
-                            "example": "uuid-product-item-id"
+                            "example": "ee9d9b8f-2cca-4941-93df-398e69339526"
                           },
                           "user_id": {
                             "type": "string",
-                            "example": "uuid-user-id"
+                            "example": "e6fd0e76-f4c2-4969-bfd7-1b8b28c3440c"
                           },
                           "product_id": {
                             "type": "string",
-                            "example": "uuid-product-id"
+                            "example": "75e42c2e-c245-48b4-b6f9-30d23e47fe55"
                           },
                           "total_price": {
                             "type": "integer",
-                            "example": 14000
+                            "example": 7000
                           },
                           "qty": {
                             "type": "integer",
@@ -1492,11 +1858,13 @@
                           },
                           "created_at": {
                             "type": "string",
-                            "example": "2025-02-03T06:46:36Z"
+                            "format": "date-time",
+                            "example": "2025-03-03T09:32:11.473435019Z"
                           },
                           "updated_at": {
                             "type": "string",
-                            "example": "2025-02-03T06:46:36Z"
+                            "format": "date-time",
+                            "example": "2025-03-03T09:32:11.473435327Z"
                           }
                         }
                       }
@@ -1532,12 +1900,86 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "orderUseCase ListOrder is succeed."
+                  "example": "Successfully retrieved all orders."
                 },
                 "data": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/Order"
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "a46c4525-7196-43b9-88d4-8924a4993abb"
+                      },
+                      "user_id": {
+                        "type": "string",
+                        "example": "568814d8-6c42-426e-a552-cbbec50ee4bb"
+                      },
+                      "receipt_code": {
+                        "type": "string",
+                        "example": "C155"
+                      },
+                      "total_price": {
+                        "type": "integer",
+                        "example": 7000
+                      },
+                      "total_paid": {
+                        "type": "integer",
+                        "example": 20000
+                      },
+                      "total_return": {
+                        "type": "integer",
+                        "example": 13000
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T09:54:05.246685Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-03T09:54:05.246685Z"
+                      },
+                      "products": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "5875486d-cfea-4f67-af14-842092b5c3f8"
+                            },
+                            "user_id": {
+                              "type": "string",
+                              "example": "a46c4525-7196-43b9-88d4-8924a4993abb"
+                            },
+                            "product_id": {
+                              "type": "string",
+                              "example": "75e42c2e-c245-48b4-b6f9-30d23e47fe55"
+                            },
+                            "total_price": {
+                              "type": "integer",
+                              "example": 7000
+                            },
+                            "qty": {
+                              "type": "integer",
+                              "example": 1
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "example": "2025-03-03T09:54:05.247091Z"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "example": "2025-03-03T09:54:05.247091Z"
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -1565,12 +2007,12 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "uuid-order-id"
+            "x-example": "a46c4525-7196-43b9-88d4-8924a4993abb"
           }
         ],
         "responses": {
           "200": {
-            "description": "Order details",
+            "description": "Order details retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -1580,13 +2022,90 @@
                 },
                 "message": {
                   "type": "string",
-                  "example": "order-service, DetailOrder is succeed."
+                  "example": "Successfully retrieved order details."
                 },
                 "data": {
-                  "$ref": "#/definitions/Order"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "a46c4525-7196-43b9-88d4-8924a4993abb"
+                    },
+                    "user_id": {
+                      "type": "string",
+                      "example": "568814d8-6c42-426e-a552-cbbec50ee4bb"
+                    },
+                    "receipt_code": {
+                      "type": "string",
+                      "example": "C155"
+                    },
+                    "total_price": {
+                      "type": "integer",
+                      "example": 7000
+                    },
+                    "total_paid": {
+                      "type": "integer",
+                      "example": 20000
+                    },
+                    "total_return": {
+                      "type": "integer",
+                      "example": 13000
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T09:54:05.246685Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-03-03T09:54:05.246685Z"
+                    },
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "5875486d-cfea-4f67-af14-842092b5c3f8"
+                          },
+                          "user_id": {
+                            "type": "string",
+                            "example": "a46c4525-7196-43b9-88d4-8924a4993abb"
+                          },
+                          "product_id": {
+                            "type": "string",
+                            "example": "75e42c2e-c245-48b4-b6f9-30d23e47fe55"
+                          },
+                          "total_price": {
+                            "type": "integer",
+                            "example": 7000
+                          },
+                          "qty": {
+                            "type": "integer",
+                            "example": 1
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-03-03T09:54:05.247091Z"
+                          },
+                          "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-03-03T09:54:05.247091Z"
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
+          },
+          "404": {
+            "description": "Order not found"
           }
         }
       }

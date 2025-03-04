@@ -12,7 +12,7 @@ service CategoryService{
   rpc UpdateCategory(UpdateCategoryRequest) returns (CategoryResponse);
   rpc CreateCategory(CreateCategoryRequest) returns (CategoryResponse);
   rpc DeleteCategory(ById) returns (CategoryResponse);
-  rpc ListCategorys(empty) returns (CategoryResponseRepeated);
+  rpc ListCategories(empty) returns (CategoryResponseRepeated);
 }
 
 message Category {

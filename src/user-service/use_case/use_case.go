@@ -399,7 +399,7 @@ func (userUseCase *UserUseCase) ListUsers(ctx context.Context, empty *pb.Empty) 
 
 	result = &pb.UserResponseRepeated{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Successfully retrieved %d users.", len(users.Data)),
+		Message: "Successfully retrieved all users.",
 		Data:    users.Data,
 	}
 	return result, nil

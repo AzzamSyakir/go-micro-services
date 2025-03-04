@@ -72,7 +72,7 @@ func (categoryUseCase *CategoryUseCase) GetCategoryById(ctx context.Context, id 
 
 	return &pb.CategoryResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Category retrieved successfully. Category ID: %s", id.Id),
+		Message: "Category retrieved successfully",
 		Data:    categoryFound,
 	}, nil
 }
@@ -139,7 +139,7 @@ func (categoryUseCase *CategoryUseCase) UpdateCategory(ctx context.Context, requ
 
 	return &pb.CategoryResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Category updated successfully. Category ID: %s", request.Id),
+		Message: "Category updated successfully.",
 		Data:    patchedCategory,
 	}, nil
 }
@@ -200,7 +200,7 @@ func (categoryUseCase *CategoryUseCase) CreateCategory(ctx context.Context, requ
 
 	return &pb.CategoryResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Category created successfully. Category ID: %s, Name: %s", createdCategory.Id, createdCategory.Name),
+		Message: "Category Created Successfully",
 		Data:    createdCategory,
 	}, nil
 }
@@ -253,7 +253,7 @@ func (categoryUseCase *CategoryUseCase) DeleteCategory(ctx context.Context, id *
 
 	return &pb.CategoryResponse{
 		Code:    int64(codes.OK),
-		Message: fmt.Sprintf("Category deleted successfully. Category ID: %s", deletedCategory.Id),
+		Message: "Category deleted successfully.",
 		Data:    deletedCategory,
 	}, nil
 }

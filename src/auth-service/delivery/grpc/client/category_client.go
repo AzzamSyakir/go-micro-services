@@ -66,11 +66,11 @@ func (c *CategoryServiceClient) DeleteCategory(categoryId string) (*pb.CategoryR
 
 	return resp, nil
 }
-func (c *CategoryServiceClient) ListCategorys() (*pb.CategoryResponseRepeated, error) {
+func (c *CategoryServiceClient) ListCategories() (*pb.CategoryResponseRepeated, error) {
 
-	resp, err := c.Client.ListCategorys(context.Background(), &pb.Empty{})
+	resp, err := c.Client.ListCategories(context.Background(), &pb.Empty{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to update category: %w", err)
+		return nil, fmt.Errorf("failed to GetList category: %w", err)
 	}
 
 	return resp, nil
