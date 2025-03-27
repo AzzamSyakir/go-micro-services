@@ -46,13 +46,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
-      - name: Pull Docker Image
-        run: |
-              docker pull bukanasa/go-micro-services:auth-service-latest
-              docker pull bukanasa/go-micro-services:order-service-latest
-              docker pull bukanasa/go-micro-services:product-service-latest
-              docker pull bukanasa/go-micro-services:user-service-latest
-
             
       - name: Stop and Remove Old Containers
         run: |
