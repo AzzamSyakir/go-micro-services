@@ -1,5 +1,5 @@
 #start from golang base image
-FROM golang:1.23-alpine
+FROM golang:1.24-alpine
 
 #install dependencies
 RUN apk update
