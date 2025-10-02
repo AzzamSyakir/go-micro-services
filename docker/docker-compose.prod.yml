@@ -17,8 +17,6 @@ services:
       - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
     depends_on:
       - auth-db
-    volumes:
-      - ../src/auth-service/:/app/src/auth-service/
 
   user-services:
     container_name: user-services
@@ -35,8 +33,6 @@ services:
       - ${USER_PORT}:${USER_PORT}
     depends_on:
       - user-db
-    volumes:
-      - ../src/user-service/:/app/src/user-service/
 
   product-services:
     container_name: product-services
@@ -52,8 +48,6 @@ services:
       - ${PRODUCT_PORT}:${PRODUCT_PORT}
     depends_on:
       - product-db
-    volumes:
-      - ../src/product-service/:/app/src/product-service/
 
   order-services:
     container_name: order-services
@@ -71,8 +65,6 @@ services:
       - ${ORDER_PORT}:${ORDER_PORT}
     depends_on:
       - order-db
-    volumes:
-      - ../src/order-service/:/app/src/order-service/
 
   auth-db:
     image: postgres:latest
