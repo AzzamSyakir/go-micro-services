@@ -48,8 +48,7 @@ jobs:
 
             
       - name: Stop and Remove Old Containers
-        run: |
-          docker compose --env-file ./.env -f ~/program/docker/docker-compose.yml down --remove-orphans || true
+        run: make down-prod
       
       - name: Remove Old Docker Image
         run: |
@@ -57,7 +56,4 @@ jobs:
           
       - name: Run Docker
         run: |
-          mv .env ~/program/ 
-          cd 
-          cd program/
-          docker compose --env-file .env -f docker/docker-compose.yml up -d
+          make up-prod
