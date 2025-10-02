@@ -9,8 +9,11 @@ on:
 jobs:
   build:
     runs-on: self-hosted
-
+        
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Create .env file
         run: |
           cat <<EOF > .env
