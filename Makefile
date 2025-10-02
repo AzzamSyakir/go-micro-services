@@ -1,3 +1,10 @@
+# Env file
+ENV_FILE := .env
+
+# Docker compose paths
+DOCKER_COMPOSE_DEV := ./docker/docker-compose.dev.yml
+DOCKER_COMPOSE_PROD := ./docker/docker-compose.prod.yml
+
 # services command
 start-auth:
 	clear && go run src/auth-service/cmd/web/main.go
@@ -10,18 +17,22 @@ start-product:
 
 start-order:
 	clear && go run src/order-service/cmd/web/main.go
-# docker command
-start-docker:
-	clear && docker compose --env-file ./.env -f ./docker/docker-compose.yml up -d 
 
-stop-docker:
-	clear && docker compose --env-file ./.env -f ./docker/docker-compose.yml down --remove-orphans
+# docker command
+up-dev:
+	clear && docker compose --env-file $(ENV_FILE) -f $(DOCKER_COMPOSE_DEV) up -d 
+
+down-dev:
+	clear && docker compose --env-file $(ENV_FILE) -f $(DOCKER_COMPOSE_DEV) down -v --remove-orphans
+
+up-prod:
+	clear && docker compose --env-file $(ENV_FILE) -f $(DOCKER_COMPOSE_PROD) up -d 
+
+down-prod:
+	clear && docker compose --env-file $(ENV_FILE) -f $(DOCKER_COMPOSE_PROD) down -v --remove-orphans
 
 clean-docker:
-	clear && docker system prune && docker volume prune && docker image prune -a --env-file ./.env -f && docker container prune && docker buildx prune
-
-start-db:
-	clear && docker compose --env-file ./.env -f ./docker/docker-compose.yml up user-db product-db order-db auth-db -d
+	clear && docker system prune -f && docker volume prune -f && docker image prune -a -f && docker container prune -f && docker buildx prune -f
 
 start-test:
 	clear && go test -v -count=1 ./src/auth-service/test

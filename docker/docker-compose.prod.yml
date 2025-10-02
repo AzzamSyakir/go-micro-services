@@ -1,0 +1,162 @@
+services:
+  auth-services:
+    container_name: auth-services
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./src/auth-service/Dockerfile
+    environment:
+      POSTGRES_HOST: auth-db
+      USER_HOST: user-services
+      PRODUCT_HOST: product-services
+      ORDER_HOST: order-services
+    expose:
+      - 8080
+    ports:
+      - ${AUTH_PORT}:${AUTH_PORT}
+      - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
+    depends_on:
+      - auth-db
+
+  user-services:
+    container_name: user-services
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./src/user-service/Dockerfile
+    environment:
+      POSTGRES_HOST: user-db
+      AUTH_HOST: auth-services
+    expose:
+      - 8080
+    ports:
+      - ${USER_PORT}:${USER_PORT}
+    depends_on:
+      - user-db
+
+  product-services:
+    container_name: product-services
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./src/product-service/Dockerfile
+    environment:
+      POSTGRES_HOST: product-db
+    expose:
+      - 8080
+    ports:
+      - ${PRODUCT_PORT}:${PRODUCT_PORT}
+    depends_on:
+      - product-db
+
+  order-services:
+    container_name: order-services
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./src/order-service/Dockerfile
+    environment:
+      POSTGRES_HOST: order-db
+      USER_HOST: user-services
+      PRODUCT_HOST: product-services
+    expose:
+      - 8080
+    ports:
+      - ${ORDER_PORT}:${ORDER_PORT}
+    depends_on:
+      - order-db
+
+  auth-db:
+    image: postgres:latest
+    command: -c 'max_connections=500'
+    container_name: auth-db
+    restart: always
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: auth_db
+      PGPORT: ${POSTGRES_AUTH_PORT}
+    expose:
+      - 5432
+    ports:
+      - ${POSTGRES_AUTH_PORT}:${POSTGRES_AUTH_PORT}
+    volumes:
+      - ../db/postgres/auth_db/migration:/docker-entrypoint-initdb.d
+      - auth-db:/var/lib/postgresql/data
+
+  user-db:
+    image: postgres:latest
+    command: -c 'max_connections=500'
+    container_name: user-db
+    restart: always
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: user_db
+      PGPORT: ${POSTGRES_USER_PORT}
+    expose:
+      - 5430
+    ports:
+      - ${POSTGRES_USER_PORT}:${POSTGRES_USER_PORT}
+    volumes:
+      - ../db/postgres/user_db/migration:/docker-entrypoint-initdb.d
+      - user-db:/var/lib/postgresql/data
+
+  product-db:
+    image: postgres:latest
+    command: -c 'max_connections=500'
+    container_name: product-db
+    restart: always
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: product_db
+      PGPORT: ${POSTGRES_PRODUCT_PORT}
+    expose:
+      - 5431
+    ports:
+      - ${POSTGRES_PRODUCT_PORT}:${POSTGRES_PRODUCT_PORT}
+    volumes:
+      - ../db/postgres/product_db/migration:/docker-entrypoint-initdb.d
+      - product-db:/var/lib/postgresql/data
+
+  order-db:
+    image: postgres:latest
+    command: -c 'max_connections=500'
+    container_name: order-db
+    restart: always
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: order_db
+      PGPORT: ${POSTGRES_ORDER_PORT}
+    expose:
+      - 5432
+    ports:
+      - ${POSTGRES_ORDER_PORT}:${POSTGRES_ORDER_PORT}
+    volumes:
+      - ../db/postgres/order_db/migration:/docker-entrypoint-initdb.d
+      - order-db:/var/lib/postgresql/data
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: swagger-ui
+    restart: unless-stopped
+    ports:
+      - ${SWAGGER_PORT}:8080
+    depends_on:
+      - auth-services
+    volumes:
+      - ../docs/api/swagger.json:/spec/docs/swagger.json
+    environment:
+      SWAGGER_JSON: /spec/docs/swagger.json
+
+volumes:
+  auth-db:
+  user-db:
+  product-db:
+  order-db:
