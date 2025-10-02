@@ -16,7 +16,6 @@
   "host": "micro-services-api.azzamsyakir.com",
   "basePath": "/",
   "schemes": [
-    "http",
     "https"
   ],
   "consumes": [
