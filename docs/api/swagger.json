@@ -13,7 +13,7 @@
     "description": "GitHub Repository",
     "url": "https://github.com/AzzamSyakir/go-micro-services"
   },
-  "host": "localhost:8080",
+  "host": "micro-services-api.azzamsyakir.com",
   "basePath": "/",
   "schemes": [
     "http",
