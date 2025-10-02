@@ -49,7 +49,7 @@ jobs:
             
       - name: Stop and Remove Old Containers
         run: |
-          docker compose --env-file ./.env -f ~/program/go-micro-services/docker/docker-compose.yml down --remove-orphans || true
+          docker compose --env-file ./.env -f ~/program/docker/docker-compose.yml down --remove-orphans || true
       
       - name: Remove Old Docker Image
         run: |
@@ -57,7 +57,7 @@ jobs:
           
       - name: Run Docker
         run: |
-          mv .env ~/program/go-micro-services 
+          mv .env ~/program/ 
           cd 
-          cd program/go-micro-services
+          cd program/
           docker compose --env-file .env -f docker/docker-compose.yml up -d
