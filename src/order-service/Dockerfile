@@ -1,5 +1,5 @@
 #start from golang base image
-FROM golang:1.24-alpine
+FROM golang:1.25-alpine
 
 #install dependencies
 RUN apk update
@@ -9,7 +9,7 @@ RUN go install github.com/air-verse/air@latest
 
 #setup workdir
 RUN mkdir -p /app
-ENV WORKDIR /app
+ENV WORKDIR=/app
 WORKDIR $WORKDIR
 
 COPY ./src/order-service/ ./src/order-service/

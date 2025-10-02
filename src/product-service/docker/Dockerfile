@@ -6,7 +6,7 @@ RUN apk update
 RUN apk add --no-cache git build-base
 
 # Setup workdir.
-ENV WORKDIR /app
+ENV WORKDIR=/app
 WORKDIR $WORKDIR
 
 # Copy sources from the host current directory to the workdir inside the container.
@@ -26,5 +26,5 @@ RUN go build -C $WORKDIR/cmd/web -o $WORKDIR/build
 FROM alpine:latest
 
 # Setup workdir.
-ENV WORKDIR /app
+ENV WORKDIR=/app
 WORKDIR $WORKDIR
