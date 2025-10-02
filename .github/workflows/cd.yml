@@ -46,14 +46,18 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
-            
+    
+
       - name: Stop and Remove Old Containers
         run: make down-prod
-      
-      - name: Remove Old Docker Image
+
+      - name: Remove Old Docker Images
         run: |
-          docker images --filter "reference=bukanasa/go-micro-services" --format "{{.ID}}" | xargs -r docker rmi -f || true
-          
-      - name: Run Docker
-        run: |
-          make up-prod
+          echo "Removing unused images..."
+          docker image prune -af || true
+
+          echo "Removing dangling build cache..."
+          docker builder prune -af || true
+
+      - name: Run Docker Containers
+        run: make up-prod
